@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">MhdStuff</string>
+    <string name="departures">Aktuální odjezdy</string>
+    <string name="vehicle_map">Poloha vozidel</string>
+    <string name="vehicles">Seznam vozidel</string>
+    <string name="events">Mimořádné události</string>
+    <string name="diversions">Změny v dopravě</string>
+    <string name="news">Novinky</string>
+    <string name="schemes">Schémata linek</string>
+    <string name="settings">Nastavení</string>
+    <string name="about">O aplikaci</string>
+</resources>
