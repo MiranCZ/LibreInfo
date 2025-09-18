@@ -8,7 +8,6 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.mhdstuff.DiversionsActivity;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 

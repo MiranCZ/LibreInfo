@@ -2,14 +2,13 @@ package com.example.mhdstuff.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.mhdstuff.DiversionsActivity;
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.activity.devtest.LineListActivity;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -23,13 +22,9 @@ public class SettingsActivity extends AppCompatActivity {
 
         Button devSettings = findViewById(R.id.open_dev_settings);
 
-        devSettings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(SettingsActivity.this, DiversionsActivity.class);
-                startActivity(intent);
-
-            }
+        devSettings.setOnClickListener(view -> {
+            Intent intent = new Intent(SettingsActivity.this, LineListActivity.class);
+            startActivity(intent);
         });
     }
 }

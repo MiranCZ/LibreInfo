@@ -15,32 +15,23 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.mhdstuff.activity.listview.AbstractItemAdapter;
 import com.example.mhdstuff.parsing.types.News;
 
 import java.util.List;
 
-public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.NewsViewHolder> {
+public class NewsItemAdapter extends AbstractItemAdapter<News, NewsItemAdapter.NewsViewHolder> {
 
-    private List<News> items;
     private final Context context;
 
 
     public NewsItemAdapter(List<News> items, Context context) {
-        this.items = items;
+        super(items, R.layout.news_item_layout);
         this.context = context;
     }
 
-    @NonNull
     @Override
-    public NewsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.news_item_layout, parent, false);
-        return new NewsViewHolder(view);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull NewsViewHolder holder, int position) {
-        News currentItem = items.get(position);
-
+    protected void bindValues(NewsViewHolder holder, News currentItem) {
         holder.title.setText(currentItem.title());
         holder.date.setText(currentItem.publicFrom().toString());
         holder.content.setText(currentItem.text());
@@ -52,11 +43,11 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.NewsVi
     }
 
     @Override
-    public int getItemCount() {
-        return items == null ? 0 : items.size();
+    protected NewsViewHolder createHolder(View view) {
+        return new NewsViewHolder(view);
     }
 
-    static class NewsViewHolder extends RecyclerView.ViewHolder {
+    protected static class NewsViewHolder extends ItemViewHolder {
 
         TextView title;
         TextView date;

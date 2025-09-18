@@ -33,13 +33,18 @@
             android:parentActivityName=".activity.MainActivity">
         </activity>
         <activity
-            android:name=".DiversionsActivity"
+            android:name=".activity.DiversionsActivity"
             android:parentActivityName=".activity.MainActivity">  <!-- Optional: for Up navigation -->
         </activity>
 
         <activity
             android:name=".activity.SettingsActivity"
             android:parentActivityName=".activity.MainActivity">
+        </activity>
+
+        <activity
+            android:name=".activity.devtest.LineListActivity"
+            android:parentActivityName=".activity.SettingsActivity">
         </activity>
 
 
