@@ -35,6 +35,10 @@ dependencies {
 
     implementation(libs.appcompat)
     implementation(libs.material)
+//    implementation(libs.flexbox)
+    // https://mvnrepository.com/artifact/com.github.google/flexbox-layout
+//    implementation(libs.flexbox.layout)
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
     implementation(libs.gson)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

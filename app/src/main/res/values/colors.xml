@@ -9,10 +9,15 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="gray">#AAAAAA</color>
+    <color name="darker_gray">#1A1A1A</color>
     <color name="light_gray">#DFDFDF</color>
+    <color name="super_light_gray">#EFEFEF</color>
     <color name="dark_gray">#202020</color>
     
     <color name="primaryColor">@color/white</color>
+    <color name="widget_background">@color/super_light_gray</color>
+    <color name="secondary_color_light_tone">@color/dark_gray</color>
+    <color name="secondary_color_tone">@color/darker_gray</color>
     <color name="secondaryColor">@color/black</color>
 
 </resources>

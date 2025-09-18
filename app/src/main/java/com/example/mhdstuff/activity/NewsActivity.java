@@ -1,4 +1,4 @@
-package com.example.mhdstuff;
+package com.example.mhdstuff.activity;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -7,9 +7,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.mhdstuff.NewsItemAdapter;
+import com.example.mhdstuff.R;
 import com.example.mhdstuff.parsing.types.News;
 import com.example.mhdstuff.util.CacheHelper;
-import com.example.mhdstuff.util.RequestHelper;
 
 import java.util.List;
 

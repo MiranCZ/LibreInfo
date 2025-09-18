@@ -15,7 +15,7 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,14 +24,24 @@
         </activity>
 
         <activity
-            android:name=".SearchActivity"
-            android:parentActivityName=".MainActivity">  <!-- Optional: for Up navigation -->
+            android:name=".activity.SearchActivity"
+            android:parentActivityName=".activity.MainActivity">  <!-- Optional: for Up navigation -->
         </activity>
 
         <activity
-            android:name=".NewsActivity"
-            android:parentActivityName=".MainActivity">  <!-- Optional: for Up navigation -->
+            android:name=".activity.NewsActivity"
+            android:parentActivityName=".activity.MainActivity">
         </activity>
+        <activity
+            android:name=".DiversionsActivity"
+            android:parentActivityName=".activity.MainActivity">  <!-- Optional: for Up navigation -->
+        </activity>
+
+        <activity
+            android:name=".activity.SettingsActivity"
+            android:parentActivityName=".activity.MainActivity">
+        </activity>
+
 
     </application>
 

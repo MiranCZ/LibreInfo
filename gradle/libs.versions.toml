@@ -1,5 +1,6 @@
 [versions]
 agp = "8.9.2"
+flexboxLayout = "3.0.0"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
@@ -8,6 +9,7 @@ material = "1.10.0"
 gson = "2.13.2"
 
 [libraries]
+flexbox-layout = { module = "com.github.google:flexbox-layout", version.ref = "flexboxLayout" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

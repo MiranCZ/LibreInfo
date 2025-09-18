@@ -9,6 +9,9 @@
     <color name="white">#FFFFFFFF</color>
     
     <color name="primaryColor">@color/black</color>
+    <color name="widget_background">@color/dark_gray</color>
+    <color name="secondary_color_light_tone">@color/light_gray</color>
+    <color name="secondary_color_tone">@color/gray</color>
     <color name="secondaryColor">@color/white</color>
 
 </resources>

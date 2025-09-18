@@ -1,4 +1,4 @@
-package com.example.mhdstuff;
+package com.example.mhdstuff.activity;
 
 import android.os.Bundle;
 
@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.mhdstuff.ItemAdapter;
+import com.example.mhdstuff.R;
 import com.example.mhdstuff.parsing.types.Stop;
 import com.example.mhdstuff.util.FuzzySearch;
 
