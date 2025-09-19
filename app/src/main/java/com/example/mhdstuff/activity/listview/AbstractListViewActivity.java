@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.parsing.storage.IdStorage;
 
 public abstract class AbstractListViewActivity extends AppCompatActivity {
 
@@ -32,7 +33,8 @@ public abstract class AbstractListViewActivity extends AppCompatActivity {
 
         Context context = this;
         new Thread(() -> {
-            RecyclerView.Adapter adapter = getAdapter(context);
+            IdStorage storage = IdStorage.getInstance();
+            RecyclerView.Adapter adapter = getAdapter(context, storage);
             runOnUiThread(() -> recyclerView.setAdapter(adapter));
         }).start();
 
@@ -43,6 +45,6 @@ public abstract class AbstractListViewActivity extends AppCompatActivity {
         }
     }
 
-    protected abstract RecyclerView.Adapter getAdapter(Context context);
+    protected abstract RecyclerView.Adapter getAdapter(Context context, IdStorage storage);
 
 }

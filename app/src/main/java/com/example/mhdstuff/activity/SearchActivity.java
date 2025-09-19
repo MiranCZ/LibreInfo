@@ -1,6 +1,7 @@
 package com.example.mhdstuff.activity;
 
 import android.os.Bundle;
+import android.os.Handler;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mhdstuff.ItemAdapter;
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Stop;
 import com.example.mhdstuff.util.FuzzySearch;
 
@@ -41,15 +43,24 @@ public class SearchActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recycler_view_items);
         searchView = findViewById(R.id.search_view);
 
-        allItems = MainActivity.storage.stopStorage().getAllStops();
-        allItems.sort(Comparator.comparing(s -> s.name().toLowerCase()));
-        search = new FuzzySearch<>(allItems, Stop::name);
+        new Thread(() -> {
+            IdStorage storage = IdStorage.getInstance();
+            allItems = storage.stopStorage().getAllStops();
+            allItems.sort(Comparator.comparing(s -> s.name().toLowerCase()));
+            search = storage.stopStorage().getSearcher();
+
+            filteredItems = new ArrayList<>(allItems);
+            System.out.println(allItems.size() + " ALL STOPS SIZE");
+
+            adapter = new ItemAdapter(filteredItems);
+
+            runOnUiThread(() -> recyclerView.setAdapter(adapter));
+        }).start();
 
 
-        filteredItems = new ArrayList<>(allItems);
-        System.out.println(allItems.size() + " ALL STOPS SIZE");
 
-        adapter = new ItemAdapter(filteredItems);
+
+
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -57,7 +68,7 @@ public class SearchActivity extends AppCompatActivity {
         divider.setDrawable(ContextCompat.getDrawable(this, R.drawable.divider));
         recyclerView.addItemDecoration(divider);
 
-        recyclerView.setAdapter(adapter);
+
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -78,6 +89,9 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void filterItems(String query) {
+        if (filteredItems == null) return;
+
+
         System.out.println("quering "+query);
         filteredItems.clear();
         if (query.isEmpty()) {

@@ -17,6 +17,7 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.data.DiversionDataHolder;
+import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Diversion;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.Time;
@@ -39,6 +40,13 @@ public class DiversionInfoActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        new Thread(() -> {
+            IdStorage storage = IdStorage.getInstance();
+            runOnUiThread(() -> createElements(storage));
+        }).start();
+    }
+
+    private void createElements(IdStorage storage) {
         Diversion diversion = DiversionDataHolder.getDiversion();
 
         setContentView(R.layout.activity_diversion_info);
@@ -56,7 +64,7 @@ public class DiversionInfoActivity extends AppCompatActivity {
         FlexboxLayout lines = findViewById(R.id.diversion_line_list);
 
         for (TransportLine line : diversion.lines()) {
-            LineAlias alias = MainActivity.storage.lineStorage().getAlias(line.id());
+            LineAlias alias = storage.lineStorage().getAlias(line.id());
 
             lines.addView(alias.createLineIconView(lines, this));
         }

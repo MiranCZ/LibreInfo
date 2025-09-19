@@ -13,17 +13,10 @@ import com.example.mhdstuff.parsing.storage.IdStorage;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static IdStorage storage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (storage == null) {
-            new Thread(() -> {
-                Log.e("MainActivity", "Creating storage...");
-                storage = IdStorage.create(this);
-            }).start();
-        }
 
         setContentView(R.layout.activity_main);
 

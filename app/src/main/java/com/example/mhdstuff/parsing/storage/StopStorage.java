@@ -1,6 +1,7 @@
 package com.example.mhdstuff.parsing.storage;
 
 import com.example.mhdstuff.parsing.types.Stop;
+import com.example.mhdstuff.util.FuzzySearch;
 import com.google.gson.JsonArray;
 
 import java.util.HashMap;
@@ -19,12 +20,16 @@ public class StopStorage {
     private final List<Stop> stops;
     private final Map<Long, Stop> idToStop = new HashMap<>();
 
+    private final FuzzySearch<Stop> searcher;
+
 
     public StopStorage(List<Stop> stops) {
         this.stops = stops;
         for (Stop stop : stops) {
             idToStop.put(stop.id(), stop);
         }
+
+        this.searcher = new FuzzySearch<>(stops, Stop::name);
     }
 
     public Stop getStop(int id) {
@@ -44,5 +49,9 @@ public class StopStorage {
 
     public List<Stop> getAllStops() {
         return stops;
+    }
+
+    public FuzzySearch<Stop> getSearcher() {
+        return searcher;
     }
 }

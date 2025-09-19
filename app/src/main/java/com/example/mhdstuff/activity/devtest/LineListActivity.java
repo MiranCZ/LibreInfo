@@ -14,6 +14,7 @@ import com.example.mhdstuff.DiversionsItemAdapter;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.MainActivity;
 import com.example.mhdstuff.activity.listview.AbstractItemAdapter;
+import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.google.android.flexbox.FlexboxLayoutManager;
 
@@ -33,7 +34,7 @@ public class LineListActivity extends AppCompatActivity {
 
         Context context = this;
         new Thread(() -> {
-            items = MainActivity.storage.lineStorage().getAllAliases();
+            items = IdStorage.getInstance().lineStorage().getAllAliases();
 
             adapter = new ItemAdapter(items);
             runOnUiThread(() -> recyclerView.setAdapter(adapter));
