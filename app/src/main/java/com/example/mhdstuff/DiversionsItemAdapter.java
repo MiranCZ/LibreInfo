@@ -21,7 +21,11 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.mhdstuff.activity.DiversionInfoActivity;
+import com.example.mhdstuff.activity.DiversionsActivity;
 import com.example.mhdstuff.activity.MainActivity;
+import com.example.mhdstuff.activity.SearchActivity;
+import com.example.mhdstuff.activity.data.DiversionDataHolder;
 import com.example.mhdstuff.activity.listview.AbstractItemAdapter;
 import com.example.mhdstuff.parsing.types.Diversion;
 import com.example.mhdstuff.parsing.types.LineAlias;
@@ -50,13 +54,22 @@ public class DiversionsItemAdapter extends AbstractItemAdapter<Diversion, Divers
         holder.from.setText(createSpannable("od: ", item.from()));
         holder.to.setText(createSpannable("do: ", item.to()));
 
+        holder.view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DiversionDataHolder.setDiversion(item);
+                Intent intent = new Intent(context, DiversionInfoActivity.class);
+                context.startActivity(intent);
+            }
+        });
+
         FlexboxLayout lines = holder.lines;
 
         lines.removeAllViews();
         for (TransportLine line : item.lines()) {
             LineAlias alias = MainActivity.storage.lineStorage().getAlias(line.id());
 
-            lines.addView(createLineIconView(alias, lines));
+            lines.addView(alias.createLineIconView(lines, context));
         }
     }
 
@@ -76,20 +89,6 @@ public class DiversionsItemAdapter extends AbstractItemAdapter<Diversion, Divers
         return spannable;
     }
 
-    private View createLineIconView(LineAlias lineAlias, FlexboxLayout layout) {
-        View itemView = LayoutInflater.from(context).inflate(R.layout.line_icon_layout, layout , false);
-        TextView title = itemView.findViewById(R.id.line_name);
-        title.setText(lineAlias.lineDisplayName());
-        title.setTextColor(lineAlias.textColor());
-
-        View view = itemView.findViewById(R.id.icon_container);
-        GradientDrawable back = (GradientDrawable) view.getBackground();
-        back.setColor(lineAlias.backgroundColor());
-
-        view.post(() -> view.setMinimumWidth(view.getHeight()));
-
-        return itemView;
-    }
 
     @Override
     protected DiversionViewHolder createHolder(View view) {
@@ -98,14 +97,15 @@ public class DiversionsItemAdapter extends AbstractItemAdapter<Diversion, Divers
 
     protected static class DiversionViewHolder extends ItemViewHolder {
 
+        View view;
         TextView title;
-
         TextView from;
         TextView to;
         FlexboxLayout lines;
 
         public DiversionViewHolder(@NonNull View itemView) {
             super(itemView);
+            view = itemView.findViewById(R.id.diversions_container);
             title = itemView.findViewById(R.id.diversion_title);
             from = itemView.findViewById(R.id.diversion_from);
             to = itemView.findViewById(R.id.diversion_to);

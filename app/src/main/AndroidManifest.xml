@@ -38,6 +38,12 @@
         </activity>
 
         <activity
+            android:name=".activity.DiversionInfoActivity"
+            android:parentActivityName=".activity.DiversionsActivity">  <!-- Optional: for Up navigation -->
+        </activity>
+
+
+        <activity
             android:name=".activity.SettingsActivity"
             android:parentActivityName=".activity.MainActivity">
         </activity>
