@@ -13,6 +13,7 @@
     <color name="light_gray">#DFDFDF</color>
     <color name="super_light_gray">#EFEFEF</color>
     <color name="dark_gray">#202020</color>
+    <color name="dark_red">#360F0F</color>
     
     <color name="primaryColor">@color/white</color>
     <color name="widget_background">@color/super_light_gray</color>

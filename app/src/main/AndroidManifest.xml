@@ -26,7 +26,7 @@
 
         <activity
             android:name=".activity.SearchActivity"
-            android:parentActivityName=".activity.MainActivity">  <!-- Optional: for Up navigation -->
+            android:parentActivityName=".activity.MainActivity">
         </activity>
 
         <activity
@@ -35,12 +35,12 @@
         </activity>
         <activity
             android:name=".activity.DiversionsActivity"
-            android:parentActivityName=".activity.MainActivity">  <!-- Optional: for Up navigation -->
+            android:parentActivityName=".activity.MainActivity">
         </activity>
 
         <activity
             android:name=".activity.DiversionInfoActivity"
-            android:parentActivityName=".activity.DiversionsActivity">  <!-- Optional: for Up navigation -->
+            android:parentActivityName=".activity.DiversionsActivity">
         </activity>
 
 
@@ -52,6 +52,11 @@
         <activity
             android:name=".activity.devtest.LineListActivity"
             android:parentActivityName=".activity.SettingsActivity">
+        </activity>
+
+        <activity
+            android:name=".activity.DeparturesActivity"
+            android:parentActivityName=".activity.SearchActivity">
         </activity>
 
 

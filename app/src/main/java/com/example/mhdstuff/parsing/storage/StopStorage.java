@@ -18,7 +18,7 @@ public class StopStorage {
 
 
     private final List<Stop> stops;
-    private final Map<Long, Stop> idToStop = new HashMap<>();
+    private final Map<Integer, Stop> idToStop = new HashMap<>();
 
     private final FuzzySearch<Stop> searcher;
 
@@ -33,18 +33,12 @@ public class StopStorage {
     }
 
     public Stop getStop(int id) {
-        return getStop((long) id);
-    }
-
-    public Stop getStop(long id) {
-
         if (!idToStop.containsKey(id)) {
             System.out.println("[WARN] Tried to get non-existent stop with id " + id);
             return Stop.NONE;
         }
 
         return idToStop.get(id);
-
     }
 
     public List<Stop> getAllStops() {

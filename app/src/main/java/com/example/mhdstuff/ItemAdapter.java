@@ -1,16 +1,18 @@
 package com.example.mhdstuff;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.mhdstuff.activity.DeparturesActivity;
+import com.example.mhdstuff.activity.data.StopDataHolder;
 import com.example.mhdstuff.parsing.types.Stop;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +38,14 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ButtonViewHold
         Stop currentItem = items.get(position);
         holder.button.setText(currentItem.name());
 
+        holder.button.setOnClickListener(v -> {
+            StopDataHolder.setStop(currentItem);
+
+            Intent intent = new Intent(v.getContext(), DeparturesActivity.class);
+            v.getContext().startActivity(intent);
+        });
+
         holders.put(position, holder);
-//        holderMap.put(currentItem, holder);
     }
 
     @Override
@@ -46,11 +54,13 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ButtonViewHold
     }
 
     public void submitList(List<Stop> list) {
+        this.items = list;
+
         for (int i = 0; i < holders.size() && i < list.size(); i++) {
             if (!holders.containsKey(i)) break;
-            holders.get(i).button.setText(list.get(i).name());
+
+            onBindViewHolder(holders.get(i), i);
         }
-        this.items = list;
     }
 
     static class ButtonViewHolder extends RecyclerView.ViewHolder {

@@ -4,10 +4,9 @@ import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public record Stop(long id, int zone, String name, Location location, boolean isPublic,
+public record Stop(int id, int zone, String name, Location location, boolean isPublic,
                    List<TransportLine> lines,
                    StopMode stopMode
 ) {
@@ -22,7 +21,7 @@ public record Stop(long id, int zone, String name, Location location, boolean is
     public static Stop parse(JsonObject object, LineStorage storage) {
         if (object == null) return null;
 
-        long id = object.get("StopID").getAsLong();
+        int id = object.get("StopID").getAsInt();
         int zone = object.get("Zone").getAsInt();
         String name = object.get("Name").getAsString();
         Location location = Location.parse(object);

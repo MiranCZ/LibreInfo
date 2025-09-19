@@ -6,11 +6,10 @@
 
 
 
-    <LinearLayout
+    <com.example.mhdstuff.IconLinerLayout
         android:id="@+id/icon_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minHeight="14dp"
         android:layout_marginStart="4dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="4dp"
@@ -33,5 +32,5 @@
             />
 
 
-    </LinearLayout>
+    </com.example.mhdstuff.IconLinerLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

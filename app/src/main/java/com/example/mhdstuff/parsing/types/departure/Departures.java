@@ -13,7 +13,13 @@ public record Departures(int stopId, int postId, String message, List<Departure>
         int stopID = obj.get("StopID").getAsInt();
         int postID = obj.get("PostID").getAsInt();
 
-        String message = obj.get("Message").getAsString();
+
+        String message;
+        if (obj.has("Message")) {
+            message = obj.get("Message").getAsString();
+        } else {
+            message = "";
+        }
         List<Departure> departures = Departure.parseDepartures(obj.get("PostList").getAsJsonArray(), storage);
 
         return new Departures(stopID, postID, message, departures);
