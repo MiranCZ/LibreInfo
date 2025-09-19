@@ -93,21 +93,23 @@ public class SearchActivity extends AppCompatActivity {
 
 
         System.out.println("quering "+query);
-        filteredItems.clear();
+//        filteredItems.clear();
         if (query.isEmpty()) {
 
-            filteredItems.addAll(allItems);
+            adapter.submitList(filteredItems);
+//            filteredItems.addAll(allItems);
         } else {
             long millis = System.currentTimeMillis();
 
             List<Stop> results = search.getResults(query);
-            filteredItems.addAll(results);
+//            filteredItems.addAll(results);
+            adapter.submitList(results);
 
 
             System.out.println("done in "+(System.currentTimeMillis()-millis) + " ; "+results.size());
         }
 
-        adapter.notifyDataSetChanged();
+//        adapter.notifyDataSetChanged();
         recyclerView.scrollToPosition(0);
     }
 

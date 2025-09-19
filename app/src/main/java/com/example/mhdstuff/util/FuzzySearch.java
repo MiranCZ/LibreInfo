@@ -12,13 +12,7 @@ public class FuzzySearch<T> {
 
 
     private static final BiPredicate<String, String> STRICT = String::startsWith;
-    private static final BiPredicate<String, String> STRICT_NORMALIZE = (s, input) -> {
-        return STRICT.test(normalize(s), normalize(input));
-    };
     private static final BiPredicate<String, String> LOOSE = String::contains;
-    private static final BiPredicate<String, String> LOOSE_NORMALIZE = (s, input) -> {
-        return LOOSE.test(normalize(s), normalize(input));
-    };
     private static final BiPredicate<String, String> WORD_START = (s, input) -> {
         if (!input.contains(" ")) return false;
 
@@ -34,24 +28,26 @@ public class FuzzySearch<T> {
 
         return true;
     };
-    private static final BiPredicate<String, String> WORD_START_NORMALIZE = (s, input) -> {
-        return WORD_START.test(normalize(s), normalize(input));
-    };
 
 
     private final Map<String, T> map = new HashMap<>();
     private final List<String> items = new ArrayList<>();
     private final List<String> lowItems;
     private final List<String> normalizedItems;
+    private final int longest;
 
     public FuzzySearch(List<T> items, Function<T, String> mapper) {
         long start = System.currentTimeMillis();
 
+        int longest = 0;
         for (T item : items) {
             String mapped = mapper.apply(item);
+            longest = Math.max(longest, mapped.length());
+
             map.put(mapped, item);
             this.items.add(mapped);
         }
+        this.longest = longest;
 
         this.items.sort(Comparator.comparing(String::toLowerCase));
 
@@ -67,6 +63,8 @@ public class FuzzySearch<T> {
 
 
     public List<T> getResults(String input) {
+        if (input.length() > longest) return List.of();
+
         String lowInput = input.toLowerCase();
         String normalizedInput = normalize(input);
 
@@ -107,7 +105,7 @@ public class FuzzySearch<T> {
         List<Result> results = new ArrayList<>();
         results.add(new Result(STRICT));
         results.add(new Result(LOOSE));
-        results.add(new Result(WORD_START));
+//        results.add(new Result(WORD_START)); // TODO implement more efficiently
 
 
         long m = System.currentTimeMillis();

@@ -18,8 +18,7 @@ import java.util.Map;
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ButtonViewHolder> {
 
     private List<Stop> items;
-
-    public Map<Stop, ButtonViewHolder> holderMap = new HashMap<>();
+    Map<Integer, ButtonViewHolder> holders = new HashMap<>();
 
     public ItemAdapter(List<Stop> items) {
         this.items = items;
@@ -37,12 +36,21 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ButtonViewHold
         Stop currentItem = items.get(position);
         holder.button.setText(currentItem.name());
 
-        holderMap.put(currentItem, holder);
+        holders.put(position, holder);
+//        holderMap.put(currentItem, holder);
     }
 
     @Override
     public int getItemCount() {
         return items == null ? 0 : items.size();
+    }
+
+    public void submitList(List<Stop> list) {
+        for (int i = 0; i < holders.size() && i < list.size(); i++) {
+            if (!holders.containsKey(i)) break;
+            holders.get(i).button.setText(list.get(i).name());
+        }
+        this.items = list;
     }
 
     static class ButtonViewHolder extends RecyclerView.ViewHolder {
