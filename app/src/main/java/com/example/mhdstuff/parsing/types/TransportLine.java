@@ -55,4 +55,7 @@ public record TransportLine(int id, String displayName) {
         return storage.getLine(str);
     }
 
+    public LineAlias toLineAlias(LineStorage storage) {
+        return storage.getAlias(id);
+    }
 }

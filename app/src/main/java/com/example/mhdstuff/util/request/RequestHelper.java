@@ -1,4 +1,4 @@
-package com.example.mhdstuff.util;
+package com.example.mhdstuff.util.request;
 
 import com.google.gson.*;
 
@@ -21,18 +21,21 @@ public class RequestHelper {
         return result.get().get("Events").getAsJsonArray();
     }
 
+    // this should be fine
     public static JsonArray getStops() {
         Optional<JsonArray> result = makeRequest("stops", JsonArray.class);
 
         return result.orElse(new JsonArray());
     }
 
+    // also should be fine
     public static JsonArray getPosts() {
         Optional<JsonArray> result = makeRequest("posts", JsonArray.class);
 
         return result.orElse(new JsonArray());
     }
 
+    // maybe? from and to fields seems to be missing
     public static JsonArray getDiversions() {
         Optional<JsonObject> result = makeRequest("diversions", JsonObject.class);
         if (result.isEmpty()) return new JsonArray();
@@ -40,6 +43,7 @@ public class RequestHelper {
         return result.get().get("Diversions").getAsJsonArray();
     }
 
+    // we are just fucked
     public static JsonArray getNews() {
         Optional<JsonObject> result = makeRequest("news", JsonObject.class);
         if (result.isEmpty()) return new JsonArray();
@@ -54,11 +58,14 @@ public class RequestHelper {
         return vehicles.get("Data").getAsJsonArray();
     }
 
+    // should be fine, can actually use the webhook
     public static JsonObject getVehicles() {
         Optional<JsonObject> result = makeRequest("vehicles.json", JsonObject.class);
 
         return result.orElseGet(JsonObject::new);
     }
+
+    // should be fine
     public static JsonArray getLineAliases() {
         Optional<JsonObject> result = makeRequest("linealiases", JsonObject.class);
         if (result.isEmpty()) return new JsonArray();
@@ -66,6 +73,7 @@ public class RequestHelper {
         return result.get().get("LineAliases").getAsJsonArray();
     }
 
+    // idk about this one.. ughh
     public static JsonObject getDepartures(int stopID) {
         return getDepartures(stopID, -1);
     }

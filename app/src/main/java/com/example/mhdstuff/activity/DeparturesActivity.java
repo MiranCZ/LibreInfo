@@ -14,7 +14,7 @@ import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Stop;
 import com.example.mhdstuff.parsing.types.departure.Departure;
 import com.example.mhdstuff.parsing.types.departure.Departures;
-import com.example.mhdstuff.util.RequestHelper;
+import com.example.mhdstuff.util.request.RequestHelper;
 
 import java.util.ArrayList;
 import java.util.List;

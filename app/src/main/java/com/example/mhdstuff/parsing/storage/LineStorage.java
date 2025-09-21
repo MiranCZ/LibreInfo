@@ -46,7 +46,7 @@ public class LineStorage {
             // the original client deals with it by just ignoring the entry, I think this is at least a bit better
             System.out.println("[WARN] Vehicle with id "+id+" not found! Creating a dummy one...");
 
-            LineAlias dummy = new LineAlias(id, String.valueOf(id), android.graphics.Color.MAGENTA, Color.WHITE);
+            LineAlias dummy = new LineAlias(id, String.valueOf(id), android.graphics.Color.MAGENTA, "#FF00FF", Color.WHITE, "#FFFFFF");
             idToAlias.put(id, dummy);
             nameToAlias.put(dummy.lineDisplayName(), dummy);
         }

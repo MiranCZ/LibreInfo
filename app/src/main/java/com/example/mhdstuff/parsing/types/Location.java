@@ -2,6 +2,8 @@ package com.example.mhdstuff.parsing.types;
 
 import com.google.gson.JsonObject;
 
+import org.maplibre.android.geometry.LatLng;
+
 import java.util.List;
 
 public record Location(double latitude, double longitude) {
@@ -17,7 +19,7 @@ public record Location(double latitude, double longitude) {
     }
 
     private static double getLatitude(JsonObject obj) {
-        List<String> toTest = List.of("Latitude", "Lat");
+        List<String> toTest = List.of("Latitude", "Lat", "lat");
 
         for (String s : toTest) {
             if (obj.has(s)) {
@@ -29,7 +31,7 @@ public record Location(double latitude, double longitude) {
     }
 
     private static double getLongitude(JsonObject obj) {
-        List<String> toTest = List.of("Longitude", "Lng");
+        List<String> toTest = List.of("Longitude", "Lng", "lng");
 
         for (String s : toTest) {
             if (obj.has(s)) {
@@ -41,4 +43,7 @@ public record Location(double latitude, double longitude) {
 
     }
 
+    public LatLng toLatLng() {
+        return new LatLng(latitude, longitude);
+    }
 }

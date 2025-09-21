@@ -12,17 +12,20 @@ import com.example.mhdstuff.R;
 import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.google.gson.JsonObject;
 
-public record LineAlias(int id, String lineDisplayName, int backgroundColor, int textColor) {
+public record LineAlias(int id, String lineDisplayName, int backgroundColor, String backgroundColorStr, int textColor, String textColorStr) {
 
     public static LineAlias parse(JsonObject obj) {
         if (obj == null) return null;
 
         int id = obj.get("LineID").getAsInt();
         String displayName = obj.get("LineName").getAsString();
-        int background = Color.parseColor(obj.get("Color").getAsString());
-        int textColor = Color.parseColor(obj.get("TextColor").getAsString());
 
-        return new LineAlias(id, displayName, background, textColor);
+        String backgroundStr = obj.get("Color").getAsString();
+        int background = Color.parseColor(backgroundStr);
+        String textColorStr = obj.get("TextColor").getAsString();
+        int textColor = Color.parseColor(textColorStr);
+
+        return new LineAlias(id, displayName, background, backgroundStr, textColor, textColorStr);
     }
 
     public static LineAlias parse(String str, LineStorage storage) {

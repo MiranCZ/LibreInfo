@@ -9,7 +9,7 @@ import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Diversion;
-import com.example.mhdstuff.util.RequestHelper;
+import com.example.mhdstuff.util.request.RequestHelper;
 
 import java.util.List;
 

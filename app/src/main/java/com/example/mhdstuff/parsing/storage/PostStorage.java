@@ -18,9 +18,11 @@ public class PostStorage {
     }
 
     private final Map<Stop, List<Post>> postsForStop = new HashMap<>();
+    private final List<Post> posts;
     private final StopStorage stopStorage;
 
     public PostStorage(List<Post> posts, StopStorage stopStorage) {
+        this.posts = posts;
         this.stopStorage = stopStorage;
         for (Post post : posts) {
             Stop stop = stopStorage.getStop(post.stopID());
@@ -42,4 +44,7 @@ public class PostStorage {
     }
 
 
+    public List<Post> getAllPosts() {
+        return posts;
+    }
 }

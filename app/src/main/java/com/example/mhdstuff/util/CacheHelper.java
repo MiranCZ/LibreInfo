@@ -3,14 +3,13 @@ package com.example.mhdstuff.util;
 import android.content.Context;
 import android.util.Log;
 
+import com.example.mhdstuff.util.request.RequestHelper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.Callable;

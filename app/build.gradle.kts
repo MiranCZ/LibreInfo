@@ -39,7 +39,11 @@ dependencies {
     // https://mvnrepository.com/artifact/com.github.google/flexbox-layout
 //    implementation(libs.flexbox.layout)
     implementation("com.google.android.flexbox:flexbox:3.0.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation(libs.gson)
+    implementation("org.maplibre.gl:android-sdk:11.0.0")
+//    implementation("com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v9:0.9.0")
+    implementation("org.maplibre.gl:android-plugin-annotation-v9:3.0.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
