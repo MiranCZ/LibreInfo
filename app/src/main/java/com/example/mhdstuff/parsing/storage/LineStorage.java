@@ -55,7 +55,9 @@ public class LineStorage {
     }
 
     public LineAlias getAlias(String name) {
-        return nameToAlias.get(name);
+        LineAlias alias = nameToAlias.get(name);
+        if (alias == null) return new LineAlias(0, name, 0,"",0,"");
+        return alias;
     }
 
     public TransportLine getLine(int id) {

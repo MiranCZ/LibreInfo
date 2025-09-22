@@ -13,11 +13,13 @@ import com.example.mhdstuff.R;
 import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.example.mhdstuff.util.Csv;
 import com.example.mhdstuff.util.CsvHelper;
+import com.example.mhdstuff.util.LineColorFixer;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public record LineAlias(int id, String lineDisplayName, int backgroundColor, String backgroundColorStr, int textColor, String textColorStr) {
 
@@ -64,7 +66,9 @@ public record LineAlias(int id, String lineDisplayName, int backgroundColor, Str
                 Log.e("LineAlias", line.toString());
             }
         }
-        return result;
+        LineColorFixer colorFixer = new LineColorFixer(result);
+
+        return result.stream().map(colorFixer::transform).collect(Collectors.toList());
     }
 
     public static LineAlias parse(Csv.CsvLine line) {
@@ -104,6 +108,12 @@ public record LineAlias(int id, String lineDisplayName, int backgroundColor, Str
         }
 
         return "#"+colorStr;
+    }
+
+    public LineAlias withBackgroundColor(String colorStr) {
+        int color = Color.parseColor(colorStr);
+
+        return new LineAlias(id, lineDisplayName, color, colorStr, textColor, textColorStr);
     }
 
     public JsonObject toJson() {

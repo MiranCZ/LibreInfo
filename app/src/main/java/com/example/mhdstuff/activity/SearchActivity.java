@@ -45,12 +45,11 @@ public class SearchActivity extends AppCompatActivity {
 
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();
-            allItems = storage.stopStorage().getAllStops();
+            allItems = new ArrayList<>(storage.stopStorage().getAllStops());
             allItems.sort(Comparator.comparing(s -> s.name().toLowerCase()));
             search = storage.stopStorage().getSearcher();
 
             filteredItems = new ArrayList<>(allItems);
-            System.out.println(allItems.size() + " ALL STOPS SIZE");
 
             adapter = new ItemAdapter(filteredItems);
 
@@ -58,17 +57,11 @@ public class SearchActivity extends AppCompatActivity {
         }).start();
 
 
-
-
-
-
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         DividerItemDecoration divider = new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
         divider.setDrawable(ContextCompat.getDrawable(this, R.drawable.divider));
         recyclerView.addItemDecoration(divider);
-
-
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -91,7 +84,6 @@ public class SearchActivity extends AppCompatActivity {
     private void filterItems(String query) {
         if (filteredItems == null) return;
 
-
         System.out.println("quering "+query);
 //        filteredItems.clear();
         if (query.isEmpty()) {
@@ -104,7 +96,6 @@ public class SearchActivity extends AppCompatActivity {
             List<Stop> results = search.getResults(query);
 //            filteredItems.addAll(results);
             adapter.submitList(results);
-
 
             System.out.println("done in "+(System.currentTimeMillis()-millis) + " ; "+results.size());
         }
