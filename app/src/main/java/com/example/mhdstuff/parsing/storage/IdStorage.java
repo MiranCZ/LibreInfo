@@ -22,7 +22,7 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         Log.d("IdStorage", "Initializing...");
         long ms = System.currentTimeMillis();
 
-        LineStorage lineStorage = LineStorage.parse(CacheHelper.getLineAliases(context));
+        LineStorage lineStorage = new LineStorage(CacheHelper.getLineAliases(context));
         StopStorage stopStorage = StopStorage.parse(CacheHelper.getStops(context), lineStorage);
         PostStorage postStorage = PostStorage.parse(CacheHelper.getPosts(context), lineStorage, stopStorage);
 

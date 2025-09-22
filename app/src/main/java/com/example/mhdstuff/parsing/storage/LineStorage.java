@@ -16,22 +16,22 @@ import java.util.Map;
 // TODO
 public class LineStorage {
 
-    public static LineStorage parse(JsonArray array) {
-        List<LineAlias> aliases = new ArrayList<>();
-
-        for (JsonElement element : array) {
-            aliases.add(LineAlias.parse(element.getAsJsonObject()));
-        }
-
-        return new LineStorage(aliases);
-    }
+//    public static LineStorage parse(JsonArray array) {
+//        List<LineAlias> aliases = new ArrayList<>();
+//
+//        for (JsonElement element : array) {
+//            aliases.add(LineAlias.parse(element.getAsJsonObject()));
+//        }
+//
+//        return new LineStorage(aliases);
+//    }
 
 
     private final List<LineAlias> aliases;
     private final Map<Integer, LineAlias> idToAlias = new HashMap<>();
     private final Map<String, LineAlias> nameToAlias = new HashMap<>();
 
-    private LineStorage(List<LineAlias> aliases) {
+    public LineStorage(List<LineAlias> aliases) {
         this.aliases = aliases;
 
         for (LineAlias alias : aliases) {

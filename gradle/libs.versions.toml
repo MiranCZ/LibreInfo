@@ -7,7 +7,6 @@ espressoCore = "3.5.1"
 appcompat = "1.6.1"
 material = "1.10.0"
 gson = "2.13.2"
-playServicesMaps = "19.2.0"
 
 [libraries]
 flexbox-layout = { module = "com.github.google:flexbox-layout", version.ref = "flexboxLayout" }
@@ -17,7 +16,6 @@ espresso-core = { group = "androidx.test.espresso", name = "espresso-core", vers
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
-play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

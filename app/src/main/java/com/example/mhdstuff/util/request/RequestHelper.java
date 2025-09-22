@@ -2,11 +2,13 @@ package com.example.mhdstuff.util.request;
 
 import com.google.gson.*;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.zip.ZipInputStream;
 
 public class RequestHelper {
 
@@ -65,14 +67,6 @@ public class RequestHelper {
         return result.orElseGet(JsonObject::new);
     }
 
-    // should be fine
-    public static JsonArray getLineAliases() {
-        Optional<JsonObject> result = makeRequest("linealiases", JsonObject.class);
-        if (result.isEmpty()) return new JsonArray();
-
-        return result.get().get("LineAliases").getAsJsonArray();
-    }
-
     // idk about this one.. ughh
     public static JsonObject getDepartures(int stopID) {
         return getDepartures(stopID, -1);
@@ -90,14 +84,17 @@ public class RequestHelper {
 
     }
 
+    public static ZipInputStream getStaticGTFS() {
+        InputStream stream = readUrl("https://kordis-jmk.cz/gtfs/gtfs.zip");
+        if (stream == null) return null;
+
+        return new ZipInputStream(stream);
+    }
+
     private static <T extends JsonElement> Optional<T>  makeRequest(String endpoint, Class<T> type) {
         try {
-            URL url = new URL(URL_START + endpoint);
-
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-            InputStream stream = con.getInputStream();
-
+            InputStream stream = readUrl(URL_START+endpoint);
+            if (stream == null) return Optional.empty();
 
             String output = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
             stream.close();
@@ -106,6 +103,19 @@ public class RequestHelper {
         } catch (Exception e) {
             e.printStackTrace();
             return Optional.empty();
+        }
+    }
+
+    private static InputStream readUrl(String stringUrl) {
+        try {
+            URL url = new URL(stringUrl);
+
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+            return con.getInputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
