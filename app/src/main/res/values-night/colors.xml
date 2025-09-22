@@ -13,5 +13,7 @@
     <color name="secondary_color_light_tone">@color/light_gray</color>
     <color name="secondary_color_tone">@color/gray</color>
     <color name="secondaryColor">@color/white</color>
+    <color name="ui_warning">#360F0F</color>
+    <color name="app_background">#0B0B0B</color>
 
 </resources>
