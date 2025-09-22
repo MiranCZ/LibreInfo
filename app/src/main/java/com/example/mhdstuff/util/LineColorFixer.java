@@ -42,13 +42,14 @@ public class LineColorFixer {
         }
 
         // lines above ~110 have a bit different color than those up to 110, this fixed it
-        if (TypeHelper.isInteger(alias.lineDisplayName()) && Integer.parseInt(alias.lineDisplayName()) > 100) {
-            for (int i = 100; i < 110; i++) {
-                if (idToColorMap.containsKey(i)) {
-                    return alias.withBackgroundColor(idToColorMap.get(i));
-                }
-            }
-        }
+        // FIXME this doesn't work currently
+//        if (TypeHelper.isInteger(alias.lineDisplayName()) && Integer.parseInt(alias.lineDisplayName()) > 100) {
+//            for (int i = 100; i < 110; i++) {
+//                if (idToColorMap.containsKey(i)) {
+//                    return alias.withBackgroundColor(idToColorMap.get(i));
+//                }
+//            }
+//        }
 
         return alias;
     }
