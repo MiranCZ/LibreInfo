@@ -20,7 +20,7 @@ public class DiversionsActivity extends AbstractListViewActivity {
     }
 
     @Override
-    protected RecyclerView.Adapter getAdapter(Context context, IdStorage storage) {
+    protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
         List<Diversion> items = Diversion.parseDiversions(RequestHelper.getDiversions(), storage.lineStorage());
 
         return new DiversionsItemAdapter(items, this);

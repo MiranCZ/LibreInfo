@@ -32,13 +32,13 @@ public class LineListActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.diversions_view_items);
         recyclerView.setLayoutManager(new FlexboxLayoutManager(this));
 
-        Context context = this;
-        new Thread(() -> {
-            items = IdStorage.getInstance().lineStorage().getAllAliases();
+        IdStorage.getInstanceOnUIThread((storage) -> {
+            items = storage.lineStorage().getAllAliases();
 
             adapter = new ItemAdapter(items);
-            runOnUiThread(() -> recyclerView.setAdapter(adapter));
-        }).start();
+
+            recyclerView.setAdapter(adapter);
+        }, this);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);

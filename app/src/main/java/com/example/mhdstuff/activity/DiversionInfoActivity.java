@@ -40,10 +40,7 @@ public class DiversionInfoActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        new Thread(() -> {
-            IdStorage storage = IdStorage.getInstance();
-            runOnUiThread(() -> createElements(storage));
-        }).start();
+        IdStorage.getInstanceOnUIThread(this::createElements, this);
     }
 
     private void createElements(IdStorage storage) {

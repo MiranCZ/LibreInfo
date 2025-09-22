@@ -30,8 +30,6 @@ public class DeparturesActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_departures);
 
-
-
         Stop stop = StopDataHolder.getStop();
 
         if (getSupportActionBar() != null) {

@@ -45,6 +45,6 @@ public abstract class AbstractListViewActivity extends AppCompatActivity {
         }
     }
 
-    protected abstract RecyclerView.Adapter getAdapter(Context context, IdStorage storage);
+    protected abstract RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage);
 
 }

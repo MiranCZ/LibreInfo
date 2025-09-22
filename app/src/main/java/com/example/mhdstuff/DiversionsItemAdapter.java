@@ -40,11 +40,9 @@ public class DiversionsItemAdapter extends AbstractItemAdapter<Diversion, Divers
 
     @Override
     protected void bindValues(DiversionViewHolder holder, Diversion item) {
-        new Thread(() -> {
-            IdStorage storage = IdStorage.getInstance();
-
-            activity.runOnUiThread(() -> createElement(holder, item, storage));
-        }).start();
+        IdStorage.getInstanceOnUIThread(
+                (storage) -> createElement(holder, item, storage), activity
+        );
     }
 
     private void createElement(DiversionViewHolder holder, Diversion item, IdStorage storage) {
