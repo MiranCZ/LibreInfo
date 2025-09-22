@@ -132,6 +132,13 @@ public record LineAlias(int id, String lineDisplayName, int backgroundColor, Str
         GradientDrawable back = (GradientDrawable) view.getBackground();
         back.setColor(backgroundColor());
 
+        // hardcoded outline around black background
+        if (backgroundColor == -16777216) {
+            back.setStroke(4, textColor);
+        } else {
+            back.setStroke(0, backgroundColor);
+        }
+
         return itemView;
     }
 
