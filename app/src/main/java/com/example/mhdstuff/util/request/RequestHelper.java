@@ -67,23 +67,6 @@ public class RequestHelper {
         return result.orElseGet(JsonObject::new);
     }
 
-    // idk about this one.. ughh
-    public static JsonObject getDepartures(int stopID) {
-        return getDepartures(stopID, -1);
-    }
-
-    public static JsonObject getDepartures(int stopID, int postID) {
-        String request = "departures?StopID="+stopID;
-        if (postID != -1) {
-            request = request + "&PostID="+postID;
-        }
-
-        Optional<JsonObject> result = makeRequest(request, JsonObject.class);
-
-        return result.orElseGet(JsonObject::new);
-
-    }
-
     public static ZipInputStream getStaticGTFS() {
         InputStream stream = readUrl("https://kordis-jmk.cz/gtfs/gtfs.zip");
         if (stream == null) return null;
@@ -91,7 +74,7 @@ public class RequestHelper {
         return new ZipInputStream(stream);
     }
 
-    private static <T extends JsonElement> Optional<T>  makeRequest(String endpoint, Class<T> type) {
+    private static <T extends JsonElement> Optional<T> makeRequest(String endpoint, Class<T> type) {
         try {
             InputStream stream = readUrl(URL_START+endpoint);
             if (stream == null) return Optional.empty();

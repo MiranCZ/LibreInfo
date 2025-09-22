@@ -15,6 +15,7 @@ import com.example.mhdstuff.parsing.types.Stop;
 import com.example.mhdstuff.parsing.types.departure.Departure;
 import com.example.mhdstuff.parsing.types.departure.Departures;
 import com.example.mhdstuff.util.request.RequestHelper;
+import com.example.mhdstuff.util.request.soap.SoapHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,8 @@ public class DeparturesActivity extends AppCompatActivity {
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();
 
-            Departures departures = Departures.parse(RequestHelper.getDepartures(stop.id()), storage.lineStorage());
+//            Departures departures = Departures.parse(RequestHelper.getDepartures(stop.id()), storage.lineStorage());
+            Departures departures = Departures.parse(SoapHelper.getDepartures(stop.id()), storage.lineStorage());
 
             LinearLayout layout = findViewById(R.id.departure_items);
 

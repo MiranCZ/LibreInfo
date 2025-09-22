@@ -1,3 +1,5 @@
+import java.net.URI
+
 plugins {
     alias(libs.plugins.android.application)
 }
@@ -44,6 +46,7 @@ dependencies {
     implementation("org.maplibre.gl:android-sdk:11.0.0")
 //    implementation("com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v9:0.9.0")
     implementation("org.maplibre.gl:android-plugin-annotation-v9:3.0.0")
+    implementation("com.google.code.ksoap2-android:ksoap2-android:3.6.4")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

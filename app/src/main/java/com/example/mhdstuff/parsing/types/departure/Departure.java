@@ -15,25 +15,7 @@ import com.google.gson.JsonObject;
 
 import java.util.List;
 
-public record Departure(int stopID, int postID, String name, List<DepartureEntry> entries) {
-
-    public static List<Departure> parseDepartures(JsonArray array, LineStorage lineStorage) {
-        return TypeHelper.parseList(array, (o) -> parse(o, lineStorage));
-    }
-
-    public static Departure parse(JsonObject obj, LineStorage lineStorage) {
-        if (obj == null) return null;
-
-        int stopID = obj.get("StopID").getAsInt();
-        int postID = obj.get("PostID").getAsInt();
-        String name = obj.get("Name").getAsString();
-
-        List<DepartureEntry> entries = DepartureEntry.parseEntriesList(
-                obj.get("Departures").getAsJsonArray(), lineStorage
-        );
-
-        return new Departure(stopID, postID, name, entries);
-    }
+public record Departure(int postID, String name, List<DepartureEntry> entries) {
 
     public View createDepartureView(ViewGroup parent, Context context) {
         View view = LayoutInflater.from(context).inflate(R.layout.departure_layout, parent , false);
