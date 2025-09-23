@@ -2,6 +2,7 @@ package com.example.mhdstuff.activity.listview;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,7 +36,13 @@ public abstract class AbstractListViewActivity extends AppCompatActivity {
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();
             RecyclerView.Adapter adapter = getAdapter(context, storage);
-            runOnUiThread(() -> recyclerView.setAdapter(adapter));
+            runOnUiThread(() -> {
+                var spinner =  findViewById(R.id.loading_spinner);
+                if (spinner != null) {
+                    spinner.setVisibility(View.GONE);
+                }
+                recyclerView.setAdapter(adapter);
+            });
         }).start();
 
 
