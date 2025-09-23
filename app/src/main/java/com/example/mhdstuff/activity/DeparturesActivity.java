@@ -1,12 +1,14 @@
 package com.example.mhdstuff.activity;
 
 import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.data.StopDataHolder;
@@ -42,7 +44,6 @@ public class DeparturesActivity extends AppCompatActivity {
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();
 
-//            Departures departures = Departures.parse(RequestHelper.getDepartures(stop.id()), storage.lineStorage());
             Departures departures = Departures.parse(SoapHelper.getDepartures(stop.id()),stop.id() , storage);
 
             LinearLayout layout = findViewById(R.id.departure_items);
@@ -60,7 +61,12 @@ public class DeparturesActivity extends AppCompatActivity {
 
         runOnUiThread(() -> {
             TextView message = findViewById(R.id.departure_message);
-            if (!departures.message().isBlank()) {
+            if (departureList.isEmpty()) {
+                message.setVisibility(TextView.VISIBLE);
+                message.setText("Nebyly nalezeny žádné odjezdy...");
+
+                ((GradientDrawable)message.getBackground()).setColor(ContextCompat.getColor(this, R.color.widget_background));
+            } else if (!departures.message().isBlank()) {
                 message.setVisibility(TextView.VISIBLE);
                 message.setText(departures.message());
             }
