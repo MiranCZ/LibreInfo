@@ -42,7 +42,7 @@ public class DeparturesActivity extends AppCompatActivity {
             IdStorage storage = IdStorage.getInstance();
 
 //            Departures departures = Departures.parse(RequestHelper.getDepartures(stop.id()), storage.lineStorage());
-            Departures departures = Departures.parse(SoapHelper.getDepartures(stop.id()), storage.lineStorage());
+            Departures departures = Departures.parse(SoapHelper.getDepartures(stop.id()),stop.id() , storage);
 
             LinearLayout layout = findViewById(R.id.departure_items);
 

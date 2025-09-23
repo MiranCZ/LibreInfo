@@ -8,6 +8,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.TypeHelper;
@@ -20,16 +21,17 @@ import java.util.List;
 
 public record DepartureEntry(LineAlias line, String finalStop, int postID, boolean lowFloor, String timeMark) {
 
-    public static DepartureEntry parse(SoapSaneObject obj, LineStorage lineStorage) {
+    public static DepartureEntry parse(SoapSaneObject obj, IdStorage storage) {
         if (obj == null) return null;
 
-        LineAlias line = LineAlias.parse(obj.getString("LineName"), lineStorage);
+        LineAlias line = LineAlias.parse(obj.getString("LineName"), storage.lineStorage());
         String finalStop = obj.getString("FinalStation");
         int postID = obj.getInt("PostID");
+
         boolean lowFloor = obj.getBoolean("IsBarrierLess");
         String timeMark = obj.getString("TimeMark"); // TODO make this into an object with DriveOrderSign
 
-        return new DepartureEntry(line, finalStop, postID, lowFloor, timeMark);
+        return new DepartureEntry(line, finalStop, postID , lowFloor, timeMark);
     }
 
     public View createDepartureEntryView(ViewGroup parent, Context context) {

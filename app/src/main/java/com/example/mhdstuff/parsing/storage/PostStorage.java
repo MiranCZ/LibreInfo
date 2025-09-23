@@ -30,6 +30,15 @@ public class PostStorage {
         }
     }
 
+    public Post getPost(int stopID, int postID) {
+        for (Post post : getPosts(stopID)) {
+             if (post.postID() == postID) return post;
+        }
+
+        System.out.println("[WARN] Unable to find post with args "+stopID + " ; "+postID + " ; "+getPosts(stopID));
+        return null;
+    }
+
     public List<Post> getPosts(int id) {
         return getPosts(stopStorage.getStop(id));
     }

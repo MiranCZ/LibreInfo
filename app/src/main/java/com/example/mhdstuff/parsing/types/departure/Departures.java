@@ -1,5 +1,6 @@
 package com.example.mhdstuff.parsing.types.departure;
 
+import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.example.mhdstuff.util.request.soap.SoapSaneObject;
 import com.google.gson.JsonObject;
@@ -15,7 +16,7 @@ import java.util.Map;
 public record Departures(String message, List<Departure> departures) {
 
 
-    public static Departures parse(SoapSaneObject obj, LineStorage storage) {
+    public static Departures parse(SoapSaneObject obj, int stopID, IdStorage storage) {
         if (obj == null) return null;
 
         String message = "";
@@ -35,7 +36,8 @@ public record Departures(String message, List<Departure> departures) {
 
         List<Departure> departures = new ArrayList<>();
         for (Map.Entry<Integer, List<DepartureEntry>> entry : departureMap.entrySet()) {
-            departures.add(new Departure(entry.getKey(),entry.getKey()+"", entry.getValue()));
+            String postName = storage.postStorage().getPost(stopID, entry.getKey()).name();
+            departures.add(new Departure(entry.getKey(),postName, entry.getValue()));
         }
         departures.sort(Comparator.comparingInt(Departure::postID));
 
