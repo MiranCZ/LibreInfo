@@ -1,17 +1,29 @@
 package com.example.mhdstuff.parsing.types;
 
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.example.mhdstuff.R;
 import com.example.mhdstuff.parsing.storage.IdStorage;
+import com.example.mhdstuff.util.request.soap.SoapSaneObject;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import org.ksoap2.serialization.SoapObject;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public record Vehicle(int id, int idB, int idC, int vType, int lType, Location location, int bearing,
-                      TransportLine line, int routeId, String course, boolean lowFloor, int delay,
-                      Stop lastStop, Stop finalStop, Optional<String> finalStopName, boolean inactive) {
+                      LineAlias line, int routeId, String course, boolean lowFloor, int delay,
+                      Stop lastStop, Stop finalStop, Optional<String> finalStopName, boolean inactive, int serviceId) {
 
     public static List<Vehicle> parseVehicles(JsonArray array, IdStorage storage) {
         List<Vehicle> result = new ArrayList<>();
@@ -21,6 +33,39 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         }
 
         return result;
+    }
+
+    public static List<Vehicle> parseVehicles(SoapSaneObject obj, IdStorage storage) {
+        List<Vehicle> result = new ArrayList<>();
+        for (Object o : obj) {
+            result.add(parse(SoapSaneObject.parse((SoapObject) o), storage));
+        }
+
+        return result;
+    }
+
+    public static Vehicle parse(SoapSaneObject obj, IdStorage storage) {
+        if (obj == null) return null;
+
+        int azimut = obj.getInt("Azimut");
+        int carNum = obj.getInt("CarNum");
+        int carNumB = obj.getInt("VhcBCarNum");
+
+        int delay = obj.getInt("DelayInMins");
+
+        Stop finalStop = storage.stopStorage().getStop(obj.getInt("FinalStopID"));
+        Stop lastStop = storage.stopStorage().getStop(obj.getInt("LastStopID"));
+
+        boolean lowFloor = obj.getBoolean("IsBarrierLess");
+        Location location = Location.parse(obj);
+
+        LineAlias line = LineAlias.parse(obj.getString("LineID"), storage.lineStorage());
+
+        int routeId = obj.getInt("RouteID");
+        int serviceId = obj.getInt("ServiceID");
+
+        return new Vehicle(carNum, carNumB, 0, -1, -1, location, azimut, line,
+                routeId, "", lowFloor, delay, lastStop, finalStop, null, false, serviceId);
     }
 
     public static Vehicle parse(JsonObject obj, IdStorage storage) {
@@ -68,9 +113,21 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         boolean inactive = obj.get("IsInactive").getAsBoolean();
 
         return new Vehicle(
-                id, idB, idC, vType, lType, location, bearing, line, routeId, course,
-                lowFloor, delay, lastStop, finalStop, finalStopName, inactive
+                id, idB, idC, vType, lType, location, bearing, /*line,*/null, routeId, course,
+                lowFloor, delay, lastStop, finalStop, finalStopName, inactive, -1
         );
     }
 
+    public View createVehicleInfo(ViewGroup parent, Context context) {
+        View view = LayoutInflater.from(context).inflate(R.layout.vehicle_entry_layout, parent , false);
+
+
+        FrameLayout icon = view.findViewById(R.id.vehicle_line_icon);
+        icon.addView(line.createLineIconView(icon, context),0);
+
+        TextView heading = view.findViewById(R.id.vehicle_heading);
+        heading.setText(finalStop.name());
+
+        return view;
+    }
 }

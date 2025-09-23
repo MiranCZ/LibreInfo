@@ -6,9 +6,22 @@ import org.ksoap2.serialization.SoapPrimitive;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Function;
 
 public class SoapSaneObject implements Iterable<Object>{
 
+    private static final Map<Class<?>, Function<String, ?>> parsers = new HashMap<>();
+
+    static {
+        register(String.class, String::valueOf);
+        register(Integer.class, Integer::parseInt);
+        register(Double.class, Double::parseDouble);
+        register(Boolean.class, Boolean::parseBoolean);
+    }
+
+    private static <T> void register(Class<T> clazz, Function<String, T> mapper) {
+        parsers.put(clazz, mapper);
+    }
 
     public static SoapSaneObject parse(SoapObject soapObject) {
         Map<String, Object> map = new HashMap<>();
@@ -59,6 +72,19 @@ public class SoapSaneObject implements Iterable<Object>{
         if (value == null) return null;
 
         return Boolean.parseBoolean(value);
+    }
+
+    public Double getDouble(String name) {
+        try {
+            return getType(name);
+        } catch (ClassCastException ignored) {
+        }
+
+        String value = getType(name);
+        if (value == null) return null;
+
+        return Double.parseDouble(value);
+
     }
 
     public SoapObject getSoupObject(String name) {
@@ -112,5 +138,4 @@ public class SoapSaneObject implements Iterable<Object>{
             }
         };
     }
-
 }

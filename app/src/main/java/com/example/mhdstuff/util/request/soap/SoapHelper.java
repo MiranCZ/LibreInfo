@@ -18,15 +18,29 @@ public class SoapHelper {
         return makeSoapCall(
                 "GetNearDeparturesAcrossPosts",
                 "NearDepartures",
-                "INearDeparturesService/GetNearDeparturesAcrossPosts",
+                "INearDeparturesService",
                 Map.of("stopID", stopID)
         );
+    }
+
+    public static SoapSaneObject getVehicles() {
+        SoapSaneObject result = makeSoapCall(
+                "GetTrafficState",
+                "TrafficState",
+                "ITrafficState",
+                Map.of());
+        if (result == null) return null;
+        if (!result.getString("Result").equalsIgnoreCase("success")) {
+            return null;
+        }
+
+        return result.getSoapSaneObject("ItemList");
     }
 
     /**
      * Oh dear god
      */
-    private static SoapSaneObject makeSoapCall(String soapName, String endpoint, String action, Map<String, Object> properties) {
+    private static SoapSaneObject makeSoapCall(String soapName, String endpoint, String service, Map<String, Object> properties) {
         SoapObject request = new SoapObject(NAMESPACE, soapName);
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
             request.addProperty(entry.getKey(), entry.getValue());
@@ -39,7 +53,7 @@ public class SoapHelper {
         HttpTransportSE transport = new HttpTransportSE(BASE_URL + endpoint, 30_000);
 
 
-        String SOAP_ACTION = NAMESPACE + action;
+        String SOAP_ACTION = NAMESPACE + service +"/"+soapName;
 
         Object responseObj;
         try {

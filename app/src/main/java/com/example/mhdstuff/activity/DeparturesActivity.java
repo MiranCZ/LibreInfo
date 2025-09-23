@@ -38,6 +38,7 @@ public class DeparturesActivity extends AppCompatActivity {
             getSupportActionBar().setTitle(stop.name());
         }
 
+        Context context = this;
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();
 
@@ -46,7 +47,6 @@ public class DeparturesActivity extends AppCompatActivity {
 
             LinearLayout layout = findViewById(R.id.departure_items);
 
-            Context context = this;
             createEntries(departures, layout, context);
         }).start();
     }
@@ -58,16 +58,18 @@ public class DeparturesActivity extends AppCompatActivity {
         // incremental loading of elements to increase speed of opening the screen; the effect is practically unnoticeable
         final int viewsPerFrame = 2;
 
+        runOnUiThread(() -> {
+            TextView message = findViewById(R.id.departure_message);
+            if (!departures.message().isBlank()) {
+                message.setVisibility(TextView.VISIBLE);
+                message.setText(departures.message());
+            }
+        });
+
         while (!departureList.isEmpty()) {
             CountDownLatch latch = new CountDownLatch(1);
 
             runOnUiThread(() -> {
-                TextView message = findViewById(R.id.departure_message);
-                if (!departures.message().isBlank()) {
-                    message.setVisibility(TextView.VISIBLE);
-                    message.setText(departures.message());
-                }
-
                 for (int i = 0; i < viewsPerFrame && !departureList.isEmpty(); i++) {
                     Departure departure = departureList.remove(0);
                     layout.addView(departure.createDepartureView(layout, context), index.getAndIncrement());
