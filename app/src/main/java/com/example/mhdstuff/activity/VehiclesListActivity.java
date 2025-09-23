@@ -8,9 +8,13 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.VehicleItemAdapter;
+import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
 import com.example.mhdstuff.parsing.storage.IdStorage;
+import com.example.mhdstuff.parsing.types.Location;
 import com.example.mhdstuff.parsing.types.Vehicle;
 import com.example.mhdstuff.parsing.types.departure.Departure;
 import com.example.mhdstuff.util.request.soap.SoapHelper;
@@ -18,13 +22,18 @@ import com.example.mhdstuff.util.request.soap.SoapSaneObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class VehiclesListActivity extends AppCompatActivity {
+public class VehiclesListActivity extends AbstractListViewActivity {
 
 
-    @Override
+    public VehiclesListActivity() {
+        super("Seznam vozidel", R.layout.activity_vehicles, R.id.recycler_view);
+    }
+
+    /*@Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -38,13 +47,25 @@ public class VehiclesListActivity extends AppCompatActivity {
 
             List<Vehicle> vehicles = Vehicle.parseVehicles(SoapHelper.getVehicles(), storage);
 
-            LinearLayout layout = findViewById(R.id.vehicle_items);
+            LinearLayout layout = findViewById(R.id.);
             createEntries(vehicles, layout, context, storage);
         }).start();
+    }*/
+
+    @Override
+    protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
+        List<Vehicle> vehicles = Vehicle.parseVehicles(SoapHelper.getVehicles(), storage);
+
+
+        return new VehicleItemAdapter(vehicles, context);
+//        Vehicle dummy = new Vehicle(1234, 5678, 0, -1, -1, Location.NONE, 0, storage.lineStorage().getAlias(1), 0
+//                , "", true, 1, storage.stopStorage().getStop(1146), storage.stopStorage().getStop(1001), Optional.empty()
+//        , false, 111);
+//        return new VehicleItemAdapter(List.of(dummy, dummy, dummy), context);
     }
 
 
-    private void createEntries(List<Vehicle> vehicles, LinearLayout layout, Context context, IdStorage storage) {
+    /*private void createEntries(List<Vehicle> vehicles, LinearLayout layout, Context context, IdStorage storage) {
         AtomicInteger index = new AtomicInteger(0);
 
         // incremental loading of elements to increase speed of opening the screen; the effect is practically unnoticeable
@@ -62,8 +83,8 @@ public class VehiclesListActivity extends AppCompatActivity {
 
             runOnUiThread(() -> {
                 for (int i = 0; i < viewsPerFrame && !views.isEmpty(); i++) {
-                    Vehicle vehicle = vehicles.remove(0);
-                    layout.addView(vehicle.createVehicleInfo(layout, context), index.getAndIncrement());
+                    View view = views.remove(0);
+                    layout.addView(view, index.getAndIncrement());
                 }
                 latch.countDown();
             });
@@ -73,5 +94,5 @@ public class VehiclesListActivity extends AppCompatActivity {
                 throw new RuntimeException(e);
             }
         }
-    }
+    }*/
 }

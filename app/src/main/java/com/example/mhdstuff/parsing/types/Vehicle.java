@@ -1,12 +1,17 @@
 package com.example.mhdstuff.parsing.types;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.parsing.storage.IdStorage;
@@ -65,7 +70,7 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         int serviceId = obj.getInt("ServiceID");
 
         return new Vehicle(carNum, carNumB, 0, -1, -1, location, azimut, line,
-                routeId, "", lowFloor, delay, lastStop, finalStop, null, false, serviceId);
+                routeId, "", lowFloor, delay, lastStop, finalStop, Optional.empty(), false, serviceId);
     }
 
     public static Vehicle parse(JsonObject obj, IdStorage storage) {
@@ -130,4 +135,44 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
 
         return view;
     }
+
+    public String getVehicleNumbersString() {
+        String res = id+"";
+        if (idB != 0) res += " + "+idB;
+        if (idC != 0) res += " + "+idC;
+
+        return res;
+    }
+
+    public String getServiceString() {
+        String res = serviceId+"";
+        while (res.length() < 5) {
+            res = "0"+res;
+        }
+
+        return res;
+    }
+
+    public String getFinalStopText() {
+        return finalStopName.orElseGet(finalStop::name);
+    }
+
+    public SpannableString getDelaySpan() {
+        String text = (delay == 0)?"včas":(delay + " min");
+        int color;
+        if (delay == 0) {
+            color = Color.GREEN;
+        } else if (delay < 5) {
+            color = Color.YELLOW;
+        } else {
+            color = Color.RED;
+        }
+
+        SpannableString spannable = new SpannableString(text);
+
+        spannable.setSpan(new ForegroundColorSpan(color), 0, text.length(), 0);
+
+        return spannable;
+    }
+
 }
