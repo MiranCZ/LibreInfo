@@ -16,7 +16,9 @@ import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.MapVehicle;
 import com.example.mhdstuff.parsing.types.Post;
 import com.example.mhdstuff.parsing.types.Stop;
+import com.example.mhdstuff.parsing.types.Vehicle;
 import com.example.mhdstuff.util.request.VehicleWebsocket;
+import com.example.mhdstuff.util.request.soap.SoapHelper;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
@@ -35,6 +37,8 @@ import org.maplibre.android.plugins.annotation.ClusterOptions;
 import org.maplibre.android.plugins.annotation.Symbol;
 import org.maplibre.android.plugins.annotation.SymbolManager;
 import org.maplibre.android.plugins.annotation.SymbolOptions;
+import org.maplibre.android.style.layers.Property;
+import org.maplibre.android.style.layers.PropertyFactory;
 import org.maplibre.android.style.layers.RasterLayer;
 import org.maplibre.android.style.layers.SymbolLayer;
 import org.maplibre.android.style.sources.GeoJsonOptions;
@@ -44,20 +48,22 @@ import org.maplibre.android.style.sources.TileSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
 
 public class VehicleMapActivity extends AppCompatActivity {
 
+    private final Map<Integer, Symbol> vehicles = new ConcurrentHashMap<>();
     private MapView mapView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         MapLibre.getInstance(this);
         setContentView(R.layout.activity_vehicle_map);
-
-
 
         mapView = findViewById(R.id.vehicle_map);
         mapView.onCreate(savedInstanceState);
@@ -65,101 +71,103 @@ public class VehicleMapActivity extends AppCompatActivity {
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();
 
-            runOnUiThread(() -> setupMap(storage));
-        }).start();
 
+            final CountDownLatch latch = new CountDownLatch(1);
+            var ref = new Object() {
+                List<Vehicle> vehicles = null;
+            };
 
-    }
-
-    private void setupMap(IdStorage storage) {
-        Context context = this;
-        mapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(@NonNull MapLibreMap map) {
-                var stopBitmap = toBitmap(context, R.drawable.map_pin_regular);
-                var busBitmap = toBitmap(context, R.drawable.vehicle_arrow);
-
-                map.setStyle("https://api.maptiler.com/maps/basic-v2/style.json?key=U4nGAJfk1oEvXcTaX02N");
-
-
-                map.setCameraPosition(new CameraPosition.Builder().target(new LatLng(49.191748,  16.613163)).zoom(15).build());
-                map.getStyle(new Style.OnStyleLoaded() {
-                    @Override
-                    public void onStyleLoaded(@NonNull Style style) {
-                        CustomSymbolManager symbolManager = new CustomSymbolManager(mapView,map, style);
-                        CustomSymbolManager vehicleSymbolManager = new CustomSymbolManager(mapView,map, style);
-
-                        SymbolLayer layer = symbolManager.getLayer();
-                        layer.setMinZoom(13);
-
-                        style.addImage("stop_icon", stopBitmap);
-                        style.addImage("bus_icon", busBitmap, true);
-
-                        symbolManager.setIconAllowOverlap(true);
-
-                        vehicleSymbolManager.setIconAllowOverlap(true);
-                        vehicleSymbolManager.setIconIgnorePlacement(true);
-                        vehicleSymbolManager.setTextAllowOverlap(true);
-                        vehicleSymbolManager.setTextIgnorePlacement(true);
-//                        symbolManager.setIconIgnorePlacement();
-
-                        for (Post post : storage.postStorage().getAllPosts()) {
-                            SymbolOptions options = new SymbolOptions().withLatLng(post.location().toLatLng()).withIconImage("stop_icon").withIconSize(1f).withIconAnchor("bottom");
-                            symbolManager.create(options);
-                        }
-
-
-                        Map<Integer, Symbol> vehicles = new HashMap<>();
-                        VehicleWebsocket.subscribe(VehicleMapActivity.class,new VehicleWebsocket.WebsocketListener() {
-                            @Override
-                            public void onMessage(String message) {
-                                MapVehicle vehicle = MapVehicle.parse(new Gson().fromJson(message, JsonObject.class));
-
-
-
-                                runOnUiThread(() -> {
-                                    if (vehicles.containsKey(vehicle.id())) {
-                                        if (vehicle.line().id() == 8) {
-                                            System.out.println("UPDATE " + message);
-                                        }
-
-                                        Symbol symbol = vehicles.get(vehicle.id());
-                                        symbol.setLatLng(vehicle.location().toLatLng());
-                                        symbol.setIconRotate((float) vehicle.bearing());
-
-                                        vehicleSymbolManager.update(symbol);
-                                    } else {
-
-
-                                        LineAlias alias = vehicle.line().toLineAlias(storage.lineStorage());
-
-                                        SymbolOptions options = new SymbolOptions().withLatLng(vehicle.location().toLatLng())
-                                                .withIconImage("bus_icon").withIconRotate((float) vehicle.bearing())
-                                                .withTextField(alias.lineDisplayName()).withTextSize(11f)
-                                                .withIconSize(1.25f)
-                                                .withIconColor(alias.backgroundColorStr())
-                                                .withTextColor(alias.textColorStr())
-                                                .withSymbolSortKey((float) vehicles.size());
-
-                                        var symbol = vehicleSymbolManager.create(options);
-                                        vehicles.put(vehicle.id(), symbol);
-                                    }
-                                });
-                            }
-                        });
-
+            runOnUiThread(() -> setupMap(storage, (symbolManager) -> {
+                new Thread(() -> {
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
 
+                    for (Vehicle vehicle : ref.vehicles) {
+                        MapVehicle mapVehicle = vehicle.toMapVehicle();
+
+                        if (!vehicles.containsKey(mapVehicle.id())) {
+                            updateVehicles(mapVehicle, symbolManager, storage);
+                        }
+                    }
+                }).start();
+            }));
+
+            ref.vehicles = Vehicle.parseVehicles(SoapHelper.getVehicles(), storage);
+            latch.countDown();
+        }).start();
+    }
+
+    private void setupMap(IdStorage storage, Consumer<CustomSymbolManager> onReady) {
+        Context context = this;
+        mapView.getMapAsync(map -> {
+            var stopBitmap = toBitmap(context, R.drawable.map_pin_regular);
+            var busBitmap = toBitmap(context, R.drawable.vehicle_arrow);
+
+            map.setStyle("https://api.maptiler.com/maps/basic-v2/style.json?key=U4nGAJfk1oEvXcTaX02N");
+
+
+            map.setCameraPosition(new CameraPosition.Builder().target(new LatLng(49.191748,  16.613163)).zoom(15).build());
+            map.getStyle(style -> {
+                CustomSymbolManager symbolManager = new CustomSymbolManager(mapView,map, style);
+                CustomSymbolManager vehicleSymbolManager = new CustomSymbolManager(mapView,map, style);
+
+                SymbolLayer layer = symbolManager.getLayer();
+                layer.setMinZoom(13);
+
+
+                vehicleSymbolManager.getLayer().withProperties(PropertyFactory.iconRotationAlignment(Property.ICON_ROTATION_ALIGNMENT_MAP));
+
+                style.addImage("stop_icon", stopBitmap);
+                style.addImage("bus_icon", busBitmap, true);
+
+                symbolManager.setIconAllowOverlap(true);
+
+                vehicleSymbolManager.setIconAllowOverlap(true);
+                vehicleSymbolManager.setIconIgnorePlacement(true);
+                vehicleSymbolManager.setTextAllowOverlap(true);
+                vehicleSymbolManager.setTextIgnorePlacement(true);
+
+                onReady.accept(vehicleSymbolManager);
+
+                for (Post post : storage.postStorage().getAllPosts()) {
+                    SymbolOptions options = new SymbolOptions().withLatLng(post.location().toLatLng()).withIconImage("stop_icon").withIconSize(1f).withIconAnchor("bottom");
+                    symbolManager.create(options);
+                }
+
+                VehicleWebsocket.subscribe(VehicleMapActivity.class, message -> {
+                    MapVehicle vehicle = MapVehicle.parse(new Gson().fromJson(message, JsonObject.class));
+
+                    updateVehicles(vehicle, vehicleSymbolManager, storage);
                 });
 
-
-//                map.addMarker(new MarkerOptions().position(new LatLng(0.0,0.0)).title("Hello World!"));
-
-
-
-//                map.setCameraPosition(new CameraPosition.Builder().target(new LatLng(0.0,0.0)).zoom(10.0).build());
-            }
+            });
         });
+    }
+
+    private void updateVehicles(MapVehicle vehicle, CustomSymbolManager vehicleSymbolManager, IdStorage storage) {
+        if (vehicles.containsKey(vehicle.id())) {
+            Symbol symbol = vehicles.get(vehicle.id());
+            symbol.setLatLng(vehicle.location().toLatLng());
+            symbol.setIconRotate((float) vehicle.bearing());
+
+            vehicleSymbolManager.update(symbol);
+        } else {
+            LineAlias alias = vehicle.line().toLineAlias(storage.lineStorage());
+
+            SymbolOptions options = new SymbolOptions().withLatLng(vehicle.location().toLatLng())
+                    .withIconImage("bus_icon").withIconRotate((float) vehicle.bearing())
+                    .withTextField(alias.lineDisplayName()).withTextSize(11f)
+                    .withIconSize(1.25f)
+                    .withIconColor(alias.backgroundColorStr())
+                    .withTextColor(alias.textColorStr())
+                    .withSymbolSortKey((float) vehicles.size());
+
+            var symbol = vehicleSymbolManager.create(options);
+            vehicles.put(vehicle.id(), symbol);
+        }
     }
 
     @NonNull

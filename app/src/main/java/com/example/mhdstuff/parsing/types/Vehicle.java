@@ -175,4 +175,7 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         return spannable;
     }
 
+    public MapVehicle toMapVehicle() {
+        return new MapVehicle(id, location, bearing, line.toTransportLine());
+    }
 }
