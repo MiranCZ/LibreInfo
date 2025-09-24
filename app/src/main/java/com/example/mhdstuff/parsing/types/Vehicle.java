@@ -28,7 +28,7 @@ import java.util.Optional;
 
 public record Vehicle(int id, int idB, int idC, int vType, int lType, Location location, int bearing,
                       LineAlias line, int routeId, String course, boolean lowFloor, int delay,
-                      Stop lastStop, Stop finalStop, Optional<String> finalStopName, boolean inactive, int serviceId) {
+                      Stop lastStop, Stop finalStop, Optional<String> finalStopName, boolean inactive, int serviceId) implements VehicleBase {
 
     public static List<Vehicle> parseVehicles(JsonArray array, IdStorage storage) {
         List<Vehicle> result = new ArrayList<>();
@@ -158,7 +158,7 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
     }
 
     public SpannableString getDelaySpan() {
-        String text = (delay == 0)?"včas":(delay + " min");
+        String text = (delay == 0) ? "včas" : (delay + " min");
         int color;
         if (delay == 0) {
             color = Color.GREEN;
@@ -173,9 +173,5 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         spannable.setSpan(new ForegroundColorSpan(color), 0, text.length(), 0);
 
         return spannable;
-    }
-
-    public MapVehicle toMapVehicle() {
-        return new MapVehicle(id, location, bearing, line.toTransportLine());
     }
 }
