@@ -58,6 +58,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 // FIXME the text rendering is still not the best ugh
@@ -66,6 +67,7 @@ public class VehicleMapActivity extends AppCompatActivity {
     private final Map<Integer, Feature> vehicleFeatureMap = new ConcurrentHashMap<>();
     private MapView mapView;
     private Timer timer;
+    private int following = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +76,7 @@ public class VehicleMapActivity extends AppCompatActivity {
         MapLibre.getInstance(this);
         setContentView(R.layout.activity_vehicle_map);
 
+        following = getIntent().getIntExtra("following", -1);
         mapView = findViewById(R.id.vehicle_map);
         mapView.onCreate(savedInstanceState);
 
@@ -86,7 +89,7 @@ public class VehicleMapActivity extends AppCompatActivity {
                 final List<VehicleBase> vehicles = new ArrayList<>();
             };
 
-            runOnUiThread(() -> setupMap(storage, (geoJson) -> {
+            runOnUiThread(() -> setupMap(storage, (geoJson, map) -> {
                 new Thread(() -> {
                     try {
                         latch.await();
@@ -94,7 +97,7 @@ public class VehicleMapActivity extends AppCompatActivity {
                         throw new RuntimeException(e);
                     }
 
-                    updateGeoJson(geoJson, ref.vehicles);
+                    updateGeoJson(geoJson, map, ref.vehicles);
                 }).start();
             }));
 
@@ -103,7 +106,7 @@ public class VehicleMapActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void setupMap(IdStorage storage, Consumer<GeoJsonSource> onReady) {
+    private void setupMap(IdStorage storage, BiConsumer<GeoJsonSource, MapLibreMap> onReady) {
         Context context = this;
         mapView.getMapAsync(map -> {
             map.getUiSettings().setRotateGesturesEnabled(false);
@@ -151,13 +154,13 @@ public class VehicleMapActivity extends AppCompatActivity {
                 style.addLayer(l);
                 style.addLayerAbove(text, "symbol-layer");
 
-                onReady.accept(source);
+                onReady.accept(source, map);
 
 
                 VehicleWebsocket.subscribe(VehicleMapActivity.class, message -> {
                     MapVehicle vehicle = MapVehicle.parse(new Gson().fromJson(message, JsonObject.class), storage.lineStorage());
 
-                    updateGeoJson(source, vehicle);
+                    updateGeoJson(source, map, vehicle);
                 });
 
                 for (Post post : storage.postStorage().getAllPosts()) {
@@ -169,12 +172,12 @@ public class VehicleMapActivity extends AppCompatActivity {
         });
     }
 
-    private void updateGeoJson(GeoJsonSource source, List<VehicleBase> vehicles) {
-        updateGeoJson(source, vehicles.toArray(new VehicleBase[0]));
+    private void updateGeoJson(GeoJsonSource source, MapLibreMap map, List<VehicleBase> vehicles) {
+        updateGeoJson(source, map, vehicles.toArray(new VehicleBase[0]));
     }
 
     // TODO add dynamic timer so that when a lot of elements is updated the map is redrawn prematurely
-    private void updateGeoJson(GeoJsonSource source, VehicleBase... vehicles) {
+    private void updateGeoJson(GeoJsonSource source, MapLibreMap map, VehicleBase... vehicles) {
         if (timer == null) setupCountdown(source);
 
         for (VehicleBase vehicle : vehicles) {
@@ -185,6 +188,10 @@ public class VehicleMapActivity extends AppCompatActivity {
             feature.addNumberProperty("bearing", vehicle.bearing());
 
             vehicleFeatureMap.put(vehicle.id(), feature);
+
+            if (vehicle.id() == following) {
+                runOnUiThread(() -> map.setCameraPosition(new CameraPosition.Builder().target(vehicle.location().toLatLng()).build()));
+            }
         }
     }
 

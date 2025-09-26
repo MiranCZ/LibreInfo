@@ -1,20 +1,18 @@
 package com.example.mhdstuff;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.example.mhdstuff.activity.VehicleMapActivity;
 import com.example.mhdstuff.activity.listview.AbstractItemAdapter;
 import com.example.mhdstuff.parsing.types.Vehicle;
 
-import org.w3c.dom.Text;
-
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class VehicleItemAdapter extends AbstractItemAdapter<Vehicle, VehicleItemAdapter.VehicleItemHolder> {
 
@@ -45,6 +43,12 @@ public class VehicleItemAdapter extends AbstractItemAdapter<Vehicle, VehicleItem
         holder.vehicleDelay.setText(item.getDelaySpan());
 
         holder.vehicleNextStop.setText(item.lastStop().name());
+
+        holder.layout.setOnClickListener(view -> {
+            Intent intent = new Intent(context, VehicleMapActivity.class);
+            intent.putExtra("following", item.id());
+            context.startActivity(intent);
+        });
     }
 
     @Override
@@ -53,6 +57,8 @@ public class VehicleItemAdapter extends AbstractItemAdapter<Vehicle, VehicleItem
     }
 
     protected static class VehicleItemHolder extends ItemViewHolder {
+
+        View layout;
 
         TextView vehicleNums;
         TextView vehicleService;
@@ -65,6 +71,7 @@ public class VehicleItemAdapter extends AbstractItemAdapter<Vehicle, VehicleItem
 
         public VehicleItemHolder(@NonNull View itemView) {
             super(itemView);
+            layout = itemView.findViewById(R.id.vehicle_entry);
             vehicleNums = itemView.findViewById(R.id.vehicle_nums);
             vehicleService = itemView.findViewById(R.id.vehicle_service);
             wheelchairIcon = itemView.findViewById(R.id.vehicle_wheelchair_icon);
