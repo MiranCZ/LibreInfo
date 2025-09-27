@@ -47,6 +47,8 @@ public class VehicleItemAdapter extends AbstractItemAdapter<Vehicle, VehicleItem
         holder.layout.setOnClickListener(view -> {
             Intent intent = new Intent(context, VehicleMapActivity.class);
             intent.putExtra("following", item.id());
+            intent.putExtra("lat", item.location().latitude());
+            intent.putExtra("lng", item.location().longitude());
             context.startActivity(intent);
         });
     }

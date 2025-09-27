@@ -24,8 +24,16 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class DeparturesActivity extends AppCompatActivity {
+public class DeparturesActivity extends BaseActivity {
 
+
+
+    private final Stop stop;
+
+    public DeparturesActivity() {
+        super(StopDataHolder.getStop().name());
+        stop = StopDataHolder.getStop();
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -33,12 +41,10 @@ public class DeparturesActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_departures);
 
-        Stop stop = StopDataHolder.getStop();
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(stop.name());
-        }
+//        if (getSupportActionBar() != null) {
+//            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//            getSupportActionBar().setTitle(stop.name());
+//        }
 
         Context context = this;
         new Thread(() -> {

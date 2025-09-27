@@ -1,7 +1,14 @@
 package com.example.mhdstuff.activity;
 
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -20,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private ItemAdapter adapter;
@@ -29,19 +36,29 @@ public class SearchActivity extends AppCompatActivity {
     private SearchView searchView;
     private FuzzySearch<Stop> search;
 
+    public SearchActivity() {
+        super("Aktuální odjezdy");
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
-        // For the back button in the action bar
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Search Items");
-        }
-
         recyclerView = findViewById(R.id.recycler_view_items);
         searchView = findViewById(R.id.search_view);
+
+        searchView.setIconifiedByDefault(false);
+        searchView.setIconified(false);
+        searchView.setQueryHint("Zadejte zastávku");
+        ((GradientDrawable)searchView.getBackground()).setColor(ContextCompat.getColor(this, R.color.widget_background));
+
+        View searchPlate = searchView.findViewById(androidx.appcompat.R.id.search_plate);
+        searchPlate.setBackgroundColor(Color.TRANSPARENT);
+
+        ImageView searchIcon = searchView.findViewById(androidx.appcompat.R.id.search_mag_icon);
+        searchIcon.setColorFilter(ContextCompat.getColor(this, R.color.light_blue), PorterDuff.Mode.SRC_ATOP);
+
 
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();

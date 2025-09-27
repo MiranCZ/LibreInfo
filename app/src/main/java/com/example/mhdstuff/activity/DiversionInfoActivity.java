@@ -24,7 +24,7 @@ import com.example.mhdstuff.parsing.types.Time;
 import com.example.mhdstuff.parsing.types.TransportLine;
 import com.google.android.flexbox.FlexboxLayout;
 
-public class DiversionInfoActivity extends AppCompatActivity {
+public class DiversionInfoActivity extends BaseActivity {
 
 //    private final Diversion diversion;
 
@@ -33,7 +33,7 @@ public class DiversionInfoActivity extends AppCompatActivity {
 //    }
 
     public DiversionInfoActivity() {
-
+        super("Změny v dopravě");
     }
 
     @Override

@@ -10,16 +10,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.activity.BaseActivity;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 
-public abstract class AbstractListViewActivity extends AppCompatActivity {
+public abstract class AbstractListViewActivity extends BaseActivity {
 
-    private final String name;
+
     private final int layoutId;
     private final int recycleViewId;
 
     public AbstractListViewActivity(String name, int layoutId, int recycleViewId) {
-        this.name = name;
+        super(name);
         this.layoutId = layoutId;
         this.recycleViewId = recycleViewId;
     }
@@ -44,12 +45,6 @@ public abstract class AbstractListViewActivity extends AppCompatActivity {
                 recyclerView.setAdapter(adapter);
             });
         }).start();
-
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(name);
-        }
     }
 
     protected abstract RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage);

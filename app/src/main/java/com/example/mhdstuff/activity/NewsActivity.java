@@ -14,11 +14,15 @@ import com.example.mhdstuff.util.CacheHelper;
 
 import java.util.List;
 
-public class NewsActivity extends AppCompatActivity {
+public class NewsActivity extends BaseActivity {
 
     private List<News> items;
     private RecyclerView recyclerView;
     private NewsItemAdapter adapter;
+
+    public NewsActivity() {
+        super("Novinky");
+    }
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,12 +39,6 @@ public class NewsActivity extends AppCompatActivity {
             runOnUiThread(() -> recyclerView.setAdapter(adapter));
 //            recyclerView.setAdapter(adapter);
         }).start();
-
-        // For the back button in the action bar
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Novinky");
-        }
 
     }
 

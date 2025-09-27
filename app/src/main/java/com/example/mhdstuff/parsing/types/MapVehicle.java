@@ -1,13 +1,14 @@
 package com.example.mhdstuff.parsing.types;
 
+import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.google.gson.JsonObject;
 
-public record MapVehicle(int id, Location location, int bearing, LineAlias line) implements VehicleBase{
+public record MapVehicle(int id, Location location, int bearing, LineAlias line, Stop finalStop) implements VehicleBase{
 
 
 
-    public static MapVehicle parse(JsonObject obj, LineStorage storage) {
+    public static MapVehicle parse(JsonObject obj, IdStorage storage) {
         JsonObject attrs = obj.getAsJsonObject("attributes");
 
         int id = attrs.get("id").getAsInt();
@@ -18,9 +19,11 @@ public record MapVehicle(int id, Location location, int bearing, LineAlias line)
         int lineId = attrs.get("lineid").getAsInt();
         String lineName = attrs.get("linename").getAsString();
 
-        LineAlias line = storage.getAlias(lineId);
+        LineAlias line = storage.lineStorage().getAlias(lineId);
 
-        return new MapVehicle(id, location, bearing, line);
+        Stop finalStop = storage.stopStorage().getStop(attrs.get("finalstopid").getAsInt());
+
+        return new MapVehicle(id, location, bearing, line, finalStop);
     }
 
 }

@@ -11,8 +11,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
+
+    public MainActivity() {
+        super("Dpmb stuff");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -16,4 +16,6 @@ public interface VehicleBase {
 
     int id();
 
+    Stop finalStop();
+
 }

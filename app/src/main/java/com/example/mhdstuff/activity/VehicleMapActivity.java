@@ -14,6 +14,7 @@ import static org.maplibre.android.style.layers.PropertyFactory.textSize;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 
@@ -23,6 +24,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.activity.testing.OverpassDownloader;
+import com.example.mhdstuff.activity.testing.OverpassToGeoJson;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.MapVehicle;
 import com.example.mhdstuff.parsing.types.Post;
@@ -44,9 +47,12 @@ import org.maplibre.android.plugins.annotation.ClusterOptions;
 import org.maplibre.android.plugins.annotation.SymbolManager;
 import org.maplibre.android.plugins.annotation.SymbolOptions;
 import org.maplibre.android.style.expressions.Expression;
+import org.maplibre.android.style.layers.LineLayer;
+import org.maplibre.android.style.layers.PropertyFactory;
 import org.maplibre.android.style.layers.SymbolLayer;
 import org.maplibre.android.style.sources.GeoJsonOptions;
 import org.maplibre.android.style.sources.GeoJsonSource;
+import org.maplibre.android.utils.ColorUtils;
 import org.maplibre.geojson.Feature;
 import org.maplibre.geojson.FeatureCollection;
 import org.maplibre.geojson.Point;
@@ -62,12 +68,19 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 // FIXME the text rendering is still not the best ugh
+// TODO refactor, cleanup
 public class VehicleMapActivity extends AppCompatActivity {
 
     private final Map<Integer, Feature> vehicleFeatureMap = new ConcurrentHashMap<>();
     private MapView mapView;
     private Timer timer;
-    private int following = -1;
+    private SelectedContext selectedContext = new SelectedContext();
+
+    private static final String ROUTE_SOURCE_ID = "route-source";
+    private static final String ROUTE_LAYER_ID = "route-layer";
+    GeoJsonSource routeSource;
+    LineLayer routeLayer;
+    IdStorage storage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,12 +89,13 @@ public class VehicleMapActivity extends AppCompatActivity {
         MapLibre.getInstance(this);
         setContentView(R.layout.activity_vehicle_map);
 
-        following = getIntent().getIntExtra("following", -1);
+        selectedContext.setSelected(getIntent().getIntExtra("following", -1));
+
         mapView = findViewById(R.id.vehicle_map);
         mapView.onCreate(savedInstanceState);
 
         new Thread(() -> {
-            IdStorage storage = IdStorage.getInstance();
+            storage = IdStorage.getInstance();
 
 
             final CountDownLatch latch = new CountDownLatch(1);
@@ -117,9 +131,19 @@ public class VehicleMapActivity extends AppCompatActivity {
 
             map.setStyle("https://api.maptiler.com/maps/basic-v2/style.json?key=U4nGAJfk1oEvXcTaX02N");
 
+            double lat = getIntent().getDoubleExtra("lat", -1);
+            double lng = getIntent().getDoubleExtra("lng", -1);
+
 
             GeoJsonSource source = new GeoJsonSource("points-source", new GeoJsonOptions());
-            map.setCameraPosition(new CameraPosition.Builder().target(new LatLng(49.191748, 16.613163)).zoom(15).build());
+
+            LatLng camPos;
+            if (lat != -1 && lng != -1) {
+                camPos = new LatLng(lat, lng);
+            } else {
+                camPos = new LatLng(49.191748, 16.613163);
+            }
+            map.setCameraPosition(new CameraPosition.Builder().target(camPos).zoom(15).build());
 
             findViewById(R.id.loading_spinner).setVisibility(View.GONE);
 
@@ -127,11 +151,46 @@ public class VehicleMapActivity extends AppCompatActivity {
                 style.addImage("bus_icon", busBitmap, true);
                 style.addImage("stop_icon", stopBitmap);
 
+                routeSource = new GeoJsonSource(ROUTE_SOURCE_ID);
+
+
+                routeLayer = new LineLayer(ROUTE_LAYER_ID, ROUTE_SOURCE_ID);
+                routeLayer.setProperties(
+                        PropertyFactory.lineWidth(4f)
+                );
+                style.addSource(routeSource);
+                style.addLayer(routeLayer);
+
                 style.addSource(source);
 
                 CustomSymbolManager stopLayer = new CustomSymbolManager(mapView,map, style);
                 stopLayer.getLayer().setMinZoom(13f);
                 stopLayer.setIconAllowOverlap(true);
+
+
+
+
+                /*new Thread(() -> {
+                    String overpassJson = OverpassDownloader.downloadData("1");
+                    OverpassToGeoJson.GeoJsonPair pair = OverpassToGeoJson.convert(overpassJson,);
+
+                    runOnUiThread(() -> {
+                    // Add route source + line layer
+                    routeSource = new GeoJsonSource(ROUTE_SOURCE_ID, pair.routesGeoJson);
+
+
+                    LineLayer routeLayer = new LineLayer(ROUTE_LAYER_ID, ROUTE_SOURCE_ID);
+                    routeLayer.setProperties(
+                            PropertyFactory.lineColor(ColorUtils.colorToRgbaString(Color.RED)), // or "#ff0000"
+                            PropertyFactory.lineWidth(4f)
+                    );
+
+                        System.out.println(pair.routesGeoJson);
+
+                        style.addSource(routeSource);
+                        style.addLayer(routeLayer);
+                    });
+                }).start();*/
 
                 SymbolLayer l = new SymbolLayer("symbol-layer", "points-source");
                 l.setProperties(
@@ -158,7 +217,7 @@ public class VehicleMapActivity extends AppCompatActivity {
 
 
                 VehicleWebsocket.subscribe(VehicleMapActivity.class, message -> {
-                    MapVehicle vehicle = MapVehicle.parse(new Gson().fromJson(message, JsonObject.class), storage.lineStorage());
+                    MapVehicle vehicle = MapVehicle.parse(new Gson().fromJson(message, JsonObject.class), storage);
 
                     updateGeoJson(source, map, vehicle);
                 });
@@ -189,8 +248,24 @@ public class VehicleMapActivity extends AppCompatActivity {
 
             vehicleFeatureMap.put(vehicle.id(), feature);
 
-            if (vehicle.id() == following) {
+            if (selectedContext.following && selectedContext.selected == vehicle.id()) {
                 runOnUiThread(() -> map.setCameraPosition(new CameraPosition.Builder().target(vehicle.location().toLatLng()).build()));
+            }
+            if (!selectedContext.fetchedLine && selectedContext.selected == vehicle.id()) {
+
+                new Thread(() -> {
+                    String overpassJson = OverpassDownloader.downloadData(vehicle.line().lineDisplayName());
+
+                    OverpassToGeoJson.GeoJsonPair pair = OverpassToGeoJson.convert(overpassJson, vehicle.finalStop().name());
+
+                    runOnUiThread(() -> {
+                        routeSource.setGeoJson(pair.routesGeoJson);
+                        routeLayer.setProperties(
+                                PropertyFactory.lineColor(vehicle.line().backgroundColorStr())
+                        );
+                    });
+                }).start();
+
             }
         }
     }
@@ -280,6 +355,22 @@ public class VehicleMapActivity extends AppCompatActivity {
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         mapView.onSaveInstanceState(outState);
+    }
+
+
+    private class SelectedContext {
+        private int selected = -1;
+        boolean following = false;
+        boolean fetchedLine = false;
+        boolean changed = false;
+
+        public void setSelected(int selected) {
+            this.selected = selected;
+            following = false;
+            fetchedLine = false;
+            changed = true;
+        }
+
     }
 
 }
