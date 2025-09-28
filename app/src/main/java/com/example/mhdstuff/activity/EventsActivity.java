@@ -4,27 +4,26 @@ import android.content.Context;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.mhdstuff.DiversionsItemAdapter;
+import com.example.mhdstuff.EventsItemAdapter;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
 import com.example.mhdstuff.parsing.TrafficChangesManager;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 
-public class DiversionsActivity extends AbstractListViewActivity {
+public class EventsActivity extends AbstractListViewActivity {
 
-    public DiversionsActivity() {
-        super("Změny v dopravě", R.layout.activity_diversions, R.id.diversions_view_items);
+    public EventsActivity() {
+        super("Mimořádné události", R.layout.activity_diversions, R.id.diversions_view_items);
     }
 
     @Override
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
-        return new DiversionsItemAdapter(
+        return new EventsItemAdapter(
                 TrafficChangesManager.parse(
-                        ".view-display-id-attachment_3 > div:nth-child(2)",
+                        ".views-infinite-scroll-content-wrapper",
                         storage.lineStorage()
                 ), this
         );
     }
-
 
 }

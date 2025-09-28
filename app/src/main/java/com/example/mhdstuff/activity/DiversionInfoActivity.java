@@ -7,7 +7,6 @@ import android.text.Html;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.TypefaceSpan;
-import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -20,7 +19,7 @@ import com.example.mhdstuff.activity.data.DiversionDataHolder;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Diversion;
 import com.example.mhdstuff.parsing.types.LineAlias;
-import com.example.mhdstuff.parsing.types.Time;
+import com.example.mhdstuff.parsing.types.DateTime;
 import com.example.mhdstuff.parsing.types.TransportLine;
 import com.google.android.flexbox.FlexboxLayout;
 
@@ -70,7 +69,7 @@ public class DiversionInfoActivity extends BaseActivity {
         content.setText(Html.fromHtml(diversion.publicText(), 0));
     }
 
-    private SpannableString createSpannable(String info, Time time) {
+    private SpannableString createSpannable(String info, DateTime time) {
         SpannableString spannable = new SpannableString(info+time.toString());
         spannable.setSpan(new ForegroundColorSpan(ContextCompat.getColor(this, R.color.secondary_color_tone)), 0, info.length(), 0);
 
