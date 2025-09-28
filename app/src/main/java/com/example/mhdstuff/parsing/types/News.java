@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 
 import java.util.List;
 
-public record News(int id, Time publicFrom, Time publicTo, String title, String text, String link) {
+public record News(int id, DateTime publicFrom, DateTime publicTo, String title, String text, String link) {
 
     public static List<News> parseNewsList(JsonArray array) {
         return TypeHelper.parseList(array, News::parse);
@@ -15,8 +15,8 @@ public record News(int id, Time publicFrom, Time publicTo, String title, String 
         if (obj == null) return null;
 
         int id = obj.get("Number").getAsInt();
-        Time publicFrom = Time.parse(obj.get("PublicFrom").getAsString());
-        Time publicTo = Time.parse(obj.get("PublicTo").getAsString());
+        DateTime publicFrom = DateTime.parse(obj.get("PublicFrom").getAsString());
+        DateTime publicTo = DateTime.parse(obj.get("PublicTo").getAsString());
         String title = obj.get("Title").getAsString();
         String text = obj.get("Text").getAsString();
         String link = obj.get("Link").getAsString();

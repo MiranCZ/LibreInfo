@@ -72,6 +72,11 @@
             android:parentActivityName=".activity.SearchActivity">
         </activity>
 
+        <activity
+            android:name=".activity.EventsActivity"
+            android:parentActivityName=".activity.MainActivity">
+        </activity>
+
 
     </application>
 

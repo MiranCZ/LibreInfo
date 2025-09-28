@@ -6,11 +6,10 @@ import com.google.gson.JsonObject;
 
 import java.util.List;
 
-public record Diversion(int id, String number, String title, Location location, Time from, Time to,
-                        boolean valid, String publicText, String privateText, String type,
-                        List<TransportLine> lines) {
+public record Diversion(String title, Location location, DateTime from, DateTime to,
+                        String publicText, List<TransportLine> lines) {
 
-    public static List<Diversion> parseDiversions(JsonArray array, LineStorage storage) {
+/*    public static List<Diversion> parseDiversions(JsonArray array, LineStorage storage) {
         return TypeHelper.parseList(array, (o) -> parse(o, storage));
     }
 
@@ -21,8 +20,8 @@ public record Diversion(int id, String number, String title, Location location, 
         String number = obj.get("Number").getAsString();
         String title = obj.get("Title").getAsString();
         Location location = Location.parse(obj);
-        Time from = Time.parse(obj.get("ValidFrom").getAsString());
-        Time to = Time.parse(obj.get("ValidTo").getAsString());
+        DateTime from = DateTime.parse(obj.get("ValidFrom").getAsString());
+        DateTime to = DateTime.parse(obj.get("ValidTo").getAsString());
 
         boolean valid = obj.get("IsValid").getAsBoolean();
         String publicText = obj.get("PublicText").getAsString();
@@ -33,5 +32,5 @@ public record Diversion(int id, String number, String title, Location location, 
         );
 
         return new Diversion(id, number, title, location, from, to, valid, publicText, privateText, type, lines);
-    }
+    }*/
 }

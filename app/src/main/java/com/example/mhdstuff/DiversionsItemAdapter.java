@@ -1,10 +1,8 @@
 package com.example.mhdstuff;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Build;
-import android.os.HandlerThread;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.TypefaceSpan;
@@ -22,7 +20,7 @@ import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Diversion;
 import com.example.mhdstuff.parsing.types.LineAlias;
-import com.example.mhdstuff.parsing.types.Time;
+import com.example.mhdstuff.parsing.types.DateTime;
 import com.example.mhdstuff.parsing.types.TransportLine;
 import com.google.android.flexbox.FlexboxLayout;
 
@@ -71,7 +69,11 @@ public class DiversionsItemAdapter extends AbstractItemAdapter<Diversion, Divers
         }
     }
 
-    private SpannableString createSpannable(String info, Time time) {
+    private SpannableString createSpannable(String info, DateTime time) {
+        if (time == null || time == DateTime.NONE) {
+            return new SpannableString("");
+        }
+
         SpannableString spannable = new SpannableString(info+time.toString());
         spannable.setSpan(new ForegroundColorSpan(ContextCompat.getColor(activity, R.color.secondary_color_tone)), 0, info.length(), 0);
 

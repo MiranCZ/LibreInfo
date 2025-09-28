@@ -47,6 +47,7 @@ dependencies {
 //    implementation("com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v9:0.9.0")
     implementation("org.maplibre.gl:android-plugin-annotation-v9:3.0.0")
     implementation("com.google.code.ksoap2-android:ksoap2-android:3.6.4")
+    implementation("org.jsoup:jsoup:1.21.2")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

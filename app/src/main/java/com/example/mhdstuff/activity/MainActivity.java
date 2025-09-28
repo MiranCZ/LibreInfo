@@ -22,8 +22,9 @@ public class MainActivity extends AppCompatActivity {
 
         Button buttonOpenSearch = findViewById(R.id.open_departures);
         Button buttonOpenVehicleMap = findViewById(R.id.open_map);
+        Button buttonOpenEvents = findViewById(R.id.open_events);
         Button buttonOpenVehiclesList = findViewById(R.id.open_vehicles);
-        Button buttonOpenNews = findViewById(R.id.open_news); // Example
+        Button buttonOpenNews = findViewById(R.id.open_news);
         Button buttonOpenDiversions = findViewById(R.id.open_diversions);
         Button buttonOpenSettings = findViewById(R.id.open_settings);
 
@@ -59,13 +60,15 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-         buttonOpenDiversions.setOnClickListener(new View.OnClickListener() {
-             @Override
-             public void onClick(View view) {
-                 Intent intent = new Intent(MainActivity.this, DiversionsActivity.class);
-                 startActivity(intent);
+         buttonOpenDiversions.setOnClickListener(view -> {
+             Intent intent = new Intent(MainActivity.this, DiversionsActivity.class);
+             startActivity(intent);
 
-             }
          });
+
+        buttonOpenEvents.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, EventsActivity.class);
+            startActivity(intent);
+        });
     }
 }
