@@ -252,7 +252,7 @@ public class VehicleMapActivity extends AppCompatActivity {
                 runOnUiThread(() -> map.setCameraPosition(new CameraPosition.Builder().target(vehicle.location().toLatLng()).build()));
             }
             if (!selectedContext.fetchedLine && selectedContext.selected == vehicle.id()) {
-
+                selectedContext.fetchedLine = true;
                 new Thread(() -> {
                     String overpassJson = OverpassDownloader.downloadData(vehicle.line().lineDisplayName());
 
