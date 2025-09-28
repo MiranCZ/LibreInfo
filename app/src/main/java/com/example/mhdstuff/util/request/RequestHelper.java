@@ -16,55 +16,26 @@ public class RequestHelper {
     private static final String URL_START = "10.0.2.2/api";
 
 
-    public static JsonArray getEvents() {
-        Optional<JsonObject> result = makeRequest("events", JsonObject.class);
-        if (result.isEmpty()) return new JsonArray();
-
-        return result.get().get("Events").getAsJsonArray();
+    public static InputStream getStops() {
+        return readUrl("https://mirancz.github.io/gtfsstatic/parsed/stops");
     }
 
-    // this should be fine
-    public static JsonArray getStops() {
-        Optional<JsonArray> result = makeRequest("stops", JsonArray.class);
-
-        return result.orElse(new JsonArray());
-    }
-
-    // also should be fine
+    // also should be fine - spoiler alert: It is not.
     public static JsonArray getPosts() {
         Optional<JsonArray> result = makeRequest("posts", JsonArray.class);
 
         return result.orElse(new JsonArray());
     }
 
-    // maybe? from and to fields seems to be missing
-    public static JsonArray getDiversions() {
-        Optional<JsonObject> result = makeRequest("diversions", JsonObject.class);
-        if (result.isEmpty()) return new JsonArray();
-
-        return result.get().get("Diversions").getAsJsonArray();
-    }
 
     // we are just fucked
     public static JsonArray getNews() {
+        if (true) return new JsonArray();
+
         Optional<JsonObject> result = makeRequest("news", JsonObject.class);
         if (result.isEmpty()) return new JsonArray();
 
         return result.get().get("News").getAsJsonArray();
-    }
-
-    public static JsonArray getVehiclesList() {
-        JsonObject vehicles = getVehicles();
-        if (!vehicles.has("Data")) return new JsonArray();
-
-        return vehicles.get("Data").getAsJsonArray();
-    }
-
-    // should be fine, can actually use the webhook
-    public static JsonObject getVehicles() {
-        Optional<JsonObject> result = makeRequest("vehicles.json", JsonObject.class);
-
-        return result.orElseGet(JsonObject::new);
     }
 
     public static ZipInputStream getStaticGTFS() {

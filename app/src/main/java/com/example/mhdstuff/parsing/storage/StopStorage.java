@@ -4,14 +4,22 @@ import com.example.mhdstuff.parsing.types.Stop;
 import com.example.mhdstuff.util.FuzzySearch;
 import com.google.gson.JsonArray;
 
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class StopStorage {
 
-    public static StopStorage parse(JsonArray array, LineStorage lineStorage) {
-        List<Stop> stops = Stop.parseStops(array, lineStorage);
+    public static StopStorage parse(DataInputStream is) {
+        List<Stop> stops;
+        try {
+            stops = Stop.parseStops(is);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
 
         return new StopStorage(stops);
     }

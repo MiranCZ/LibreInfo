@@ -29,7 +29,7 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         long ms = System.currentTimeMillis();
 
         LineStorage lineStorage = new LineStorage(CacheHelper.getLineAliases(context));
-        StopStorage stopStorage = StopStorage.parse(CacheHelper.getStops(context), lineStorage);
+        StopStorage stopStorage = StopStorage.parse(CacheHelper.getStops(context));
         PostStorage postStorage = PostStorage.parse(CacheHelper.getPosts(context), lineStorage, stopStorage);
 
         synchronized (mutex) {

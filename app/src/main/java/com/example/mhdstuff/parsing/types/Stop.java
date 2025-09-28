@@ -4,33 +4,43 @@ import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
-public record Stop(int id, int zone, String name, Location location, boolean isPublic,
-                   List<TransportLine> lines,
-                   StopMode stopMode
-) {
+public record Stop(int id, String name, Location location) {
 
 
-    public static Stop NONE = new Stop(-1, -1, "", Location.NONE, false, List.of(), StopMode.MIXED);
+    public static Stop NONE = new Stop(-1, "UNKNOWN", Location.NONE);
 
-    public static List<Stop> parseStops(JsonArray array, LineStorage storage) {
-        return TypeHelper.parseList(array, (o) -> parse(o, storage));
+    public static List<Stop> parseStops(DataInputStream is) throws IOException {
+        List<Stop> result = new ArrayList<>();
+
+        while (is.readBoolean()) {
+            result.add(parse(is));
+        }
+
+        return result;
     }
 
-    public static Stop parse(JsonObject object, LineStorage storage) {
-        if (object == null) return null;
+    public static Stop parse(DataInputStream is) throws IOException {
+        int stopId = is.readInt();
 
-        int id = object.get("StopID").getAsInt();
-        int zone = object.get("Zone").getAsInt();
-        String name = object.get("Name").getAsString();
-        Location location = Location.parse(object);
-        boolean isPublic = object.get("IsPublic").getAsBoolean();
-        List<TransportLine> lines = TransportLine.parseTransportLines(object.get("LineList").getAsString(), storage);
-        StopMode stopMode = StopMode.parse(object.get("DefaultStopMode").getAsString());
+        int nameLen = is.readInt();
+        byte[] result = new byte[nameLen];
+        int read = is.read(result);
+        if (read != result.length) {
+            throw new IOException("Failed to read stop name");
+        }
 
+        String name = new String(result, StandardCharsets.UTF_8);
 
-        return new Stop(id, zone, name, location, isPublic, lines, stopMode);
+        double lat = is.readDouble();
+        double lon = is.readDouble();
+
+        return new Stop(stopId, name, new Location(lat, lon));
     }
 
 }

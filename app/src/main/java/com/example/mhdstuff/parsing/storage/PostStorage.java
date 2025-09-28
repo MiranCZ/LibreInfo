@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -22,12 +23,21 @@ public class PostStorage {
     private final StopStorage stopStorage;
 
     public PostStorage(List<Post> posts, StopStorage stopStorage) {
-        this.posts = posts;
+        posts = new ArrayList<>(posts);
+
         this.stopStorage = stopStorage;
-        for (Post post : posts) {
+        for (Iterator<Post> iterator = posts.iterator(); iterator.hasNext(); ) {
+            Post post = iterator.next();
             Stop stop = stopStorage.getStop(post.stopID());
+            if (stop == Stop.NONE) {
+                iterator.remove();
+                continue;
+            }
+
             postsForStop.computeIfAbsent(stop, k -> new ArrayList<>()).add(post);
         }
+
+        this.posts = posts;
     }
 
     public Post getPost(int stopID, int postID) {

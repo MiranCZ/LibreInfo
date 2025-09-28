@@ -9,7 +9,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -23,20 +28,25 @@ import kotlin.text.Charsets;
 public class CacheHelper {
 
     public static JsonArray getNews(Context context) {
-        return readOrFetch("news.json", RequestHelper::getNews, context);
+        return CacheHelper.readOrFetchJson("news.json", RequestHelper::getNews, context);
     }
 
-    public static JsonArray getStops(Context context) {
-        return readOrFetch("stops.json", RequestHelper::getStops, context);
+    public static DataInputStream getStops(Context context) {
+        try {
+            return readOrFetch(RequestHelper::getStops, context, "data", "stops");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static JsonArray getPosts(Context context) {
-        return readOrFetch("posts.json", RequestHelper::getPosts, context);
+        return CacheHelper.readOrFetchJson("posts.json", RequestHelper::getPosts, context);
     }
 
     public static List<LineAlias> getLineAliases(Context context) {
         String name = "lines.json";
-        if (isCached(name, context)) {
+        if (isCached(context, name)) {
             Log.d("CacheHelper", "reading cached "+name);
             JsonArray array = readCache(name, JsonArray.class, context);
 
@@ -104,9 +114,20 @@ public class CacheHelper {
         zis.close();
     }
 
+    private static DataInputStream readOrFetch(Callable<InputStream> fetchFunc, Context context, String... name) throws FileNotFoundException {
+        if (!isCached(context, name)) {
+            try {
+                writeToCache(fetchFunc.call().readAllBytes(), context, name);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-    private static JsonArray readOrFetch(String cacheName, Callable<JsonArray> fetchFunc, Context context) {
-        if (isCached(cacheName, context)) {
+        return new DataInputStream(new BufferedInputStream(new FileInputStream(getCachedPath(context, name).toFile())));
+    }
+
+    private static JsonArray readOrFetchJson(String cacheName, Callable<JsonArray> fetchFunc, Context context) {
+        if (isCached(context, cacheName)) {
             System.out.println("Using cached version of " + cacheName);
             return readCache(cacheName, JsonArray.class, context);
         }
@@ -123,7 +144,7 @@ public class CacheHelper {
     }
 
 
-    private static boolean isCached(String name, Context context) {
+    private static boolean isCached(Context context, String... name) {
         // TODO check date
         return getCachedPath(context, name).toFile().exists();
     }
@@ -164,6 +185,9 @@ public class CacheHelper {
         Path path = context.getFilesDir().toPath();
 
         for (String s : name) {
+            if (!path.toFile().exists()) {
+                path.toFile().mkdir();
+            }
             path = path.resolve(s);
         }
 
