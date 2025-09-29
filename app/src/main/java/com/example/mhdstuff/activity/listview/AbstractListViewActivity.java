@@ -17,7 +17,7 @@ public abstract class AbstractListViewActivity extends BaseActivity {
 
 
     private final int layoutId;
-    private final int recycleViewId;
+    protected final int recycleViewId;
 
     public AbstractListViewActivity(String name, int layoutId, int recycleViewId) {
         super(name);

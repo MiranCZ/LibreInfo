@@ -9,4 +9,8 @@
     <string name="schemes">Schémata linek</string>
     <string name="settings">Nastavení</string>
     <string name="about">O aplikaci</string>
+    <string name="sorting">Řazení</string>
+    <string name="ascending">Vzestupně</string>
+    <string name="descending">Sestupně</string>
+    <string name="sort_by">Řadit podle</string>
 </resources>

@@ -42,7 +42,7 @@ public class StopStorage {
 
     public Stop getStop(int id) {
         if (!idToStop.containsKey(id)) {
-            System.out.println("[WARN] Tried to get non-existent stop with id " + id);
+//            System.out.println("[WARN] Tried to get non-existent stop with id " + id);
             return Stop.NONE;
         }
 

@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 public record Vehicle(int id, int idB, int idC, int vType, int lType, Location location, int bearing,
-                      LineAlias line, int routeId, String course, boolean lowFloor, int delay,
+                      LineAlias line, int routeId, Integer course, boolean lowFloor, int delay,
                       Stop lastStop, Stop finalStop, Optional<String> finalStopName, boolean inactive, int serviceId) implements VehicleBase {
 
     public static List<Vehicle> parseVehicles(JsonArray array, IdStorage storage) {
@@ -70,7 +70,7 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         int serviceId = obj.getInt("ServiceID");
 
         return new Vehicle(carNum, carNumB, 0, -1, -1, location, azimut, line,
-                routeId, "", lowFloor, delay, lastStop, finalStop, Optional.empty(), false, serviceId);
+                routeId, 0, lowFloor, delay, lastStop, finalStop, Optional.empty(), false, serviceId);
     }
 
     public static Vehicle parse(JsonObject obj, IdStorage storage) {
@@ -118,7 +118,7 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         boolean inactive = obj.get("IsInactive").getAsBoolean();
 
         return new Vehicle(
-                id, idB, idC, vType, lType, location, bearing, /*line,*/null, routeId, course,
+                id, idB, idC, vType, lType, location, bearing, /*line,*/null, routeId, Integer.parseInt(course),
                 lowFloor, delay, lastStop, finalStop, finalStopName, inactive, -1
         );
     }
@@ -162,10 +162,14 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         int color;
         if (delay == 0) {
             color = Color.GREEN;
-        } else if (delay < 5) {
+        } else if (delay < 3) {
             color = Color.YELLOW;
-        } else {
+        } else if (delay < 5) {
+            color = 0xFFFFA500; //orange
+        } else if (delay < 10){
             color = Color.RED;
+        } else {
+            color = 0xFF8B0000; //darkred
         }
 
         SpannableString spannable = new SpannableString(text);

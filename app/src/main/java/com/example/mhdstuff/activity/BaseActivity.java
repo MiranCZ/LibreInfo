@@ -1,6 +1,8 @@
 package com.example.mhdstuff.activity;
 
 import android.graphics.PorterDuff;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,10 +11,13 @@ import android.os.Bundle;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import com.example.mhdstuff.R;
+import com.google.android.material.appbar.MaterialToolbar;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
@@ -43,39 +48,48 @@ public abstract class BaseActivity extends AppCompatActivity {
         toolbar.setTitle(name);
         setSupportActionBar(toolbar);
 
-        getSupportActionBar().setDisplayUseLogoEnabled(true);
+
 
 
         if (getParentActivityIntent() != null) {
             toolbar.setNavigationIcon(R.drawable.chevron_left);
             toolbar.getNavigationIcon().setColorFilter(ContextCompat.getColor(this, R.color.light_blue), PorterDuff.Mode.SRC_ATOP);
 
-            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onNavigateUp();
-                }
-            });
+            toolbar.setNavigationOnClickListener(v -> onNavigateUp());
         }
 
-        // optional: enable up button by default
         if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayUseLogoEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         }
     }
 
-    /**
-     * Helper child activities can override to provide menu resource id.
-     * Return 0 if none.
-     */
-    protected int getMenuResourceId() {
-        return 0;
+    protected void addButtonIcon(int iconResId, View.OnClickListener listener) {
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        AppCompatImageButton button = new AppCompatImageButton(this);
+
+        button.setImageResource(iconResId);
+
+        int tintColor = ContextCompat.getColor(this, R.color.light_blue);
+        DrawableCompat.setTint(button.getDrawable().mutate(), tintColor);
+
+        int sizePx = dpToPx(50);
+        Toolbar.LayoutParams params = new Toolbar.LayoutParams(sizePx, sizePx);
+        params.gravity = Gravity.END | Gravity.CENTER_VERTICAL;
+        params.setMarginEnd(dpToPx(4));
+        button.setLayoutParams(params);
+
+        button.setBackgroundResource(R.drawable.icon_ripple_rounded);
+
+        button.setScaleType(AppCompatImageButton.ScaleType.FIT_CENTER);
+
+        button.setOnClickListener(listener);
+
+        toolbar.addView(button);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(android.view.Menu menu) {
-        int menuId = getMenuResourceId();
-        if (menuId != 0) getMenuInflater().inflate(menuId, menu);
-        return super.onCreateOptionsMenu(menu);
+    private int dpToPx(int dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
     }
+
 }
