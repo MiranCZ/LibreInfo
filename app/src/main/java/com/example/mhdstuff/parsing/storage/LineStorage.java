@@ -2,36 +2,65 @@ package com.example.mhdstuff.parsing.storage;
 
 import android.graphics.Color;
 
-import com.example.mhdstuff.parsing.types.Diversion;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.TransportLine;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// TODO
+
 public class LineStorage {
 
-//    public static LineStorage parse(JsonArray array) {
-//        List<LineAlias> aliases = new ArrayList<>();
-//
-//        for (JsonElement element : array) {
-//            aliases.add(LineAlias.parse(element.getAsJsonObject()));
-//        }
-//
-//        return new LineStorage(aliases);
-//    }
+    public static LineStorage parse(DataInputStream is) {
+        List<LineAlias> aliases = new ArrayList<>();
+
+        try {
+            while (is.readBoolean()) {
+                int routeId = is.readInt();
+
+                int nameLen = is.readInt();
+
+                byte[] result = new byte[nameLen];
+                int read = is.read(result);
+                if (read != result.length) {
+                    throw new IOException("Failed to read line name");
+                }
+
+                String name = new String(result, StandardCharsets.UTF_8);
+
+                String background = readColor(is);
+                String text = readColor(is);
+
+                aliases.add(new LineAlias(routeId, name, Color.parseColor(background), background, Color.parseColor(text), text));
+            }
+
+            return new LineStorage(aliases);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new LineStorage(List.of());
+        }
+    }
+
+
+    private static String readColor(DataInputStream is) throws IOException {
+        int r = is.read();
+        int g = is.read();
+        int b = is.read();
+
+        return String.format("#%02X%02X%02X", r, g, b);
+    }
 
 
     private final List<LineAlias> aliases;
     private final Map<Integer, LineAlias> idToAlias = new HashMap<>();
     private final Map<String, LineAlias> nameToAlias = new HashMap<>();
 
-    public LineStorage(List<LineAlias> aliases) {
+    private LineStorage(List<LineAlias> aliases) {
         this.aliases = aliases;
 
         for (LineAlias alias : aliases) {

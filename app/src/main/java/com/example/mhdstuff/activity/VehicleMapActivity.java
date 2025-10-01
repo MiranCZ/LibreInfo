@@ -5,6 +5,7 @@ import static org.maplibre.android.style.layers.PropertyFactory.iconColor;
 import static org.maplibre.android.style.layers.PropertyFactory.iconImage;
 import static org.maplibre.android.style.layers.PropertyFactory.iconRotate;
 import static org.maplibre.android.style.layers.PropertyFactory.iconSize;
+import static org.maplibre.android.style.layers.PropertyFactory.symbolSortKey;
 import static org.maplibre.android.style.layers.PropertyFactory.textAllowOverlap;
 import static org.maplibre.android.style.layers.PropertyFactory.textColor;
 import static org.maplibre.android.style.layers.PropertyFactory.textField;
@@ -58,6 +59,7 @@ import org.maplibre.geojson.FeatureCollection;
 import org.maplibre.geojson.Point;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -69,7 +71,7 @@ import java.util.function.Consumer;
 
 // FIXME the text rendering is still not the best ugh
 // TODO refactor, cleanup
-public class VehicleMapActivity extends AppCompatActivity {
+public class VehicleMapActivity extends BaseActivity {
 
     private final Map<Integer, Feature> vehicleFeatureMap = new ConcurrentHashMap<>();
     private MapView mapView;
@@ -81,6 +83,10 @@ public class VehicleMapActivity extends AppCompatActivity {
     GeoJsonSource routeSource;
     LineLayer routeLayer;
     IdStorage storage;
+
+    public VehicleMapActivity() {
+        super("Poloha vozidel");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,10 +171,7 @@ public class VehicleMapActivity extends AppCompatActivity {
 
                 CustomSymbolManager stopLayer = new CustomSymbolManager(mapView,map, style);
                 stopLayer.getLayer().setMinZoom(13f);
-                stopLayer.setIconAllowOverlap(true);
-
-
-
+                stopLayer.setIconAllowOverlap(false);
 
                 /*new Thread(() -> {
                     String overpassJson = OverpassDownloader.downloadData("1");
@@ -192,26 +195,33 @@ public class VehicleMapActivity extends AppCompatActivity {
                     });
                 }).start();*/
 
-                SymbolLayer l = new SymbolLayer("symbol-layer", "points-source");
-                l.setProperties(
+//                SymbolLayer l = new SymbolLayer("symbol-layer", "points-source");
+//                l.setProperties(
+//                        iconImage("bus_icon"),
+//                        iconColor(Expression.get("color")),
+//                        iconSize(1.25f),
+//                        iconRotate(Expression.get("bearing")),
+//                        iconAllowOverlap(true)
+//
+//                 );
+
+                SymbolLayer text = new SymbolLayer("text-layer", "points-source");
+                text.setProperties(
+                        textSize(11f),
+                        textAllowOverlap(true),
+                        textOptional(true),
+                        textField(Expression.get("name")),
+                        textColor(Expression.get("textColor")),
                         iconImage("bus_icon"),
                         iconColor(Expression.get("color")),
                         iconSize(1.25f),
                         iconRotate(Expression.get("bearing")),
-                        iconAllowOverlap(true)
-
-                );
-                SymbolLayer text = new SymbolLayer("text-layer", "points-source");
-                text.setProperties(
-                        textSize(11f),
-                        textAllowOverlap(false),
-                        textOptional(true),
-                        textField(Expression.get("name")),
-                        textColor(Expression.get("textColor"))
+                        iconAllowOverlap(true),
+                        symbolSortKey(Expression.get("sort"))
                 );
 
-                style.addLayer(l);
-                style.addLayerAbove(text, "symbol-layer");
+                style.addLayer(text);
+//                style.addLayerAbove(text, "symbol-layer");
 
                 onReady.accept(source, map);
 
@@ -221,6 +231,8 @@ public class VehicleMapActivity extends AppCompatActivity {
 
                     updateGeoJson(source, map, vehicle);
                 });
+
+
 
                 for (Post post : storage.postStorage().getAllPosts()) {
                     SymbolOptions options = new SymbolOptions().withLatLng(post.location().toLatLng()).withIconImage("stop_icon").withIconSize(1f).withIconAnchor("bottom");
@@ -236,15 +248,25 @@ public class VehicleMapActivity extends AppCompatActivity {
     }
 
     // TODO add dynamic timer so that when a lot of elements is updated the map is redrawn prematurely
+    HashMap<Integer, Integer> idMap = new HashMap<>();
+    int id = 0;
     private void updateGeoJson(GeoJsonSource source, MapLibreMap map, VehicleBase... vehicles) {
         if (timer == null) setupCountdown(source);
 
+
+        int id = 0;
         for (VehicleBase vehicle : vehicles) {
             Feature feature = Feature.fromGeometry(Point.fromLngLat(vehicle.location().longitude(), vehicle.location().latitude()));
             feature.addStringProperty("color", vehicle.line().backgroundColorStr());
             feature.addStringProperty("textColor", vehicle.line().textColorStr());
             feature.addStringProperty("name", vehicle.line().lineDisplayName());
             feature.addNumberProperty("bearing", vehicle.bearing());
+
+            if (!idMap.containsKey(vehicle.id())) {
+                idMap.put(vehicle.id(), id++);
+            }
+            // FIXME this is still not the best
+            feature.addNumberProperty("sort", idMap.get(vehicle.id()) % 100);
 
             vehicleFeatureMap.put(vehicle.id(), feature);
 

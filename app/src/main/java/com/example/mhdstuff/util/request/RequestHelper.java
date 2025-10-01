@@ -20,6 +20,10 @@ public class RequestHelper {
         return readUrl("https://mirancz.github.io/gtfsstatic/parsed/stops");
     }
 
+    public static InputStream getLineAliases() {
+        return readUrl("https://mirancz.github.io/gtfsstatic/parsed/routes");
+    }
+
     // also should be fine - spoiler alert: It is not.
     public static JsonArray getPosts() {
         Optional<JsonArray> result = makeRequest("posts", JsonArray.class);

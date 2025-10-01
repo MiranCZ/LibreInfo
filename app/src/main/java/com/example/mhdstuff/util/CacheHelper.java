@@ -40,78 +40,17 @@ public class CacheHelper {
         }
     }
 
+    public static DataInputStream getLineAliases(Context context) {
+        try {
+            return readOrFetch(RequestHelper::getLineAliases, context, "data", "lines");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public static JsonArray getPosts(Context context) {
         return CacheHelper.readOrFetchJson("posts.json", RequestHelper::getPosts, context);
-    }
-
-    public static List<LineAlias> getLineAliases(Context context) {
-        String name = "lines.json";
-        if (isCached(context, name)) {
-            Log.d("CacheHelper", "reading cached "+name);
-            JsonArray array = readCache(name, JsonArray.class, context);
-
-            return LineAlias.parseLineAliases(array);
-        }
-
-        Path gtfs = getGtfsEntry("routes.txt", context);
-
-        Log.d("CacheHelper", "reading gtfs entry "+gtfs);
-        try {
-            String csvString = new String(Files.readAllBytes(gtfs), Charsets.UTF_8);
-
-            System.out.println("READ STRING "+csvString.length());
-            List<LineAlias> lines = LineAlias.parseCsv(csvString);
-            System.out.println("PARSED "+lines.size());
-
-            // TODO cache async?
-            JsonArray result = new JsonArray();
-            for (LineAlias line : lines) {
-                result.add(line.toJson());
-            }
-
-            System.out.println("WRITING "+lines.size());
-            writeCache(name, result, context);
-
-            return lines;
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static Path getGtfsEntry(String fileName, Context context) {
-        Path path = getCachedPath(context, "gtfs", fileName);
-        if (!path.toFile().exists()) {
-            ZipInputStream zis = RequestHelper.getStaticGTFS();
-            try {
-                extractZip(zis, context);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-        }
-
-        return path;
-    }
-
-    private static void extractZip(ZipInputStream zis, Context context) throws IOException {
-        ZipEntry entry;
-
-        Path gtfsPath = getCachedPath(context, "gtfs");
-        if (!gtfsPath.toFile().exists()) {
-            gtfsPath.toFile().mkdir();
-        }
-        System.out.println("SHOUDL EXIST "+gtfsPath);
-
-        while ((entry = zis.getNextEntry()) != null) {
-            String fileName = entry.getName();
-            System.out.println("\tread "+fileName);
-
-            writeToCache(zis.readAllBytes(), context, "gtfs", fileName);
-            zis.closeEntry();
-        }
-
-        zis.close();
     }
 
     private static DataInputStream readOrFetch(Callable<InputStream> fetchFunc, Context context, String... name) throws FileNotFoundException {

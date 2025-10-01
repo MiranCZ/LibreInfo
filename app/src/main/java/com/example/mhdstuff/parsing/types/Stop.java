@@ -29,6 +29,7 @@ public record Stop(int id, String name, Location location) {
         int stopId = is.readInt();
 
         int nameLen = is.readInt();
+
         byte[] result = new byte[nameLen];
         int read = is.read(result);
         if (read != result.length) {
