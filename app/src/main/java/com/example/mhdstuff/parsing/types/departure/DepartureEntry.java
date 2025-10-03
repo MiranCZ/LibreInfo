@@ -11,20 +11,18 @@ import android.widget.TextView;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.parsing.storage.IdStorage;
-import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.TimeMark;
-import com.example.mhdstuff.parsing.types.TypeHelper;
+import com.example.mhdstuff.parsing.types.Vehicle;
 import com.example.mhdstuff.util.request.soap.SoapSaneObject;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
 
-import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-public record DepartureEntry(LineAlias line, String finalStop, int postID, boolean lowFloor, TimeMark timeMark) {
+public record DepartureEntry(LineAlias line, String finalStop, int postID, boolean lowFloor, TimeMark timeMark, Optional<Vehicle> vehicle) {
 
-    public static DepartureEntry parse(SoapSaneObject obj, IdStorage storage) {
+    public static DepartureEntry parse(SoapSaneObject obj, Map<Long, Vehicle> vehicleMap, IdStorage storage) {
         if (obj == null) return null;
 
         LineAlias line = LineAlias.parse(obj.getString("LineName"), storage.lineStorage());
@@ -34,7 +32,11 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
         boolean lowFloor = obj.getBoolean("IsBarrierLess");
         TimeMark timeMark = TimeMark.parse(obj.getString("TimeMark")); // TODO make this into an object with DriveOrderSign
 
-        return new DepartureEntry(line, finalStop, postID , lowFloor, timeMark);
+        int connectionId = obj.getInt("ConnectionID");
+        long key = ((long) connectionId <<32) | ((long)line.id());
+        Optional<Vehicle> vehicle = Optional.ofNullable(vehicleMap.get(key));
+
+        return new DepartureEntry(line, finalStop, postID , lowFloor, timeMark, vehicle);
     }
 
     public View createDepartureEntryView(ViewGroup parent, Context context) {

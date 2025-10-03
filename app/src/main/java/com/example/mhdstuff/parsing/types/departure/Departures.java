@@ -1,9 +1,10 @@
 package com.example.mhdstuff.parsing.types.departure;
 
+import androidx.annotation.Nullable;
+
 import com.example.mhdstuff.parsing.storage.IdStorage;
-import com.example.mhdstuff.parsing.storage.LineStorage;
+import com.example.mhdstuff.parsing.types.Vehicle;
 import com.example.mhdstuff.util.request.soap.SoapSaneObject;
-import com.google.gson.JsonObject;
 
 import org.ksoap2.serialization.SoapObject;
 
@@ -16,20 +17,34 @@ import java.util.Map;
 public record Departures(String message, List<Departure> departures) {
 
 
-    public static Departures parse(SoapSaneObject obj, int stopID, IdStorage storage) {
-        if (obj == null) return null;
+    public static Departures parse(SoapSaneObject deps, @Nullable SoapSaneObject vehicles, int stopID, IdStorage storage) {
+        if (deps == null) return null;
 
         String message = "";
 
-        for (Object o : obj.getSoapSaneObject("InfoTextSet")) {
+        for (Object o : deps.getSoapSaneObject("InfoTextSet")) {
             message += o+"\n\n";
         }
         message = message.trim();
 
         Map<Integer, List<DepartureEntry>> departureMap = new HashMap<>();
 
-        for (Object departureObj : obj.getSoapSaneObject("DeparturesL")) {
-            DepartureEntry entry = DepartureEntry.parse(SoapSaneObject.parse((SoapObject) departureObj), storage);
+        HashMap<Long, Vehicle> map = new HashMap<>();
+        if (vehicles != null) {
+            for (Object obj : vehicles) {
+                Vehicle vehicle = Vehicle.parse(SoapSaneObject.parse((SoapObject) obj), storage);
+
+                long key = ((long) vehicle.routeId() << 32) | ((long) vehicle.line().id());
+
+                if (map.containsKey(key)) {
+                    System.out.println("ALREADY HERE \n\t" + vehicle + "\n\t" + map.get(key));
+                }
+                map.put(key, vehicle);
+            }
+        }
+
+        for (Object departureObj : deps.getSoapSaneObject("DeparturesL")) {
+            DepartureEntry entry = DepartureEntry.parse(SoapSaneObject.parse((SoapObject) departureObj), map, storage);
 
             departureMap.computeIfAbsent(entry.postID(), k -> new ArrayList<>()).add(entry);
         }

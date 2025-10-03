@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -57,7 +58,9 @@ public class DeparturesActivity extends BaseActivity {
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();
 
-            Departures departures = Departures.parse(SoapHelper.getDepartures(stop.id()), stop.id(), storage);
+            Departures departures = Departures.parse(
+                    SoapHelper.getDepartures(stop.id()), SoapHelper.getVehicles(), stop.id(), storage
+            );
 
             // fallback to offline if something went wrong
             if (departures == null) {
@@ -121,7 +124,8 @@ public class DeparturesActivity extends BaseActivity {
                             heading,
                             postId,
                             false, // FIXME the trips might have that info actually
-                            timeMark
+                            timeMark,
+                            Optional.empty()
                     ));
                     ind++;
                 }
