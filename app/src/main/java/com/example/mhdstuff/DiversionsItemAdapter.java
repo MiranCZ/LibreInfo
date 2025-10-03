@@ -50,13 +50,9 @@ public class DiversionsItemAdapter extends AbstractItemAdapter<Diversion, Divers
         holder.from.setText(createSpannable("od: ", item.from()));
         holder.to.setText(createSpannable("do: ", item.to()));
 
-        holder.view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                DiversionDataHolder.setDiversion(item);
-                Intent intent = new Intent(activity, DiversionInfoActivity.class);
-                activity.startActivity(intent);
-            }
+        holder.view.setOnClickListener(view -> {
+            DiversionDataHolder.setDiversion(item);
+            activity.startActivity(DiversionInfoActivity.class);
         });
 
         FlexboxLayout lines = holder.lines;

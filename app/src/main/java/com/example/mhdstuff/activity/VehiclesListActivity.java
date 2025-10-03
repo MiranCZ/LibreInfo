@@ -38,6 +38,7 @@ public class VehiclesListActivity extends AbstractListViewActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // TODO add showing animation
         addButtonIcon(R.drawable.adjustments, v -> {
             LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -147,7 +148,7 @@ public class VehiclesListActivity extends AbstractListViewActivity {
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
         vehicles = Vehicle.parseVehicles(SoapHelper.getVehicles(), storage);
 
-        adapter = new VehicleItemAdapter(vehicles, context);
+        adapter = new VehicleItemAdapter(vehicles, this);
         updateSort();
 
         return adapter;

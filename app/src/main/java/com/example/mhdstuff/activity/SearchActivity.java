@@ -68,7 +68,7 @@ public class SearchActivity extends BaseActivity {
 
             filteredItems = new ArrayList<>(allItems);
 
-            adapter = new ItemAdapter(filteredItems);
+            adapter = new ItemAdapter(filteredItems, this);
 
             runOnUiThread(() -> recyclerView.setAdapter(adapter));
         }).start();

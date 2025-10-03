@@ -32,47 +32,12 @@ public class MainActivity extends BaseActivity {
         Button buttonOpenDiversions = findViewById(R.id.open_diversions);
         Button buttonOpenSettings = findViewById(R.id.open_settings);
 
-        buttonOpenSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, SearchActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        // Add OnClickListeners for other buttons as needed
-        // For example:
-         buttonOpenNews.setOnClickListener(v -> {
-             Intent intent = new Intent(MainActivity.this, NewsActivity.class);
-             startActivity(intent);
-         });
-
-
-        buttonOpenVehicleMap.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, VehicleMapActivity.class);
-            startActivity(intent);
-        });
-
-        buttonOpenVehiclesList.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, VehiclesListActivity.class);
-            startActivity(intent);
-        });
-
-
-        buttonOpenSettings.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-            startActivity(intent);
-        });
-
-         buttonOpenDiversions.setOnClickListener(view -> {
-             Intent intent = new Intent(MainActivity.this, DiversionsActivity.class);
-             startActivity(intent);
-
-         });
-
-        buttonOpenEvents.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, EventsActivity.class);
-            startActivity(intent);
-        });
+        buttonOpenSearch.setOnClickListener(v -> startActivity(SearchActivity.class));
+        buttonOpenNews.setOnClickListener(v -> startActivity(NewsActivity.class));
+        buttonOpenVehicleMap.setOnClickListener(v -> startActivity(VehicleMapActivity.class));
+        buttonOpenVehiclesList.setOnClickListener(v -> startActivity(VehiclesListActivity.class));
+        buttonOpenSettings.setOnClickListener(v -> startActivity(SettingsActivity.class));
+        buttonOpenDiversions.setOnClickListener(view -> startActivity(DiversionsActivity.class));
+        buttonOpenEvents.setOnClickListener(view -> startActivity(EventsActivity.class));
     }
 }

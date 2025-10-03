@@ -8,20 +8,22 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.example.mhdstuff.activity.BaseActivity;
 import com.example.mhdstuff.activity.VehicleMapActivity;
 import com.example.mhdstuff.activity.listview.AbstractItemAdapter;
 import com.example.mhdstuff.parsing.types.Vehicle;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class VehicleItemAdapter extends AbstractItemAdapter<Vehicle, VehicleItemAdapter.VehicleItemHolder> {
 
 
-    private final Context context;
+    private final BaseActivity parent;
 
-    public VehicleItemAdapter(List<Vehicle> items, Context context) {
+    public VehicleItemAdapter(List<Vehicle> items, BaseActivity parent) {
         super(items, R.layout.vehicle_entry_layout);
-        this.context = context;
+        this.parent = parent;
     }
 
     @Override
@@ -37,7 +39,7 @@ public class VehicleItemAdapter extends AbstractItemAdapter<Vehicle, VehicleItem
 
         // TODO maybe cache this
         holder.vehicleLineIcon.removeAllViews();
-        holder.vehicleLineIcon.addView(item.line().createLineIconView(holder.vehicleLineIcon, context));
+        holder.vehicleLineIcon.addView(item.line().createLineIconView(holder.vehicleLineIcon, parent));
 
         holder.vehicleHeading.setText(item.getFinalStopText());
         holder.vehicleDelay.setText(item.getDelaySpan());
@@ -45,11 +47,11 @@ public class VehicleItemAdapter extends AbstractItemAdapter<Vehicle, VehicleItem
         holder.vehicleNextStop.setText(item.lastStop().name());
 
         holder.layout.setOnClickListener(view -> {
-            Intent intent = new Intent(context, VehicleMapActivity.class);
-            intent.putExtra("following", item.id());
-            intent.putExtra("lat", item.location().latitude());
-            intent.putExtra("lng", item.location().longitude());
-            context.startActivity(intent);
+            parent.startActivity(VehicleMapActivity.class, intent -> {
+                intent.putExtra("following", item.id());
+                intent.putExtra("lat", item.location().latitude());
+                intent.putExtra("lng", item.location().longitude());
+            });
         });
     }
 

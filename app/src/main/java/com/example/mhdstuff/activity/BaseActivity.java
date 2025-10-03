@@ -1,5 +1,7 @@
 package com.example.mhdstuff.activity;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -18,6 +20,8 @@ import androidx.core.graphics.drawable.DrawableCompat;
 
 import com.example.mhdstuff.R;
 import com.google.android.material.appbar.MaterialToolbar;
+
+import java.util.function.Consumer;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
@@ -47,8 +51,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(name);
         setSupportActionBar(toolbar);
-
-
 
 
         if (getParentActivityIntent() != null) {
@@ -92,4 +94,30 @@ public abstract class BaseActivity extends AppCompatActivity {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
     }
 
+    public void startActivity(Class<? extends Activity> clazz) {
+        startActivity(clazz, (ignored) -> {});
+    }
+
+    public void startActivity(Class<? extends Activity> clazz, Consumer<Intent> intentSetup) {
+        Intent intent = new Intent(this, clazz);
+
+        intentSetup.accept(intent);
+        startActivity(intent);
+        overridePendingTransition(R.anim.fast_scale_up, R.anim.fast_fade_out);
+
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+
+        overridePendingTransition(R.anim.fast_fade_in, R.anim.fast_scale_down);
+    }
+
+    @Override
+    public boolean onNavigateUp() {
+        boolean result = super.onNavigateUp();
+        overridePendingTransition(R.anim.fast_fade_in, R.anim.fast_scale_down);
+        return result;
+    }
 }

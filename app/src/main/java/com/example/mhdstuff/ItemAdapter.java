@@ -1,5 +1,6 @@
 package com.example.mhdstuff;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.mhdstuff.activity.BaseActivity;
 import com.example.mhdstuff.activity.DeparturesActivity;
 import com.example.mhdstuff.activity.data.StopDataHolder;
 import com.example.mhdstuff.parsing.types.Stop;
@@ -20,10 +22,12 @@ import java.util.Map;
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ButtonViewHolder> {
 
     private List<Stop> items;
+    private final BaseActivity parent;
     Map<Integer, ButtonViewHolder> holders = new HashMap<>();
 
-    public ItemAdapter(List<Stop> items) {
+    public ItemAdapter(List<Stop> items, BaseActivity parent) {
         this.items = items;
+        this.parent = parent;
     }
 
     @NonNull
@@ -41,8 +45,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ButtonViewHold
         holder.button.setOnClickListener(v -> {
             StopDataHolder.setStop(currentItem);
 
-            Intent intent = new Intent(v.getContext(), DeparturesActivity.class);
-            v.getContext().startActivity(intent);
+            parent.startActivity(DeparturesActivity.class);
         });
 
         holders.put(position, holder);
