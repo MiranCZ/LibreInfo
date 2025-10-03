@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Optional;
 import java.util.zip.ZipInputStream;
 
@@ -18,6 +19,14 @@ public class RequestHelper {
 
     public static InputStream getStops() {
         return readUrl("https://mirancz.github.io/gtfsstatic/parsed/stops");
+    }
+
+    public static InputStream getStopTimes() {
+        return readUrl("https://mirancz.github.io/gtfsstatic/parsed/stop_times");
+    }
+
+    public static InputStream getTrips() {
+        return readUrl("https://mirancz.github.io/gtfsstatic/parsed/trips");
     }
 
     public static InputStream getLineAliases() {
@@ -40,6 +49,18 @@ public class RequestHelper {
         if (result.isEmpty()) return new JsonArray();
 
         return result.get().get("News").getAsJsonArray();
+    }
+
+    public static InputStream getRouteStops() {
+        return readUrl("https://mirancz.github.io/gtfsstatic/parsed/route_stops");
+    }
+
+    public static InputStream getCalendar() {
+        return readUrl("https://mirancz.github.io/gtfsstatic/unzipped/calendar");
+    }
+
+    public static InputStream getCalendarDates() {
+        return readUrl("https://mirancz.github.io/gtfsstatic/unzipped/calendar_dates");
     }
 
     public static ZipInputStream getStaticGTFS() {

@@ -2,7 +2,6 @@ package com.example.mhdstuff.parsing.storage;
 
 import com.example.mhdstuff.parsing.types.Stop;
 import com.example.mhdstuff.util.FuzzySearch;
-import com.google.gson.JsonArray;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -14,7 +13,7 @@ public class StopStorage {
 
     public static StopStorage parse(DataInputStream is) {
         List<Stop> stops;
-        try {
+        try(is) {
             stops = Stop.parseStops(is);
         } catch (IOException e) {
             e.printStackTrace();

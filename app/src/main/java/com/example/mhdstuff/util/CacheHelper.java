@@ -3,7 +3,6 @@ package com.example.mhdstuff.util;
 import android.content.Context;
 import android.util.Log;
 
-import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.util.request.RequestHelper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -15,13 +14,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import kotlin.text.Charsets;
 
@@ -29,6 +26,69 @@ public class CacheHelper {
 
     public static JsonArray getNews(Context context) {
         return CacheHelper.readOrFetchJson("news.json", RequestHelper::getNews, context);
+    }
+
+    public static String getCalendar(Context context) {
+        if (!isCached(context, "data", "calendar")) {
+            InputStream is = RequestHelper.getCalendar();
+
+            try {
+                writeToCache(is.readAllBytes(), context, "data", "calendar");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return readCache(context, "data", "calendar");
+    }
+
+    public static String getCalendarDates(Context context) {
+        if (!isCached(context, "data", "calendar_dates")) {
+            InputStream is = RequestHelper.getCalendarDates();
+
+            try {
+                writeToCache(is.readAllBytes(), context, "data", "calendar_dates");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return readCache(context, "data", "calendar_dates");
+    }
+
+    public static RandomAccessFile getRouteStopsRAF(Context context) {
+
+        if (!isCached(context, "data", "route_stops")) {
+            try {
+                writeToCache(RequestHelper.getRouteStops().readAllBytes(), context, "data", "route_stops");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        try {
+            return new RandomAccessFile(getCachedPath(context, "data", "route_stops").toFile(), "r");
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static DataInputStream getStopTimes(Context context) {
+        try {
+            return readOrFetch(RequestHelper::getStopTimes, context, "data", "stop_times");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static DataInputStream getTrips(Context context) {
+        try {
+            return readOrFetch(RequestHelper::getTrips, context, "data", "trips");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static DataInputStream getStops(Context context) {
@@ -103,6 +163,16 @@ public class CacheHelper {
 
         try {
             Files.write(path, bytes, StandardOpenOption.CREATE);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static String readCache(Context context, String... name) {
+        Path path = getCachedPath(context, name);
+
+        try {
+            return new String(Files.readAllBytes(path), Charsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

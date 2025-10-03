@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
-public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostStorage postStorage) {
+public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostStorage postStorage, TripStorage tripStorage, RouteStopStorage routeStopStorage, CalendarStorage calendarStorage) {
 
 
     private static final Object mutex = new Object();
@@ -32,8 +32,18 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         StopStorage stopStorage = StopStorage.parse(CacheHelper.getStops(context));
         PostStorage postStorage = PostStorage.parse(CacheHelper.getPosts(context), lineStorage, stopStorage);
 
+        System.out.println("Rest done in " + (System.currentTimeMillis()-ms));
+        TripStorage tripStorage = TripStorage.parse(CacheHelper.getTrips(context));
+        RouteStopStorage routeStopStorage = RouteStopStorage.parse(
+                CacheHelper.getStopTimes(context), CacheHelper.getRouteStopsRAF(context)
+        );
+
+        CalendarStorage calendarStorage = CalendarStorage.parse(
+                CacheHelper.getCalendar(context), CacheHelper.getCalendarDates(context)
+        );
+
         synchronized (mutex) {
-            storage = new IdStorage(lineStorage, stopStorage, postStorage);
+            storage = new IdStorage(lineStorage, stopStorage, postStorage, tripStorage, routeStopStorage, calendarStorage);
             readyLatch.countDown();
 
 

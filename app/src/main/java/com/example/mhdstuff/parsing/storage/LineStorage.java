@@ -19,7 +19,7 @@ public class LineStorage {
     public static LineStorage parse(DataInputStream is) {
         List<LineAlias> aliases = new ArrayList<>();
 
-        try {
+        try(is) {
             while (is.readBoolean()) {
                 int routeId = is.readInt();
 

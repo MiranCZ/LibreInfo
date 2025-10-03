@@ -87,6 +87,10 @@ public class SoapSaneObject implements Iterable<Object>{
 
     }
 
+    public boolean has(String name) {
+        return map.containsKey(name);
+    }
+
     public SoapObject getSoupObject(String name) {
         return getType(name);
     }

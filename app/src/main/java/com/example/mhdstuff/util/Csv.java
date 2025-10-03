@@ -59,6 +59,16 @@ public class Csv {
             return line.get(id);
         }
 
+        public Boolean getBoolean(String name) {
+            return getT(name, CsvLine::parseBool);
+        }
+
+        private static boolean parseBool(String str) {
+            str = str.strip().toLowerCase();
+
+            return str.equals("true") || str.equals("1");
+        }
+
         public Integer getInt(String name) {
             return getT(name, Integer::parseInt);
         }

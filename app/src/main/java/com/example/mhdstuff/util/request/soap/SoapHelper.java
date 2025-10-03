@@ -6,6 +6,7 @@ import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Map;
 
 public class SoapHelper {
@@ -15,12 +16,16 @@ public class SoapHelper {
 
 
     public static SoapSaneObject getDepartures(int stopID) {
-        return makeSoapCall(
-                "GetNearDeparturesAcrossPosts",
-                "NearDepartures",
-                "INearDeparturesService",
-                Map.of("stopID", stopID)
-        );
+        try {
+            return makeSoapCall(
+                    "GetNearDeparturesAcrossPosts",
+                    "NearDepartures",
+                    "INearDeparturesService",
+                    Map.of("stopID", stopID)
+            );
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static SoapSaneObject getVehicles() {

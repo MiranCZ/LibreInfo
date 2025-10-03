@@ -5,7 +5,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-public record TimeMark(LocalTime time) {
+public record TimeMark(LocalTime time, boolean certain) {
+
+    public TimeMark(LocalTime time) {
+        this(time, true);
+    }
 
     public static TimeMark parse(String str) {
         if (str == null) return null;
@@ -30,11 +34,16 @@ public record TimeMark(LocalTime time) {
 
         LocalTime now = LocalTime.now();
         long elapsed = Duration.between(now, time).toMinutes();
+        if (elapsed < 0) {
+            elapsed += Duration.ofDays(1).toMinutes();
+        }
+
+        String prefix = certain ? "" : "± ";
 
         if (elapsed < minutesThreshold) {
-            return elapsed + " min";
+            return prefix + elapsed + " min";
         } else {
-            return time.format(DateTimeFormatter.ofPattern("HH:mm"));
+            return prefix + time.format(DateTimeFormatter.ofPattern("HH:mm"));
         }
     }
 
