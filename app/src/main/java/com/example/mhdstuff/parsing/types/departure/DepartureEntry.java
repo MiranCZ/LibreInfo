@@ -1,6 +1,8 @@
 package com.example.mhdstuff.parsing.types.departure;
 
 import android.content.Context;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +22,7 @@ import com.example.mhdstuff.util.request.soap.SoapSaneObject;
 import java.util.Map;
 import java.util.Optional;
 
-public record DepartureEntry(LineAlias line, String finalStop, int postID, boolean lowFloor, TimeMark timeMark, Optional<Vehicle> vehicle) {
+public record DepartureEntry(LineAlias line, String finalStop, int postID, boolean lowFloor, TimeMark timeMark, Optional<Vehicle> vehicleOpt) {
 
     public static DepartureEntry parse(SoapSaneObject obj, Map<Long, Vehicle> vehicleMap, IdStorage storage) {
         if (obj == null) return null;
@@ -49,7 +51,24 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
         heading.setText(finalStop);
 
         TextView arrival = view.findViewById(R.id.departure_arrival);
-        arrival.setText(timeMark.getFormattedString(60));
+
+        String arrivalText = timeMark.getFormattedString(60);
+        if (vehicleOpt.isPresent()) {
+            Vehicle vehicle = vehicleOpt.get();
+            int color = vehicle.getDelayColor();
+
+            String delayStr = "";
+            if (vehicle.delay() > 0) {
+                delayStr = " ("+vehicle.delay()+") ";
+            }
+
+            SpannableString spannable = new SpannableString(delayStr+ arrivalText);
+            spannable.setSpan(new ForegroundColorSpan(color), 0, spannable.length(), 0);
+
+            arrival.setText(spannable);
+        } else {
+            arrival.setText(arrivalText);
+        }
 
         if (timeMark.isLeaving()) {
             AlphaAnimation blink = new AlphaAnimation(0.0f, 1.0f);

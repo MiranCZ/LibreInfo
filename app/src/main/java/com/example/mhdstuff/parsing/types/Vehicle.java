@@ -159,6 +159,16 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
 
     public SpannableString getDelaySpan() {
         String text = (delay == 0) ? "včas" : (delay + " min");
+        int color = getDelayColor();
+
+        SpannableString spannable = new SpannableString(text);
+
+        spannable.setSpan(new ForegroundColorSpan(color), 0, text.length(), 0);
+
+        return spannable;
+    }
+
+    public int getDelayColor() {
         int color;
         if (delay == 0) {
             color = Color.GREEN;
@@ -171,11 +181,6 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         } else {
             color = 0xFF8B0000; //darkred
         }
-
-        SpannableString spannable = new SpannableString(text);
-
-        spannable.setSpan(new ForegroundColorSpan(color), 0, text.length(), 0);
-
-        return spannable;
+        return color;
     }
 }

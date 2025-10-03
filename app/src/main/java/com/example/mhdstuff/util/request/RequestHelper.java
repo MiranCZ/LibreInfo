@@ -30,7 +30,7 @@ public class RequestHelper {
     }
 
     public static InputStream getLineAliases() {
-        return readUrl("https://mirancz.github.io/gtfsstatic/parsed/routes");
+        return readUrl("https://mirancz.github.io/gtfsstatic/parsed/lines");
     }
 
     // also should be fine - spoiler alert: It is not.
