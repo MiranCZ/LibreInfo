@@ -9,17 +9,22 @@ import com.example.mhdstuff.util.CacheHelper;
 import com.example.mhdstuff.util.Pair;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
-public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostStorage postStorage, TripStorage tripStorage, RouteStopStorage routeStopStorage, CalendarStorage calendarStorage) {
+public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostStorage postStorage,
+                        TripStorage tripStorage, RouteStopStorage routeStopStorage,
+                        CalendarStorage calendarStorage) {
 
 
     private static final Object mutex = new Object();
-    private static final CountDownLatch readyLatch = new CountDownLatch(1);
     private static IdStorage storage;
-    private static final List<Pair<Consumer<IdStorage>, Activity>> listeners = new ArrayList<>();
+    private static final List<Pair<Consumer<?>, Activity>> listeners = new ArrayList<>();
+    private static final Map<Class<?>, CountDownLatch> latches = new HashMap<>();
+    private static final Map<Class<?>, Object> instances = new HashMap<>();
     private static boolean initCalled = false;
 
     public static void init(Context context) {
@@ -28,11 +33,15 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         Log.d("IdStorage", "Initializing...");
         long ms = System.currentTimeMillis();
 
-        LineStorage lineStorage = LineStorage.parse(CacheHelper.getLineAliases(context));
         StopStorage stopStorage = StopStorage.parse(CacheHelper.getStops(context));
-        PostStorage postStorage = PostStorage.parse(CacheHelper.getPosts(context), lineStorage, stopStorage);
+        onLoaded(StopStorage.class, stopStorage);
 
-        System.out.println("Rest done in " + (System.currentTimeMillis()-ms));
+        LineStorage lineStorage = LineStorage.parse(CacheHelper.getLineAliases(context));
+        onLoaded(LineStorage.class, lineStorage);
+
+        PostStorage postStorage = PostStorage.parse(CacheHelper.getPosts(context), lineStorage, stopStorage);
+        onLoaded(PostStorage.class, postStorage);
+
         TripStorage tripStorage = TripStorage.parse(CacheHelper.getTrips(context));
         RouteStopStorage routeStopStorage = RouteStopStorage.parse(
                 CacheHelper.getStopTimes(context), CacheHelper.getRouteStopsRAF(context)
@@ -42,17 +51,9 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
                 CacheHelper.getCalendar(context), CacheHelper.getCalendarDates(context)
         );
 
-        synchronized (mutex) {
-            storage = new IdStorage(lineStorage, stopStorage, postStorage, tripStorage, routeStopStorage, calendarStorage);
-            readyLatch.countDown();
 
-
-            for (var listener : listeners) {
-                listener.right().runOnUiThread(() -> listener.left().accept(storage));
-            }
-            listeners.clear();
-        }
-
+        storage = new IdStorage(lineStorage, stopStorage, postStorage, tripStorage, routeStopStorage, calendarStorage);
+        onLoaded(IdStorage.class, storage);
 
         Log.d("IdStorage", "Initialized in " + (System.currentTimeMillis() - ms) + "ms");
     }
@@ -71,31 +72,86 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
                     activity.runOnUiThread(() -> consumer.accept(saved));
                 }
             } else {
-                listeners.add(new Pair<>(consumer, activity));
+                listen(IdStorage.class, consumer, activity);
+            }
+        }
+    }
+
+    private static <T> void onLoaded(Class<T> clazz, T instance) {
+        synchronized (mutex) {
+            CountDownLatch latch = latches.get(clazz);
+            if (latch != null) {
+                latch.countDown();
+            }
+            instances.put(clazz, instance);
+
+            for (var pair : listeners) {
+                //noinspection unchecked
+                Consumer<T> listener = (Consumer<T>) pair.left();
+
+                pair.right().runOnUiThread(() -> listener.accept(instance));
+            }
+            listeners.clear();
+        }
+    }
+
+    private static <T> void listen(Class<T> clazz, Consumer<T> consumer, Activity activity) {
+        synchronized (mutex) {
+            listeners.add(new Pair<>(consumer, activity));
+            if (!latches.containsKey(clazz)) {
+                latches.put(clazz, new CountDownLatch(1));
             }
         }
     }
 
     public static IdStorage getInstance() {
-        if (Looper.getMainLooper().isCurrentThread()) {
-            throw new RuntimeException("Should be called from background thread since it can be blocking");
-        }
         if (!initCalled) {
             Log.w("IdStorage", "IdStorage called before starting to get initialized");
         }
 
+        return getInstanceOf(IdStorage.class);
+    }
 
-        Log.d("IdStorage", "GetInstance called before initialized, waiting...");
+    public static LineStorage getLineStorage() {
+        return getInstanceOf(LineStorage.class);
+    }
+
+    public static StopStorage getStopStorage() {
+        return getInstanceOf(StopStorage.class);
+    }
+
+
+    private static int waitId = 0;
+
+    private static <T> T getInstanceOf(Class<T> clazz) {
+        checkNotMainThread();
+        synchronized (mutex) {
+            Object instance = instances.get(clazz);
+            if (instance != null) return (T) instance;
+
+            if (!latches.containsKey(clazz)) {
+                latches.put(clazz, new CountDownLatch(1));
+            }
+        }
+
+        int id = waitId++;
         try {
-            readyLatch.await();
-            Log.d("IdStorage", "Freed up waiting thread");
+            Log.d("IdStorage", "Waiting for " + clazz + " (" + id + ")");
+            latches.get(clazz).await();
+            Log.d("IdStorage", "Freed up waiting thread for " + clazz + " (" + id + ")");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
-
-        return storage;
+        synchronized (mutex) {
+            return (T) instances.get(clazz);
+        }
     }
 
+    private static void checkNotMainThread() {
+        if (Looper.getMainLooper().isCurrentThread()) {
+            throw new RuntimeException("Should be called from background thread since it can be blocking");
+        }
+    }
 
 }

@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mhdstuff.ItemAdapter;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.parsing.storage.IdStorage;
+import com.example.mhdstuff.parsing.storage.StopStorage;
 import com.example.mhdstuff.parsing.types.Stop;
 import com.example.mhdstuff.util.FuzzySearch;
 
@@ -61,10 +62,11 @@ public class SearchActivity extends BaseActivity {
 
 
         new Thread(() -> {
-            IdStorage storage = IdStorage.getInstance();
-            allItems = new ArrayList<>(storage.stopStorage().getAllStops());
+            StopStorage storage = IdStorage.getStopStorage();
+
+            allItems = new ArrayList<>(storage.getAllStops());
             allItems.sort(Comparator.comparing(s -> s.name().toLowerCase()));
-            search = storage.stopStorage().getSearcher();
+            search = storage.getSearcher();
 
             filteredItems = new ArrayList<>(allItems);
 
