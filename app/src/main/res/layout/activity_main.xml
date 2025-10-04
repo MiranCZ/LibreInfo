@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:showDividers="middle"
-    android:divider="@drawable/divider"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    tools:context=".activity.MainActivity">
+    android:layout_height="match_parent">
+
+    <LinearLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@drawable/divider"
+        android:orientation="vertical"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:showDividers="middle"
+        tools:context=".activity.MainActivity">
 
         <Button
             android:id="@+id/open_departures"
@@ -19,8 +25,7 @@
             android:layout_marginTop="10dp"
             android:text="@string/departures"
             app:icon="@drawable/bus_light_full"
-            app:iconSize="24dp"
-            />
+            app:iconSize="24dp" />
 
         <Button
             android:id="@+id/open_map"
@@ -29,8 +34,7 @@
             android:layout_height="wrap_content"
             android:text="@string/vehicle_map"
             app:icon="@drawable/location_arrow"
-            app:iconSize="24dp"
-            />
+            app:iconSize="24dp" />
 
         <Button
             android:id="@+id/open_vehicles"
@@ -39,8 +43,7 @@
             android:layout_height="wrap_content"
             android:text="@string/vehicles"
             app:icon="@drawable/list_ul_regular"
-            app:iconSize="24dp"
-            />
+            app:iconSize="24dp" />
 
         <Button
             android:id="@+id/open_events"
@@ -49,8 +52,7 @@
             android:layout_height="wrap_content"
             android:text="@string/events"
             app:icon="@drawable/bolt_regular"
-            app:iconSize="24dp"
-            />
+            app:iconSize="24dp" />
 
         <Button
             android:id="@+id/open_diversions"
@@ -59,8 +61,7 @@
             android:layout_height="wrap_content"
             android:text="@string/diversions"
             app:icon="@drawable/triangle_exclamation_regular"
-            app:iconSize="24dp"
-            />
+            app:iconSize="24dp" />
 
         <Button
             android:id="@+id/open_news"
@@ -69,8 +70,7 @@
             android:layout_height="wrap_content"
             android:text="@string/news"
             app:icon="@drawable/message_lines_regular"
-            app:iconSize="24dp"
-            />
+            app:iconSize="24dp" />
 
         <Button
             android:id="@+id/open_schemes"
@@ -79,8 +79,7 @@
             android:layout_height="wrap_content"
             android:text="@string/schemes"
             app:icon="@drawable/code_fork_regular"
-            app:iconSize="24dp"
-            />
+            app:iconSize="24dp" />
 
         <Button
             android:id="@+id/open_settings"
@@ -89,8 +88,7 @@
             android:layout_height="wrap_content"
             android:text="@string/settings"
             app:icon="@drawable/gear_regular"
-            app:iconSize="24dp"
-            />
+            app:iconSize="24dp" />
 
         <Button
             android:id="@+id/open_about"
@@ -99,17 +97,16 @@
             android:layout_height="wrap_content"
             android:text="@string/about"
             app:icon="@drawable/circle_info_regular"
-            app:iconSize="24dp"
-            />
+            app:iconSize="24dp" />
 
         <!-- empty button to add line after the last element-->
         <Button
+            style="@style/MyButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            style="@style/MyButtonStyle"
             android:clickable="false"
-            android:focusable="false"
-                />
+            android:focusable="false" />
 
 
-</LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

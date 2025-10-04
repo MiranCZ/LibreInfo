@@ -10,8 +10,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.devtest.LineListActivity;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends BaseActivity {
 
+
+    public SettingsActivity() {
+        super("Nastavení");
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -23,8 +27,7 @@ public class SettingsActivity extends AppCompatActivity {
         Button devSettings = findViewById(R.id.open_dev_settings);
 
         devSettings.setOnClickListener(view -> {
-            Intent intent = new Intent(SettingsActivity.this, LineListActivity.class);
-            startActivity(intent);
+            startActivity(LineListActivity.class);
         });
     }
 }

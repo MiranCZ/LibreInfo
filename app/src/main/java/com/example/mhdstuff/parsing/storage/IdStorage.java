@@ -24,7 +24,7 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
 
     private static final Object mutex = new Object();
     private static IdStorage storage;
-    private static final List<Pair<Consumer<?>, Activity>> listeners = new ArrayList<>();
+    private static final Map<Class<?>, List<Pair<Consumer<?>, Activity>>> listeners = new HashMap<>();
     private static final Map<Class<?>, CountDownLatch> latches = new HashMap<>();
     private static final Map<Class<?>, Object> instances = new HashMap<>();
     private static boolean initCalled = false;
@@ -55,9 +55,11 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
                 CacheHelper.getCalendar(context), CacheHelper.getCalendarDates(context)
         );
 
-
-        storage = new IdStorage(lineStorage, stopStorage, postStorage, tripStorage, routeStopStorage, calendarStorage);
-        onLoaded(IdStorage.class, storage);
+        synchronized (mutex) {
+            storage = new IdStorage(lineStorage, stopStorage, postStorage, tripStorage, routeStopStorage, calendarStorage);
+            System.out.println("Saying on loaded");
+            onLoaded(IdStorage.class, storage);
+        }
 
         Log.d("IdStorage", "Initialized in " + (System.currentTimeMillis() - ms) + "ms");
     }
@@ -89,19 +91,21 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
             }
             instances.put(clazz, instance);
 
-            for (var pair : listeners) {
+            for (var pair : listeners.getOrDefault(clazz, List.of())) {
                 //noinspection unchecked
                 Consumer<T> listener = (Consumer<T>) pair.left();
 
+                System.out.println("LISTENER FREED ");
                 pair.right().runOnUiThread(() -> listener.accept(instance));
             }
-            listeners.clear();
+            listeners.getOrDefault(clazz, List.of()).clear();
         }
     }
 
     private static <T> void listen(Class<T> clazz, Consumer<T> consumer, Activity activity) {
         synchronized (mutex) {
-            listeners.add(new Pair<>(consumer, activity));
+            Log.d("IdStorage", "Listening for " + clazz);
+            listeners.computeIfAbsent(clazz, k -> new ArrayList<>()).add(new Pair<>(consumer, activity));
             if (!latches.containsKey(clazz)) {
                 latches.put(clazz, new CountDownLatch(1));
             }
