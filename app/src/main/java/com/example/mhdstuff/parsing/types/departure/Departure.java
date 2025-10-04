@@ -8,16 +8,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.mhdstuff.R;
-import com.example.mhdstuff.parsing.storage.LineStorage;
-import com.example.mhdstuff.parsing.types.TypeHelper;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.example.mhdstuff.activity.BaseActivity;
 
 import java.util.List;
 
 public record Departure(int postID, String name, List<DepartureEntry> entries) {
 
-    public View createDepartureView(ViewGroup parent, Context context) {
+    public View createDepartureView(BaseActivity activity, ViewGroup parent, Context context) {
         View view = LayoutInflater.from(context).inflate(R.layout.departure_layout, parent , false);
 
         TextView title = view.findViewById(R.id.departure_title);
@@ -27,7 +24,7 @@ public record Departure(int postID, String name, List<DepartureEntry> entries) {
 
         int index = 0;
         for (DepartureEntry entry : entries) {
-            View v = entry.createDepartureEntryView(items, context);
+            View v = entry.createDepartureEntryView(activity, items, context);
             items.addView(v, index++);
         }
 

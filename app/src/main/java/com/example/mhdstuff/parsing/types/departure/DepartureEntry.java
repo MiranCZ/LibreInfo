@@ -10,8 +10,11 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.activity.BaseActivity;
+import com.example.mhdstuff.activity.VehicleMapActivity;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.TimeMark;
@@ -41,7 +44,7 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
         return new DepartureEntry(line, finalStop, postID , lowFloor, timeMark, vehicle);
     }
 
-    public View createDepartureEntryView(ViewGroup parent, Context context) {
+    public View createDepartureEntryView(BaseActivity activity, ViewGroup parent, Context context) {
         View view = LayoutInflater.from(context).inflate(R.layout.departure_entry_layout, parent , false);
 
         FrameLayout icon = view.findViewById(R.id.departure_line_icon);
@@ -66,8 +69,16 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
             spannable.setSpan(new ForegroundColorSpan(color), 0, spannable.length(), 0);
 
             arrival.setText(spannable);
+
+            view.setOnClickListener(v -> activity.startActivity(VehicleMapActivity.class, intent -> {
+                intent.putExtra("following", vehicle.id());
+                intent.putExtra("lat", vehicle.location().latitude());
+                intent.putExtra("lng", vehicle.location().longitude());
+            }));
         } else {
             arrival.setText(arrivalText);
+
+            view.setOnClickListener(v -> Toast.makeText(context, "Vozidlo nelze zobrazit na mapě", Toast.LENGTH_SHORT).show());
         }
 
         if (timeMark.isLeaving()) {

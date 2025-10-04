@@ -194,7 +194,7 @@ public class DeparturesActivity extends BaseActivity {
             runOnUiThread(() -> {
                 for (int i = 0; i < viewsPerFrame && !departureList.isEmpty(); i++) {
                     Departure departure = departureList.remove(0);
-                    layout.addView(departure.createDepartureView(layout, context), index.getAndIncrement());
+                    layout.addView(departure.createDepartureView(this, layout, context), index.getAndIncrement());
                 }
                 latch.countDown();
             });
