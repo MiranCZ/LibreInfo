@@ -8,10 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import androidx.core.content.ContextCompat;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.parsing.storage.IdStorage;
@@ -131,7 +128,7 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         icon.addView(line.createLineIconView(icon, context),0);
 
         TextView heading = view.findViewById(R.id.vehicle_heading);
-        heading.setText(finalStop.name());
+        heading.setText(finalStop.name);
 
         return view;
     }
@@ -154,7 +151,7 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
     }
 
     public String getFinalStopText() {
-        return finalStopName.orElseGet(finalStop::name);
+        return finalStopName.orElseGet(() -> finalStop.name);
     }
 
     public SpannableString getDelaySpan() {

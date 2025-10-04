@@ -1,31 +1,47 @@
 package com.example.mhdstuff.parsing.types;
 
-import com.example.mhdstuff.parsing.storage.LineStorage;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import android.content.SharedPreferences;
+
+import com.example.mhdstuff.util.PreferencesHolder;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public record Stop(int id, String name, Location location) {
+public final class Stop {
 
 
-    public static Stop NONE = new Stop(-1, "UNKNOWN", Location.NONE);
+    public static Stop NONE = new Stop(-1, "UNKNOWN", Location.NONE, PreferencesHolder.NONE);
 
-    public static List<Stop> parseStops(DataInputStream is) throws IOException {
+    public final int id;
+    public final String name;
+    public final Location location;
+    private final PreferencesHolder favStops;
+
+    private boolean favourite;
+
+    public Stop(int id, String name, Location location, PreferencesHolder favStops) {
+        this.id = id;
+        this.name = name;
+        this.location = location;
+        this.favStops = favStops;
+        this.favourite = favStops.getBoolean(id, false);
+    }
+
+    public static List<Stop> parseStops(DataInputStream is, PreferencesHolder favStops) throws IOException {
         List<Stop> result = new ArrayList<>();
 
         while (is.readBoolean()) {
-            result.add(parse(is));
+            result.add(parse(is, favStops));
         }
 
         return result;
     }
 
-    public static Stop parse(DataInputStream is) throws IOException {
+    public static Stop parse(DataInputStream is, PreferencesHolder favStops) throws IOException {
         int stopId = is.readInt();
 
         int nameLen = is.readInt();
@@ -41,7 +57,44 @@ public record Stop(int id, String name, Location location) {
         double lat = is.readDouble();
         double lon = is.readDouble();
 
-        return new Stop(stopId, name, new Location(lat, lon));
+        // TODO set favourite
+        return new Stop(stopId, name, new Location(lat, lon), favStops);
+    }
+
+    public void setFavourite(boolean favourite) {
+        this.favourite = favourite;
+        favStops.putBoolean(id, favourite);
+    }
+
+    public boolean isFavourite() {
+        return favourite;
+    }
+
+    public void flush() {
+        favStops.flush();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (Stop) obj;
+        return this.id == that.id &&
+                Objects.equals(this.name, that.name) &&
+                Objects.equals(this.location, that.location);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, location);
+    }
+
+    @Override
+    public String toString() {
+        return "Stop[" +
+                "id=" + id + ", " +
+                "name=" + name + ", " +
+                "location=" + location + ']';
     }
 
 }

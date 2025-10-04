@@ -15,13 +15,11 @@ import static org.maplibre.android.style.layers.PropertyFactory.textSize;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.example.mhdstuff.R;
@@ -53,7 +51,6 @@ import org.maplibre.android.style.layers.PropertyFactory;
 import org.maplibre.android.style.layers.SymbolLayer;
 import org.maplibre.android.style.sources.GeoJsonOptions;
 import org.maplibre.android.style.sources.GeoJsonSource;
-import org.maplibre.android.utils.ColorUtils;
 import org.maplibre.geojson.Feature;
 import org.maplibre.geojson.FeatureCollection;
 import org.maplibre.geojson.Point;
@@ -67,7 +64,6 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 // FIXME the text rendering is still not the best ugh
 // TODO refactor, cleanup
@@ -278,7 +274,7 @@ public class VehicleMapActivity extends BaseActivity {
                 new Thread(() -> {
                     String overpassJson = OverpassDownloader.downloadData(vehicle.line().lineDisplayName());
 
-                    OverpassToGeoJson.GeoJsonPair pair = OverpassToGeoJson.convert(overpassJson, vehicle.finalStop().name());
+                    OverpassToGeoJson.GeoJsonPair pair = OverpassToGeoJson.convert(overpassJson, vehicle.finalStop().name);
 
                     runOnUiThread(() -> {
                         routeSource.setGeoJson(pair.routesGeoJson);

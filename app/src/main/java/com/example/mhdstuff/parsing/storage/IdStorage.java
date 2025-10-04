@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.example.mhdstuff.util.CacheHelper;
 import com.example.mhdstuff.util.Pair;
+import com.example.mhdstuff.util.PreferencesHolder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
+import java.util.prefs.PreferenceChangeEvent;
 
 public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostStorage postStorage,
                         TripStorage tripStorage, RouteStopStorage routeStopStorage,
@@ -33,7 +35,9 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         Log.d("IdStorage", "Initializing...");
         long ms = System.currentTimeMillis();
 
-        StopStorage stopStorage = StopStorage.parse(CacheHelper.getStops(context));
+        var preferences = context.getSharedPreferences("favStops", Context.MODE_PRIVATE);
+
+        StopStorage stopStorage = StopStorage.parse(CacheHelper.getStops(context), new PreferencesHolder(preferences));
         onLoaded(StopStorage.class, stopStorage);
 
         LineStorage lineStorage = LineStorage.parse(CacheHelper.getLineAliases(context));

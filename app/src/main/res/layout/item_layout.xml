@@ -7,7 +7,7 @@
     >
 
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/item_button"
         style="@style/MyButtonStyle"
         android:layout_width="match_parent"

@@ -3,11 +3,11 @@ package com.example.mhdstuff.activity;
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.example.mhdstuff.R;
@@ -22,7 +22,7 @@ import com.example.mhdstuff.parsing.types.Trip;
 import com.example.mhdstuff.parsing.types.departure.Departure;
 import com.example.mhdstuff.parsing.types.departure.DepartureEntry;
 import com.example.mhdstuff.parsing.types.departure.Departures;
-import com.example.mhdstuff.util.request.RequestHelper;
+import com.example.mhdstuff.util.Container;
 import com.example.mhdstuff.util.request.soap.SoapHelper;
 
 import java.time.LocalTime;
@@ -44,7 +44,7 @@ public class DeparturesActivity extends BaseActivity {
     private final Stop stop;
 
     public DeparturesActivity() {
-        super(StopDataHolder.getStop().name());
+        super(StopDataHolder.getStop().name);
         stop = StopDataHolder.getStop();
     }
 
@@ -54,12 +54,35 @@ public class DeparturesActivity extends BaseActivity {
 
         setContentView(R.layout.activity_departures);
 
+        Container<View> heartFullCont = new Container<>();
+        View heartEmpty = addButtonIcon(R.drawable.heart_regular, v -> {
+            v.setVisibility(View.GONE);
+            heartFullCont.item.setVisibility(View.VISIBLE);
+
+            stop.setFavourite(true);
+        });
+
+        View heartFull = addButtonIcon(R.drawable.heart_solid, v -> {
+            heartEmpty.setVisibility(View.VISIBLE);
+            v.setVisibility(View.GONE);
+
+            stop.setFavourite(false);
+        }, false);
+
+        heartFullCont.item = heartFull;
+
+        if (stop.isFavourite()) {
+            heartEmpty.setVisibility(View.GONE);
+        } else {
+            heartFull.setVisibility(View.GONE);
+        }
+
         Context context = this;
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();
 
             Departures departures = Departures.parse(
-                    SoapHelper.getDepartures(stop.id()), SoapHelper.getVehicles(), stop.id(), storage
+                    SoapHelper.getDepartures(stop.id), SoapHelper.getVehicles(), stop.id, storage
             );
 
             // fallback to offline if something went wrong
@@ -76,7 +99,7 @@ public class DeparturesActivity extends BaseActivity {
 
     private Departures getOffline(IdStorage storage) {
         long ms = System.currentTimeMillis();
-        RouteStop[] stops = storage.routeStopStorage().getRouteStopsParsed(stop.id());
+        RouteStop[] stops = storage.routeStopStorage().getRouteStopsParsed(stop.id);
         System.out.println("Calculating stops took "+(System.currentTimeMillis()-ms)+"ms");
 
         CalendarStorage calendarStorage = storage.calendarStorage();
@@ -134,7 +157,7 @@ public class DeparturesActivity extends BaseActivity {
             if (!departureEntries.isEmpty()) {
                 Departure departure = new Departure(
                         postId,
-                        storage.postStorage().getPost(stop.id(), postId).name(),
+                        storage.postStorage().getPost(stop.id, postId).name(),
                         departureEntries
                 );
                 result.add(departure);
@@ -181,5 +204,12 @@ public class DeparturesActivity extends BaseActivity {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        stop.flush();
     }
 }

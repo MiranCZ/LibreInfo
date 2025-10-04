@@ -1,7 +1,5 @@
 package com.example.mhdstuff;
 
-import android.content.Context;
-import android.content.Intent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -14,7 +12,6 @@ import com.example.mhdstuff.activity.listview.AbstractItemAdapter;
 import com.example.mhdstuff.parsing.types.Vehicle;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class VehicleItemAdapter extends AbstractItemAdapter<Vehicle, VehicleItemAdapter.VehicleItemHolder> {
 
@@ -44,7 +41,7 @@ public class VehicleItemAdapter extends AbstractItemAdapter<Vehicle, VehicleItem
         holder.vehicleHeading.setText(item.getFinalStopText());
         holder.vehicleDelay.setText(item.getDelaySpan());
 
-        holder.vehicleNextStop.setText(item.lastStop().name());
+        holder.vehicleNextStop.setText(item.lastStop().name);
 
         holder.layout.setOnClickListener(view -> {
             parent.startActivity(VehicleMapActivity.class, intent -> {

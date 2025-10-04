@@ -1,7 +1,10 @@
 package com.example.mhdstuff.parsing.storage;
 
+import android.content.SharedPreferences;
+
 import com.example.mhdstuff.parsing.types.Stop;
 import com.example.mhdstuff.util.FuzzySearch;
+import com.example.mhdstuff.util.PreferencesHolder;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -11,10 +14,10 @@ import java.util.Map;
 
 public class StopStorage {
 
-    public static StopStorage parse(DataInputStream is) {
+    public static StopStorage parse(DataInputStream is, PreferencesHolder favStops) {
         List<Stop> stops;
         try(is) {
-            stops = Stop.parseStops(is);
+            stops = Stop.parseStops(is, favStops);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -26,17 +29,16 @@ public class StopStorage {
 
     private final List<Stop> stops;
     private final Map<Integer, Stop> idToStop = new HashMap<>();
-
     private final FuzzySearch<Stop> searcher;
 
 
     public StopStorage(List<Stop> stops) {
         this.stops = stops;
         for (Stop stop : stops) {
-            idToStop.put(stop.id(), stop);
+            idToStop.put(stop.id, stop);
         }
 
-        this.searcher = new FuzzySearch<>(stops, Stop::name);
+        this.searcher = new FuzzySearch<>(stops, stop -> stop.name);
     }
 
     public Stop getStop(int id) {

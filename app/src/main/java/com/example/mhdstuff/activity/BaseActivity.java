@@ -66,14 +66,20 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
-    protected void addButtonIcon(int iconResId, View.OnClickListener listener) {
+    protected View addButtonIcon(int iconResId, View.OnClickListener listener) {
+        return addButtonIcon(iconResId, listener, true);
+    }
+
+    protected View addButtonIcon(int iconResId, View.OnClickListener listener, boolean addTint) {
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         AppCompatImageButton button = new AppCompatImageButton(this);
 
         button.setImageResource(iconResId);
 
-        int tintColor = ContextCompat.getColor(this, R.color.light_blue);
-        DrawableCompat.setTint(button.getDrawable().mutate(), tintColor);
+        if (addTint) {
+            int tintColor = ContextCompat.getColor(this, R.color.light_blue);
+            DrawableCompat.setTint(button.getDrawable().mutate(), tintColor);
+        }
 
         int sizePx = dpToPx(50);
         Toolbar.LayoutParams params = new Toolbar.LayoutParams(sizePx, sizePx);
@@ -88,6 +94,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         button.setOnClickListener(listener);
 
         toolbar.addView(button);
+
+        return button;
     }
 
     private int dpToPx(int dp) {
