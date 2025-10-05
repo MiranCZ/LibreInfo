@@ -46,6 +46,12 @@
             android:name=".activity.NewsActivity"
             android:parentActivityName=".activity.MainActivity">
         </activity>
+
+        <activity
+            android:name=".activity.AboutActivity"
+            android:parentActivityName=".activity.MainActivity">
+        </activity>
+
         <activity
             android:name=".activity.DiversionsActivity"
             android:parentActivityName=".activity.MainActivity">

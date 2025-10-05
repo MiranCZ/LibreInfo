@@ -13,4 +13,5 @@
     <string name="ascending">Vzestupně</string>
     <string name="descending">Sestupně</string>
     <string name="sort_by">Řadit podle</string>
+    <string name="about_text">Neoficiální aplikace pro mhd v Brně. Aplikace byla vytvořena kvůli katastrofálnímu stavu oficiální nové aplikace DPMBinfo. Veškerá data jsou získávána z veřejných zdrojů (plus mínus).</string>
 </resources>

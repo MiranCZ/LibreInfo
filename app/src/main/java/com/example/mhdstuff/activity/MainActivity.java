@@ -31,6 +31,7 @@ public class MainActivity extends BaseActivity {
         Button buttonOpenNews = findViewById(R.id.open_news);
         Button buttonOpenDiversions = findViewById(R.id.open_diversions);
         Button buttonOpenSettings = findViewById(R.id.open_settings);
+        Button buttonOpenAbout = findViewById(R.id.open_about);
 
         buttonOpenSearch.setOnClickListener(v -> startActivity(SearchActivity.class));
         buttonOpenNews.setOnClickListener(v -> startActivity(NewsActivity.class));
@@ -39,5 +40,6 @@ public class MainActivity extends BaseActivity {
         buttonOpenSettings.setOnClickListener(v -> startActivity(SettingsActivity.class));
         buttonOpenDiversions.setOnClickListener(view -> startActivity(DiversionsActivity.class));
         buttonOpenEvents.setOnClickListener(view -> startActivity(EventsActivity.class));
+        buttonOpenAbout.setOnClickListener(view -> startActivity(AboutActivity.class));
     }
 }
