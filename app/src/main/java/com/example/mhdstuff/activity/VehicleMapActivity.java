@@ -129,8 +129,8 @@ public class VehicleMapActivity extends BaseActivity {
             map.getUiSettings().setRotateGesturesEnabled(false);
             map.getUiSettings().setCompassEnabled(false);
 
-            var stopBitmap = toBitmap(context, R.drawable.map_pin_regular);
-            var busBitmap = toBitmap(context, R.drawable.vehicle_arrow);
+            var stopBitmap = toBitmap(context, R.drawable.stop, 64);
+            var busBitmap = toBitmap(context, R.drawable.vehicle_arrow, 96);
 
             map.setStyle("https://api.maptiler.com/maps/basic-v2/style.json?key=U4nGAJfk1oEvXcTaX02N");
 
@@ -273,9 +273,9 @@ public class VehicleMapActivity extends BaseActivity {
     }
 
     @NonNull
-    private static Bitmap toBitmap(Context context, int id) {
+    private static Bitmap toBitmap(Context context, int id, int size) {
         var drawable = AppCompatResources.getDrawable(context, id);
-        var bitmap = Bitmap.createBitmap(96, 96, Bitmap.Config.ARGB_8888);
+        var bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         var canvas = new Canvas(bitmap);
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);

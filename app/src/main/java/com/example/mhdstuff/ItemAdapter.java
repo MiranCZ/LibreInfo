@@ -53,7 +53,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ButtonViewHold
             holder.button.setIconResource(R.drawable.heart_solid);
             holder.button.setIconTint(null);
         } else {
-            holder.button.setIconResource(R.drawable.map_pin_regular);
+            holder.button.setIconResource(R.drawable.stop);
             holder.button.setIconTint(lightBlue);
         }
 
