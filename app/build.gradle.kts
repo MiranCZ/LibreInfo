@@ -43,7 +43,7 @@ dependencies {
     implementation("com.google.android.flexbox:flexbox:3.0.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation(libs.gson)
-    implementation("org.maplibre.gl:android-sdk:11.13.0")
+    implementation("org.maplibre.gl:android-sdk:12.0.0")
     implementation("org.maplibre.gl:android-plugin-annotation-v9:3.0.2")
     implementation("com.google.code.ksoap2-android:ksoap2-android:3.6.4")
     implementation("org.jsoup:jsoup:1.21.2")

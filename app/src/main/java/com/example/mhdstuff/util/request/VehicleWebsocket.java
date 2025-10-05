@@ -36,16 +36,15 @@ public class VehicleWebsocket {
             System.out.println("Removign "+listener);
             listeners.remove(listener);
         }
+        listenerMap.remove(clazz);
 
-        System.out.println("UNSUB "+listeners.size());
-        listeners.clear(); // FIXME
-//        if (listeners.isEmpty()) {
+        if (listeners.isEmpty()) {
             if (socket != null) {
                 System.out.println("Closed...");
                 socket.close(1000, "Client closing");
                 socket = null;
             }
-//        }
+        }
     }
 
     private static void createWebsocket() {

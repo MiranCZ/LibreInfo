@@ -79,6 +79,7 @@ public class VehicleMapActivity extends BaseActivity {
     GeoJsonSource routeSource;
     LineLayer routeLayer;
     IdStorage storage;
+    CustomSymbolManager stopLayer;
 
     public VehicleMapActivity() {
         super("Poloha vozidel");
@@ -165,41 +166,9 @@ public class VehicleMapActivity extends BaseActivity {
 
                 style.addSource(source);
 
-                CustomSymbolManager stopLayer = new CustomSymbolManager(mapView,map, style);
+                stopLayer = new CustomSymbolManager(mapView,map, style);
                 stopLayer.getLayer().setMinZoom(13f);
                 stopLayer.setIconAllowOverlap(false);
-
-                /*new Thread(() -> {
-                    String overpassJson = OverpassDownloader.downloadData("1");
-                    OverpassToGeoJson.GeoJsonPair pair = OverpassToGeoJson.convert(overpassJson,);
-
-                    runOnUiThread(() -> {
-                    // Add route source + line layer
-                    routeSource = new GeoJsonSource(ROUTE_SOURCE_ID, pair.routesGeoJson);
-
-
-                    LineLayer routeLayer = new LineLayer(ROUTE_LAYER_ID, ROUTE_SOURCE_ID);
-                    routeLayer.setProperties(
-                            PropertyFactory.lineColor(ColorUtils.colorToRgbaString(Color.RED)), // or "#ff0000"
-                            PropertyFactory.lineWidth(4f)
-                    );
-
-                        System.out.println(pair.routesGeoJson);
-
-                        style.addSource(routeSource);
-                        style.addLayer(routeLayer);
-                    });
-                }).start();*/
-
-//                SymbolLayer l = new SymbolLayer("symbol-layer", "points-source");
-//                l.setProperties(
-//                        iconImage("bus_icon"),
-//                        iconColor(Expression.get("color")),
-//                        iconSize(1.25f),
-//                        iconRotate(Expression.get("bearing")),
-//                        iconAllowOverlap(true)
-//
-//                 );
 
                 SymbolLayer text = new SymbolLayer("text-layer", "points-source");
                 text.setProperties(
@@ -217,7 +186,6 @@ public class VehicleMapActivity extends BaseActivity {
                 );
 
                 style.addLayer(text);
-//                style.addLayerAbove(text, "symbol-layer");
 
                 onReady.accept(source, map);
 
@@ -230,8 +198,9 @@ public class VehicleMapActivity extends BaseActivity {
 
 
 
+                SymbolOptions def = new SymbolOptions().withIconImage("stop_icon").withIconSize(1f).withIconAnchor("bottom");
                 for (Post post : storage.postStorage().getAllPosts()) {
-                    SymbolOptions options = new SymbolOptions().withLatLng(post.location().toLatLng()).withIconImage("stop_icon").withIconSize(1f).withIconAnchor("bottom");
+                    SymbolOptions options = def.withLatLng(post.location().toLatLng());
                     stopLayer.create(options);
                 }
 
@@ -293,6 +262,11 @@ public class VehicleMapActivity extends BaseActivity {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
+                if (mapView == null) {
+                    cancel();
+                    return;
+                }
+
                 runOnUiThread(() -> source.setGeoJson(FeatureCollection.fromFeatures(vehicleFeatureMap.values().toArray(new Feature[0]))));
             }
         },0, 2_000);
@@ -354,13 +328,24 @@ public class VehicleMapActivity extends BaseActivity {
     protected void onStop() {
         super.onStop();
         mapView.onStop();
-        VehicleWebsocket.unsubscribe(VehicleWebsocket.class);
+        VehicleWebsocket.unsubscribe(VehicleMapActivity.class);
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        if (stopLayer != null) {
+            stopLayer.deleteAll();
+            stopLayer.onDestroy();
+            stopLayer = null;
+        }
+
         mapView.onDestroy();
+        timer.cancel();
+        super.onDestroy();
+        mapView = null;
+        vehicleFeatureMap.clear();
+        routeLayer = null;
+        routeSource = null;
     }
 
     @Override
