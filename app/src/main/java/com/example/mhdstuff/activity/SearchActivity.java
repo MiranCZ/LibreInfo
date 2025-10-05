@@ -131,7 +131,7 @@ public class SearchActivity extends BaseActivity {
         System.out.println("quering "+query);
 
         if (query.isEmpty()) {
-            sortAndSubmitAll();
+            sortAndSubmitAll(true);
         } else {
             long millis = System.currentTimeMillis();
 
@@ -163,11 +163,15 @@ public class SearchActivity extends BaseActivity {
 
         if (adapter != null) {
             // in case favourite stop was edited
-            sortAndSubmitAll();
+            sortAndSubmitAll(true);
         }
     }
 
     private void sortAndSubmitAll() {
+        sortAndSubmitAll(false);
+    }
+
+    private void sortAndSubmitAll(boolean hardUpdate) {
         List<Stop> favourite = new ArrayList<>();
         List<Stop> rest = new ArrayList<>();
 
@@ -182,7 +186,11 @@ public class SearchActivity extends BaseActivity {
         System.out.println("SORTED "+ favourite.size() + " ; "+rest.size());
         rest.addAll(0, favourite);
 
-        adapter.submitList(rest);
+        if (hardUpdate) {
+            adapter.submitListAndReload(rest);
+        } else {
+            adapter.submitList(rest);
+        }
     }
 
 }

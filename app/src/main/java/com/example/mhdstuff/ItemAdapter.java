@@ -65,6 +65,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ButtonViewHold
         return items == null ? 0 : items.size();
     }
 
+
+    public void submitListAndReload(List<Stop> list) {
+        this.items = list;
+        notifyDataSetChanged();
+    }
+
     public void submitList(List<Stop> list) {
         this.items = list;
 
