@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 public class LineStorage {
@@ -87,6 +88,10 @@ public class LineStorage {
         LineAlias alias = nameToAlias.get(name);
         if (alias == null) return new LineAlias(0, name, 0,"",0,"");
         return alias;
+    }
+
+    public Optional<LineAlias> getOptionalAlias(String name) {
+        return Optional.ofNullable(nameToAlias.get(name));
     }
 
     public TransportLine getLine(int id) {

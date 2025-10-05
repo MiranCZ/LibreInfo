@@ -17,6 +17,7 @@ import com.example.mhdstuff.R;
 import com.example.mhdstuff.VehicleItemAdapter;
 import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
 import com.example.mhdstuff.parsing.storage.IdStorage;
+import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.example.mhdstuff.parsing.types.Vehicle;
 import com.example.mhdstuff.util.request.soap.SoapHelper;
 
@@ -27,7 +28,7 @@ public class VehiclesListActivity extends AbstractListViewActivity {
 
     private VehicleItemAdapter adapter;
     private List<Vehicle> vehicles;
-
+    private IdStorage storage;
     private final SortInfo sortInfo = new SortInfo();
 
     public VehiclesListActivity() {
@@ -69,14 +70,15 @@ public class VehiclesListActivity extends AbstractListViewActivity {
 
     private void updateSort() {
         final int multiplier = sortInfo.ascending ? 1 : -1;
+        LineStorage lineStorage = storage.lineStorage();
 
         switch (sortInfo.sortBy) {
 
-            case LINE -> vehicles.sort(Comparator.comparing(v -> v.line().id() * multiplier));
+            case LINE -> vehicles.sort(Comparator.comparing(v -> v.line().getSortKey(lineStorage) * multiplier));
             case VEHICLE_NUM -> vehicles.sort(Comparator.comparing(v -> v.id() * multiplier));
             case COURSE -> vehicles.sort(Comparator.comparing(v -> v.course() * multiplier));
             case DELAY -> {
-                vehicles.sort(Comparator.comparing(v -> v.line().id() * multiplier));
+                vehicles.sort(Comparator.comparing(v -> v.line().getSortKey(lineStorage) * multiplier));
                 vehicles.sort(Comparator.comparing(v -> v.delay() * multiplier));
             }
         }
@@ -146,6 +148,7 @@ public class VehiclesListActivity extends AbstractListViewActivity {
 
     @Override
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
+        this.storage = storage;
         vehicles = Vehicle.parseVehicles(SoapHelper.getVehicles(), storage);
 
         adapter = new VehicleItemAdapter(vehicles, this);

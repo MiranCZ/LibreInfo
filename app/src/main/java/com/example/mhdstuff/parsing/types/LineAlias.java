@@ -19,6 +19,7 @@ import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public record LineAlias(int id, String lineDisplayName, int backgroundColor, String backgroundColorStr, int textColor, String textColorStr) {
@@ -114,6 +115,37 @@ public record LineAlias(int id, String lineDisplayName, int backgroundColor, Str
         int color = Color.parseColor(colorStr);
 
         return new LineAlias(id, lineDisplayName, color, colorStr, textColor, textColorStr);
+    }
+
+    public int getSortKey(LineStorage storage) {
+        int base = id*10;
+
+        if (lineDisplayName.equals(String.valueOf(id))) {
+            return base;
+        }
+
+        List<Character> prefixes = List.of('x','E', 'P', 'H');
+
+        for (int i = 0; i < prefixes.size(); i++) {
+            Character ch = prefixes.get(i);
+
+            if (lineDisplayName.startsWith(ch + "")) {
+                String subStr = lineDisplayName.substring(1);
+
+                Optional<LineAlias> other = storage.getOptionalAlias(subStr);
+                if (other.isPresent()) {
+                    return other.get().getSortKey(storage)+i+1;
+                }
+
+                if (TypeHelper.isInteger(subStr)) {
+                    return Integer.parseInt(subStr)*10;
+                }
+                return base;
+            }
+        }
+
+
+        return base;
     }
 
     public JsonObject toJson() {
