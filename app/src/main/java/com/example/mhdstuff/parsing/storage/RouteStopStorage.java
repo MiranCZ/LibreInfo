@@ -38,8 +38,11 @@ public class RouteStopStorage {
     }
 
 
+    private static final int ROUTE_STOP_SIZE_BYTES = Integer.BYTES + 2 * Short.BYTES + 4 * Byte.BYTES;
     private final Map<Integer, int[]> stopIdToRouteStops;
+    private final byte[] buffer = new byte[ROUTE_STOP_SIZE_BYTES];
     private final RandomAccessFile routeStops;
+
 
     private RouteStopStorage(Map<Integer, int[]> stopIdToRoute, RandomAccessFile routeStops) {
         this.stopIdToRouteStops = stopIdToRoute;
@@ -59,15 +62,14 @@ public class RouteStopStorage {
         }
     }
 
-    private RouteStop[] getRouteStopsParsedInternal(int stopId) throws IOException {
-        final int ROUTE_STOP_SIZE_BYTES = Integer.BYTES + 2 * Short.BYTES + 4 * Byte.BYTES;
 
+    private RouteStop[] getRouteStopsParsedInternal(int stopId) throws IOException {
         int[] routes = getRouteStops(stopId);
+        if (routes.length == 0) return new RouteStop[0];
 
         RouteStop[] results = new RouteStop[routes.length];
 
         // bulk-reading like this saves a LOT of time
-        byte[] buffer = new byte[ROUTE_STOP_SIZE_BYTES];
         for (int i = 0, routesLength = routes.length; i < routesLength; i++) {
             int routeId = routes[i];
             long pos = (long) (ROUTE_STOP_SIZE_BYTES) * routeId;

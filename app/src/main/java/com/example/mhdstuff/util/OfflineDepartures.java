@@ -34,6 +34,8 @@ public class OfflineDepartures {
 
         List<Departure> result = new ArrayList<>();
 
+        CalendarStorage.Date nowDate = CalendarStorage.Date.now();
+
         for (Map.Entry<Short, List<RouteStop>> entry : postToStop.entrySet()) {
             int postId = entry.getKey();
 
@@ -47,7 +49,6 @@ public class OfflineDepartures {
 
             entries.sort(Comparator.comparing(RouteStop::departure));
 
-
             Set<RouteStop> found = new HashSet<>();
             for (RouteStop stop : entries) {
                 if (found.contains(stop)) continue;
@@ -58,7 +59,7 @@ public class OfflineDepartures {
                     Trip trip = storage.tripStorage().getTrips()[stop.tripId()];;
                     String heading = storage.tripStorage().getTripHeadsign(trip);
 
-                    if (!calendarStorage.available(trip.serviceId())) continue;
+                    if (!calendarStorage.available(nowDate, trip.serviceId())) continue;
 
                     TimeMark timeMark = new TimeMark(
                             LocalTime.now().plusMinutes(stop.departure().getMinsDiff(Time.now())),

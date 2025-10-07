@@ -1,5 +1,7 @@
 package com.example.mhdstuff.parsing.storage;
 
+import android.util.Log;
+
 import com.example.mhdstuff.util.Csv;
 import com.example.mhdstuff.util.CsvHelper;
 
@@ -82,18 +84,24 @@ public class CalendarStorage {
         this.exceptions = exceptions;
     }
 
-    public boolean available(int serviceId) {
-        Date now = Date.now();
-        if (exceptions.containsKey(serviceId)) {
-            Map<Date, ExceptionType> map = exceptions.get(serviceId);
-            if (map.containsKey(now)) {
-                ExceptionType type = map.get(now);
+    public boolean available(Date date, int serviceId) {
+        Map<Date, ExceptionType> map = exceptions.get(serviceId);
+
+        if (map != null) {
+            if (map.containsKey(date)) {
+                ExceptionType type = map.get(date);
 
                 return type == ExceptionType.ADDED;
             }
         }
+        CalendarEntry entry = serviceToCalendar.get(serviceId);
 
-        return serviceToCalendar.get(serviceId).availableToday();
+        if (entry == null) {
+            Log.w("CalendarStorage", "entry for "+serviceId+" is not present!");
+            return false;
+        }
+
+        return entry.availableOn(date);
     }
 
     private enum ExceptionType {
@@ -105,9 +113,8 @@ public class CalendarStorage {
                                 boolean saturday, boolean sunday,
                                 Date from, Date to) {
 
-        public boolean availableToday() {
-            Date now = Date.now();
-            if (!now.isBetween(from, to)) return false;
+        public boolean availableOn(Date date) {
+            if (!date.isBetween(from, to)) return false;
 
             LocalDateTime dt = LocalDateTime.now();
 
