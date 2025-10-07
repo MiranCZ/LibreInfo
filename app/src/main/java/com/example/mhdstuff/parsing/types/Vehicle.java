@@ -170,7 +170,7 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         if (delay == 0) {
             color = Color.GREEN;
         } else if (delay < 3) {
-            color = Color.YELLOW;
+            color = 0xFFEED000;
         } else if (delay < 5) {
             color = 0xFFFFA500; //orange
         } else if (delay < 10){
