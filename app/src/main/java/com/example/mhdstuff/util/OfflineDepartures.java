@@ -22,6 +22,9 @@ import java.util.Set;
 public class OfflineDepartures {
 
     public static List<Departure> getOffline(IdStorage storage, int stopId) {
+        return getOffline(storage, stopId, 5);
+    }
+    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize) {
         RouteStop[] stops = storage.routeStopStorage().getRouteStopsParsed(stopId);
 
         CalendarStorage calendarStorage = storage.calendarStorage();
@@ -54,7 +57,7 @@ public class OfflineDepartures {
                 if (found.contains(stop)) continue;
                 found.add(stop);
 
-                if (ind > 4) break;
+                if (ind > (maxSize-1)) break;
                 if (now.compareTo(stop.departure()) <= 0) {
                     Trip trip = storage.tripStorage().getTrips()[stop.tripId()];;
                     String heading = storage.tripStorage().getTripHeadsign(trip);

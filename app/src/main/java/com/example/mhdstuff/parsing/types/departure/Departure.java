@@ -14,8 +14,15 @@ import java.util.List;
 
 public record Departure(int postID, String name, List<DepartureEntry> entries) {
 
+    public View createScrollableDepartureView(BaseActivity activity, ViewGroup parent, Context context) {
+        return createDepartureView(activity, parent, context, R.layout.departure_scrollable_layout);
+    }
+
     public View createDepartureView(BaseActivity activity, ViewGroup parent, Context context) {
-        View view = LayoutInflater.from(context).inflate(R.layout.departure_layout, parent , false);
+        return createDepartureView(activity, parent, context, R.layout.departure_layout);
+    }
+    private View createDepartureView(BaseActivity activity, ViewGroup parent, Context context, int layoutId) {
+        View view = LayoutInflater.from(context).inflate(layoutId, parent , false);
 
         TextView title = view.findViewById(R.id.departure_title);
         title.setText(name);
