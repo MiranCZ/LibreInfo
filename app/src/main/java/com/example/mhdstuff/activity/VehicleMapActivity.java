@@ -23,6 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.testing.OverpassDownloader;
 import com.example.mhdstuff.activity.testing.OverpassToGeoJson;
 import com.example.mhdstuff.parsing.storage.IdStorage;

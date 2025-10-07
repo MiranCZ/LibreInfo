@@ -10,11 +10,11 @@ import android.text.style.TypefaceSpan;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.data.DiversionDataHolder;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Diversion;

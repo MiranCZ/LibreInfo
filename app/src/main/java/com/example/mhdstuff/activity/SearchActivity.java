@@ -2,7 +2,6 @@ package com.example.mhdstuff.activity;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -15,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mhdstuff.ItemAdapter;
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.storage.StopStorage;
 import com.example.mhdstuff.parsing.types.Stop;

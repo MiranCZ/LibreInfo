@@ -13,7 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.mhdstuff.R;
-import com.example.mhdstuff.activity.BaseActivity;
+import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.VehicleMapActivity;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.LineAlias;

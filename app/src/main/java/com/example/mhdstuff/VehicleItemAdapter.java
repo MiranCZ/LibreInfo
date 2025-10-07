@@ -6,7 +6,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.example.mhdstuff.activity.BaseActivity;
+import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.VehicleMapActivity;
 import com.example.mhdstuff.activity.listview.AbstractItemAdapter;
 import com.example.mhdstuff.parsing.types.Vehicle;

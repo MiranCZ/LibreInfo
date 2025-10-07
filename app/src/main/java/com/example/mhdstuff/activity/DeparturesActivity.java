@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.data.StopDataHolder;
 import com.example.mhdstuff.parsing.storage.CalendarStorage;
 import com.example.mhdstuff.parsing.storage.IdStorage;
@@ -23,6 +24,7 @@ import com.example.mhdstuff.parsing.types.departure.Departure;
 import com.example.mhdstuff.parsing.types.departure.DepartureEntry;
 import com.example.mhdstuff.parsing.types.departure.Departures;
 import com.example.mhdstuff.util.Container;
+import com.example.mhdstuff.util.OfflineDepartures;
 import com.example.mhdstuff.util.request.soap.SoapHelper;
 
 import java.time.LocalTime;
@@ -98,74 +100,10 @@ public class DeparturesActivity extends BaseActivity {
 
 
     private Departures getOffline(IdStorage storage) {
-        long ms = System.currentTimeMillis();
-        RouteStop[] stops = storage.routeStopStorage().getRouteStopsParsed(stop.id);
-        System.out.println("Calculating stops took "+(System.currentTimeMillis()-ms)+"ms");
-
-        CalendarStorage calendarStorage = storage.calendarStorage();
-
-        Map<Short, List<RouteStop>> postToStop = new HashMap<>();
-
-        for (RouteStop stop : stops) {
-            postToStop.computeIfAbsent(stop.postId(), k -> new ArrayList<>()).add(stop);
-        }
-
-        List<Departure> result = new ArrayList<>();
-
-        for (Map.Entry<Short, List<RouteStop>> entry : postToStop.entrySet()) {
-            int postId = entry.getKey();
-
-            List<DepartureEntry> departureEntries = new ArrayList<>();
-
-            List<RouteStop> entries = entry.getValue();
-
-            Time now = Time.now();
-
-            int ind = 0;
-
-            entries.sort(Comparator.comparing(RouteStop::departure));
-
-
-            Set<RouteStop> found = new HashSet<>();
-            for (RouteStop stop : entries) {
-                if (found.contains(stop)) continue;
-                found.add(stop);
-
-                if (ind > 4) break;
-                if (now.compareTo(stop.departure()) <= 0) {
-                    Trip trip = storage.tripStorage().getTrips()[stop.tripId()];;
-                    String heading = storage.tripStorage().getTripHeadsign(trip);
-
-                    if (!calendarStorage.available(trip.serviceId())) continue;
-
-                    TimeMark timeMark = new TimeMark(
-                            LocalTime.now().plusMinutes(stop.departure().getMinsDiff(Time.now())),
-                            false
-                    );
-                    departureEntries.add(new DepartureEntry(
-                            storage.lineStorage().getAlias(trip.lineId()),
-                            heading,
-                            postId,
-                            false, // FIXME the trips might have that info actually
-                            timeMark,
-                            Optional.empty()
-                    ));
-                    ind++;
-                }
-            }
-
-            if (!departureEntries.isEmpty()) {
-                Departure departure = new Departure(
-                        postId,
-                        storage.postStorage().getPost(stop.id, postId).name(),
-                        departureEntries
-                );
-                result.add(departure);
-            }
-        }
-        result.sort(Comparator.comparingInt(Departure::postID));
-
-        return new Departures("!!!!\nYOU ARE VIEWING THIS IN OFFLINE MODE!\n!!!!", result);
+        return new Departures(
+                "!!!!\nYOU ARE VIEWING THIS IN OFFLINE MODE!\n!!!!",
+                OfflineDepartures.getOffline(storage, stop.id)
+        );
     }
 
     private void createEntries(Departures departures, LinearLayout layout, Context context) {

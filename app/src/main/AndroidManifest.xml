@@ -64,13 +64,23 @@
 
 
         <activity
-            android:name=".activity.SettingsActivity"
+            android:name=".activity.settings.SettingsActivity"
+            android:parentActivityName=".activity.MainActivity">
+        </activity>
+
+        <activity
+            android:name=".activity.settings.DevSettingsActivity"
+            android:parentActivityName=".activity.MainActivity">
+        </activity>
+
+        <activity
+            android:name=".activity.devtest.DeparturePerformanceActivity"
             android:parentActivityName=".activity.MainActivity">
         </activity>
 
         <activity
             android:name=".activity.devtest.LineListActivity"
-            android:parentActivityName=".activity.SettingsActivity">
+            android:parentActivityName=".activity.settings.SettingsActivity">
         </activity>
 
         <activity

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.activity.base.BaseActivity;
 
 public class AboutActivity extends BaseActivity {
 

@@ -1,15 +1,11 @@
 package com.example.mhdstuff.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.mhdstuff.R;
-import com.example.mhdstuff.parsing.storage.IdStorage;
+import com.example.mhdstuff.activity.base.BaseActivity;
+import com.example.mhdstuff.activity.settings.SettingsActivity;
 
 public class MainActivity extends BaseActivity {
 

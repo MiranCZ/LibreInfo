@@ -3,7 +3,7 @@ package com.example.mhdstuff.activity.devtest;
 import android.os.Bundle;
 
 import com.example.mhdstuff.R;
-import com.example.mhdstuff.activity.BaseActivity;
+import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.example.mhdstuff.parsing.types.LineAlias;

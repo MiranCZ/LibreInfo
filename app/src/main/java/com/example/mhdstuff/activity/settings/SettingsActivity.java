@@ -1,14 +1,12 @@
-package com.example.mhdstuff.activity;
+package com.example.mhdstuff.activity.settings;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.mhdstuff.R;
-import com.example.mhdstuff.activity.devtest.LineListActivity;
+import com.example.mhdstuff.activity.base.BaseActivity;
 
 public class SettingsActivity extends BaseActivity {
 
@@ -24,10 +22,10 @@ public class SettingsActivity extends BaseActivity {
 
         setContentView(R.layout.activity_settings);
 
-        Button devSettings = findViewById(R.id.open_dev_settings);
+        Button lineTest = findViewById(R.id.open_dev_settings);
 
-        devSettings.setOnClickListener(view -> {
-            startActivity(LineListActivity.class);
+        lineTest.setOnClickListener(view -> {
+            startActivity(DevSettingsActivity.class);
         });
     }
 }

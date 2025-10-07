@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.mhdstuff.activity.BaseActivity;
+import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.DeparturesActivity;
 import com.example.mhdstuff.activity.data.StopDataHolder;
 import com.example.mhdstuff.parsing.types.Stop;

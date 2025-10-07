@@ -1,4 +1,4 @@
-package com.example.mhdstuff.activity;
+package com.example.mhdstuff.activity.base;
 
 import android.app.Activity;
 import android.content.Intent;

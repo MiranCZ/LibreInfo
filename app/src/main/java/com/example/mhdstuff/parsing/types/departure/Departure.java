@@ -8,7 +8,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.mhdstuff.R;
-import com.example.mhdstuff.activity.BaseActivity;
+import com.example.mhdstuff.activity.base.BaseActivity;
 
 import java.util.List;
 

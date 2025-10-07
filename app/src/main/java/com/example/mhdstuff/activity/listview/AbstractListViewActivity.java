@@ -5,12 +5,11 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mhdstuff.R;
-import com.example.mhdstuff.activity.BaseActivity;
+import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 
 public abstract class AbstractListViewActivity extends BaseActivity {
