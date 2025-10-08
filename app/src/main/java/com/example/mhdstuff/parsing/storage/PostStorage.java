@@ -4,6 +4,8 @@ import com.example.mhdstuff.parsing.types.Post;
 import com.example.mhdstuff.parsing.types.Stop;
 import com.google.gson.JsonArray;
 
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,8 +14,13 @@ import java.util.Map;
 
 public class PostStorage {
 
-    public static PostStorage parse(JsonArray array, LineStorage lineStorage, StopStorage stopStorage) {
-        List<Post> posts = Post.parsePosts(array, lineStorage);
+    public static PostStorage parse(DataInputStream array, LineStorage lineStorage, StopStorage stopStorage) {
+        List<Post> posts = null;
+        try {
+            posts = Post.parsePosts(array, lineStorage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         return new PostStorage(posts, stopStorage);
     }

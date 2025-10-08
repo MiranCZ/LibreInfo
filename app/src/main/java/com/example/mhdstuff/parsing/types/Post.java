@@ -4,36 +4,57 @@ import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- * @param id Global unique id
  * @param stopID ID of the stop this post corresponds to
  * @param postID ID unique to the stop
  */
-public record Post(int id, int stopID, int postID, String name, Location location, boolean isPublic,
-                   List<TransportLine> lines, StopMode stopMode
-) {
+public record Post(int stopID, int postID, String name, Location location, boolean isPublic, List<TransportLine> lines) {
 
 
-    public static List<Post> parsePosts(JsonArray array, LineStorage lineStorage) {
-        return TypeHelper.parseList(array, (o) -> parse(o, lineStorage));
+    public static List<Post> parsePosts(DataInputStream array, LineStorage lineStorage) throws IOException {
+        List<Post> result = new ArrayList<>();
+        int size = array.readInt();
+
+        for (int i = 0; i < size; i++) {
+            result.add(parse(array, lineStorage));
+        }
+
+        return result;
     }
 
-    public static Post parse(JsonObject obj, LineStorage lineStorage) {
-        if (obj == null) return null;
+    public static Post parse(DataInputStream is, LineStorage lineStorage) throws IOException {
+        int stopId = is.readInt();
+        int postId = is.readShort();
 
-        int id = obj.get("ID").getAsInt();
-        int stopID = obj.get("StopID") .getAsInt();
-        int postID = obj.get("PostID").getAsInt();
+        int nameLen = is.readInt();
+        byte[] bytes = new byte[nameLen];
+        int l = is.read(bytes);
+        if (l != nameLen) {
+            throw new IllegalStateException();
+        }
 
-        String name = obj.get("Name").getAsString();
-        Location location = Location.parse(obj);
-        boolean isPublic = obj.get("IsPublic").getAsBoolean();
-        List<TransportLine> lines = TransportLine.parseTransportLines(obj.get("LineList").getAsString(), lineStorage);
-        StopMode stopMode = StopMode.parse(obj.get("StopMode").getAsString());
+        String name = new String(bytes, StandardCharsets.UTF_8);
 
-        return new Post(id, stopID, postID, name, location, isPublic, lines, stopMode);
+        double lat = is.readDouble();
+        double lng = is.readDouble();
+
+        boolean isPublic = is.readBoolean();
+        List<TransportLine> lines = new ArrayList<>();
+
+        int lineSize = is.readInt();
+
+        for (int j = 0; j < lineSize; j++) {
+            int id = is.readInt();
+            lines.add(lineStorage.getLine(id));
+        }
+
+
+        return new Post(stopId, postId, name, new Location(lat, lng), isPublic, lines);
     }
 }

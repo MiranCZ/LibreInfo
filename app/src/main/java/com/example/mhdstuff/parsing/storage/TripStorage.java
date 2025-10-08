@@ -32,6 +32,8 @@ public class TripStorage {
                 short serviceId = is.readShort();
                 short lineId = is.readShort();
                 int headsignId = is.readInt();
+                short blockId = is.readShort();
+                byte data = (byte) is.read();
 
                 trips[i] = new Trip(serviceId, lineId, headsignId);
             }

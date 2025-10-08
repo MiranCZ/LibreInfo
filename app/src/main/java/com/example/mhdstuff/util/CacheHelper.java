@@ -109,8 +109,13 @@ public class CacheHelper {
         }
     }
 
-    public static JsonArray getPosts(Context context) {
-        return CacheHelper.readOrFetchJson("posts.json", RequestHelper::getPosts, context);
+    public static DataInputStream getPosts(Context context) {
+        try {
+            return readOrFetch(RequestHelper::getPosts, context, "data", "posts");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private static DataInputStream readOrFetch(Callable<InputStream> fetchFunc, Context context, String... name) throws FileNotFoundException {

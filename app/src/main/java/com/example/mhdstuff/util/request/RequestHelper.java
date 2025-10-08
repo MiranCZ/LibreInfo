@@ -15,31 +15,27 @@ public class RequestHelper {
 
 
     private static final String URL_START = "10.0.2.2/api";
-
+    private static final String STATIC_DATA_URL = "https://mirancz.github.io/gtfsstatic/";
 
     public static InputStream getStops() {
-        return readUrl("https://mirancz.github.io/gtfsstatic/parsed/stops");
+        return readUrl(STATIC_DATA_URL+ "parsed/stops");
     }
 
     public static InputStream getStopTimes() {
-        return readUrl("https://mirancz.github.io/gtfsstatic/parsed/stop_times");
+        return readUrl(STATIC_DATA_URL+ "parsed/stop_times");
     }
 
     public static InputStream getTrips() {
-        return readUrl("https://mirancz.github.io/gtfsstatic/parsed/trips");
+        return readUrl(STATIC_DATA_URL+ "parsed/trips");
     }
 
     public static InputStream getLineAliases() {
-        return readUrl("https://mirancz.github.io/gtfsstatic/parsed/lines");
+        return readUrl(STATIC_DATA_URL+ "parsed/lines");
     }
 
-    // also should be fine - spoiler alert: It is not.
-    public static JsonArray getPosts() {
-        Optional<JsonArray> result = makeRequest("posts", JsonArray.class);
-
-        return result.orElse(new JsonArray());
+    public static InputStream getPosts() {
+        return readUrl(STATIC_DATA_URL+ "parsed/posts");
     }
-
 
     // we are just fucked
     public static JsonArray getNews() {
