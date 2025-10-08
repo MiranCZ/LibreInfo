@@ -12,30 +12,18 @@ import androidx.core.content.ContextCompat;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
+import com.example.mhdstuff.activity.data.PostDataHolder;
 import com.example.mhdstuff.activity.data.StopDataHolder;
-import com.example.mhdstuff.parsing.storage.CalendarStorage;
 import com.example.mhdstuff.parsing.storage.IdStorage;
-import com.example.mhdstuff.parsing.types.RouteStop;
 import com.example.mhdstuff.parsing.types.Stop;
-import com.example.mhdstuff.parsing.types.Time;
-import com.example.mhdstuff.parsing.types.TimeMark;
-import com.example.mhdstuff.parsing.types.Trip;
 import com.example.mhdstuff.parsing.types.departure.Departure;
-import com.example.mhdstuff.parsing.types.departure.DepartureEntry;
 import com.example.mhdstuff.parsing.types.departure.Departures;
 import com.example.mhdstuff.util.Container;
 import com.example.mhdstuff.util.OfflineDepartures;
 import com.example.mhdstuff.util.request.soap.SoapHelper;
 
-import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -94,7 +82,7 @@ public class DeparturesActivity extends BaseActivity {
 
             LinearLayout layout = findViewById(R.id.departure_items);
 
-            createEntries(departures, layout, context);
+            createEntries(departures, layout, context, storage);
         }).start();
     }
 
@@ -106,7 +94,7 @@ public class DeparturesActivity extends BaseActivity {
         );
     }
 
-    private void createEntries(Departures departures, LinearLayout layout, Context context) {
+    private void createEntries(Departures departures, LinearLayout layout, Context context, IdStorage storage) {
         List<Departure> departureList = new ArrayList<>(departures.departures());
         AtomicInteger index = new AtomicInteger(1);
 
@@ -132,7 +120,14 @@ public class DeparturesActivity extends BaseActivity {
             runOnUiThread(() -> {
                 for (int i = 0; i < viewsPerFrame && !departureList.isEmpty(); i++) {
                     Departure departure = departureList.remove(0);
-                    layout.addView(departure.createDepartureView(this, layout, context), index.getAndIncrement());
+
+                    View departureView = departure.createDepartureView(this, layout, context);
+                    departureView.setOnClickListener(v -> {
+                        PostDataHolder.setPost(storage.postStorage().getPost(stop.id, departure.postID()));
+                        startActivity(DeparturePostDetailActivity.class);
+                    });
+
+                    layout.addView(departureView, index.getAndIncrement());
                 }
                 latch.countDown();
             });

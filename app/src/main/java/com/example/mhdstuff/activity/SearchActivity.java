@@ -161,9 +161,15 @@ public class SearchActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
 
+        // FIXME this is not the most efficient
         if (adapter != null) {
             // in case favourite stop was edited
-            sortAndSubmitAll(true);
+
+            String query = searchView.getQuery().toString();
+            sortAndSubmitAll(false);
+
+            filterItems(query);
+            adapter.notifyDataSetChanged();
         }
     }
 
@@ -184,6 +190,7 @@ public class SearchActivity extends BaseActivity {
         }
 
         System.out.println("SORTED "+ favourite.size() + " ; "+rest.size());
+        System.out.println(rest.getFirst());
         rest.addAll(0, favourite);
 
         if (hardUpdate) {
