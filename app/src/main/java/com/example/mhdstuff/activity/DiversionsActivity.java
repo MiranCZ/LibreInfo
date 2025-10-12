@@ -9,6 +9,8 @@ import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
 import com.example.mhdstuff.parsing.TrafficChangesManager;
 import com.example.mhdstuff.parsing.storage.IdStorage;
+import com.example.mhdstuff.parsing.types.Diversion;
+import com.example.mhdstuff.util.request.RequestHelper;
 
 public class DiversionsActivity extends AbstractListViewActivity {
 
@@ -18,11 +20,7 @@ public class DiversionsActivity extends AbstractListViewActivity {
 
     @Override
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
-        return new DiversionsItemAdapter(
-                TrafficChangesManager.parse(
-                        ".view-display-id-attachment_3 > div:nth-child(2)",
-                        storage.lineStorage()
-                ), this
+        return new DiversionsItemAdapter(Diversion.parseDiversions(RequestHelper.getDiversions(),storage.lineStorage()), this
         );
     }
 

@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Vehicle;
 import com.example.mhdstuff.util.request.soap.SoapSaneObject;
+import com.google.gson.JsonObject;
 
 import org.ksoap2.serialization.SoapObject;
 
@@ -17,7 +18,7 @@ import java.util.Map;
 public record Departures(String message, List<Departure> departures) {
 
 
-    public static Departures parse(SoapSaneObject deps, @Nullable SoapSaneObject vehicles, int stopID, IdStorage storage) {
+    public static Departures parse(SoapSaneObject deps, @Nullable SoapSaneObject vehicles, int stopID, IdStorage storage, JsonObject delays) {
         if (deps == null) return null;
 
         String message = "";

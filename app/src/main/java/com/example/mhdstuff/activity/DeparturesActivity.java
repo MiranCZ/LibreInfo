@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
+import com.example.mhdstuff.activity.data.DelaysDataHolder;
 import com.example.mhdstuff.activity.data.PostDataHolder;
 import com.example.mhdstuff.activity.data.StopDataHolder;
 import com.example.mhdstuff.parsing.storage.IdStorage;
@@ -20,7 +21,9 @@ import com.example.mhdstuff.parsing.types.departure.Departure;
 import com.example.mhdstuff.parsing.types.departure.Departures;
 import com.example.mhdstuff.util.Container;
 import com.example.mhdstuff.util.OfflineDepartures;
+import com.example.mhdstuff.util.request.RequestHelper;
 import com.example.mhdstuff.util.request.soap.SoapHelper;
+import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,17 +71,12 @@ public class DeparturesActivity extends BaseActivity {
         }
 
         Context context = this;
+        JsonObject delays = DelaysDataHolder.getDelays();
+
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();
 
-            Departures departures = Departures.parse(
-                    SoapHelper.getDepartures(stop.id), SoapHelper.getVehicles(), stop.id, storage
-            );
-
-            // fallback to offline if something went wrong
-            if (departures == null) {
-                departures = getOffline(storage);
-            }
+            Departures departures = getOffline(storage, delays);
 
             LinearLayout layout = findViewById(R.id.departure_items);
 
@@ -87,10 +85,10 @@ public class DeparturesActivity extends BaseActivity {
     }
 
 
-    private Departures getOffline(IdStorage storage) {
+    private Departures getOffline(IdStorage storage, JsonObject delays) {
         return new Departures(
-                "!!!!\nYOU ARE VIEWING THIS IN OFFLINE MODE!\n!!!!",
-                OfflineDepartures.getOffline(storage, stop.id)
+                "Work in progress...",
+                OfflineDepartures.getOffline(storage, stop.id, delays)
         );
     }
 

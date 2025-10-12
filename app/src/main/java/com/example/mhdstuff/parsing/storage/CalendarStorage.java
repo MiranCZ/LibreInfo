@@ -2,9 +2,7 @@ package com.example.mhdstuff.parsing.storage;
 
 import android.util.Log;
 
-import com.example.mhdstuff.util.Csv;
-import com.example.mhdstuff.util.CsvHelper;
-
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,7 +15,7 @@ public class CalendarStorage {
     private final Map<Integer, CalendarEntry> serviceToCalendar;
     private final Map<Integer, Map<Date, ExceptionType>> exceptions;
 
-    public static CalendarStorage parse(String calendar, String calendarDates) {
+    public static CalendarStorage parse(DataInputStream calendar, DataInputStream calendarDates) {
         try {
             return parseInternal(calendar, calendarDates);
         } catch (IOException e) {
@@ -26,41 +24,42 @@ public class CalendarStorage {
         }
     }
 
-    public static CalendarStorage parseInternal(String calendarStr, String calendarDatesStr) throws IOException {
-        Csv calendarCsv = CsvHelper.parseCsvEntries(calendarStr);
+    public static CalendarStorage parseInternal(DataInputStream calendarIs, DataInputStream calendarDatesIs) throws IOException {
+        long ms = System.currentTimeMillis();
 
         List<CalendarEntry> entries = new ArrayList<>();
         Map<Integer, CalendarEntry> serviceToCalendar = new HashMap<>();
 
+        while (calendarIs.readBoolean()) {
+            int serviceId = calendarIs.readShort();
 
-        System.out.println(calendarCsv.getLines().size());
-        long ms = System.currentTimeMillis();
-        for (Csv.CsvLine line : calendarCsv.getLines()) {
-            int serviceId = line.getInt("service_id");
-            boolean monday = line.getBoolean("monday");
-            boolean tuesday = line.getBoolean("tuesday");
-            boolean wednesday = line.getBoolean("wednesday");
-            boolean thursday = line.getBoolean("thursday");
-            boolean friday = line.getBoolean("friday");
-            boolean saturday = line.getBoolean("saturday");
-            boolean sunday = line.getBoolean("sunday");
+            Date from = Date.parse(calendarIs.readInt());
+            Date to = Date.parse(calendarIs.readInt());
 
-            Date from = Date.parse(line.get("start_date"));
-            Date to = Date.parse(line.get("end_date"));
+            int data = calendarIs.read();
+
+            boolean monday = ((data >> 0) & 1) == 1;
+            boolean tuesday = ((data >> 1) & 1) == 1;
+            boolean wednesday = ((data >> 2) & 1) == 1;
+            boolean thursday = ((data >> 3) & 1) == 1;
+            boolean friday = ((data >> 4) & 1) == 1;
+            boolean saturday = ((data >> 5) & 1) == 1;
+            boolean sunday = ((data >> 6) & 1) == 1;
 
             CalendarEntry entry = new CalendarEntry(serviceId, monday, tuesday, wednesday, thursday, friday, saturday, sunday, from, to);
+
             entries.add(entry);
             serviceToCalendar.put(serviceId, entry);
         }
 
 
         Map<Integer, Map<Date, ExceptionType>> exceptions = new HashMap<>();
-        Csv exceptionCsv = CsvHelper.parseCsvEntries(calendarDatesStr);
 
-        for (Csv.CsvLine line : exceptionCsv.getLines()) {
-            int serviceId = line.getInt("service_id");
-            Date date = Date.parse(line.get("date"));
-            int exceptionTypeI = line.getInt("exception_type");
+        while (calendarDatesIs.readBoolean()) {
+            int serviceId = calendarDatesIs.readShort();
+            Date date = Date.parse(calendarDatesIs.readInt());
+            int exceptionTypeI = calendarDatesIs.read();
+
             ExceptionType type;
             if (exceptionTypeI == 1) {
                 type = ExceptionType.ADDED;
@@ -160,6 +159,10 @@ public class CalendarStorage {
             int day = Integer.parseInt(s.substring(6));
 
             return new Date(day, month, year);
+        }
+
+        public static Date parse(int packed) {
+            return new Date(packed&0xFF, (packed>>8)&0xFF,packed>>16);
         }
 
         public boolean isAfter(Date date) {

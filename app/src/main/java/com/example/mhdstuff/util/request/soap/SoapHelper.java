@@ -14,20 +14,6 @@ public class SoapHelper {
     private static final String NAMESPACE = "http://tempuri.org/";
     private static final String BASE_URL = "http://kordis.idsjmk.cz:8000/Traffic/";
 
-
-    public static SoapSaneObject getDepartures(int stopID) {
-        try {
-            return makeSoapCall(
-                    "GetNearDeparturesAcrossPosts",
-                    "NearDepartures",
-                    "INearDeparturesService",
-                    Map.of("stopID", stopID)
-            );
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     public static SoapSaneObject getVehicles() {
         SoapSaneObject result = makeSoapCall(
                 "GetTrafficState",

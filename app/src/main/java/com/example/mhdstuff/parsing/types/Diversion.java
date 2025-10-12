@@ -2,35 +2,35 @@ package com.example.mhdstuff.parsing.types;
 
 import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public record Diversion(String title, Location location, DateTime from, DateTime to,
                         String publicText, List<TransportLine> lines) {
 
-/*    public static List<Diversion> parseDiversions(JsonArray array, LineStorage storage) {
+    public static List<Diversion> parseDiversions(JsonArray array, LineStorage storage) {
         return TypeHelper.parseList(array, (o) -> parse(o, storage));
     }
 
     public static Diversion parse(JsonObject obj, LineStorage storage) {
         if (obj == null) return null;
 
-        int id = obj.get("DiversionID").getAsInt();
-        String number = obj.get("Number").getAsString();
-        String title = obj.get("Title").getAsString();
+        String title = obj.get("title").getAsString();
         Location location = Location.parse(obj);
-        DateTime from = DateTime.parse(obj.get("ValidFrom").getAsString());
-        DateTime to = DateTime.parse(obj.get("ValidTo").getAsString());
+        DateTime from = DateTime.parse(obj.get("from").getAsString());
+        DateTime to = DateTime.parse(obj.get("to").getAsString());
 
-        boolean valid = obj.get("IsValid").getAsBoolean();
-        String publicText = obj.get("PublicText").getAsString();
-        String privateText = obj.get("PrivateText").getAsString();
-        String type = obj.get("Type").getAsString(); //TODO figure out possible types and create an ENUM?
-        List<TransportLine> lines = TransportLine.parseTransportLines(
-                obj.get("AffectedLines").getAsString(), storage
-        );
+        String publicText = obj.get("content").getAsString();
 
-        return new Diversion(id, number, title, location, from, to, valid, publicText, privateText, type, lines);
-    }*/
+        List<TransportLine> lines = new ArrayList<>();
+
+        for (JsonElement element : obj.get("lines").getAsJsonArray()) {
+            lines.add(TransportLine.parse(element.getAsString(), storage));
+        }
+
+        return new Diversion(title, location, from, to, publicText, lines);
+    }
 }

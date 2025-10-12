@@ -38,12 +38,12 @@ public record TimeMark(LocalTime time, boolean certain) {
             elapsed += Duration.ofDays(1).toMinutes();
         }
 
-        String prefix = certain ? "" : "± ";
-
         if (elapsed < minutesThreshold) {
+            String prefix = certain ? "" : "± ";
             return prefix + elapsed + " min";
         } else {
-            return prefix + time.format(DateTimeFormatter.ofPattern("HH:mm"));
+            // do not add "uncertain" prefix for connections far away
+            return time.format(DateTimeFormatter.ofPattern("HH:mm"));
         }
     }
 

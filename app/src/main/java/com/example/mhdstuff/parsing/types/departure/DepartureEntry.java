@@ -25,7 +25,7 @@ import com.example.mhdstuff.util.request.soap.SoapSaneObject;
 import java.util.Map;
 import java.util.Optional;
 
-public record DepartureEntry(LineAlias line, String finalStop, int postID, boolean lowFloor, TimeMark timeMark, Optional<Vehicle> vehicleOpt) {
+public record DepartureEntry(LineAlias line, String finalStop, int postID, boolean lowFloor, TimeMark timeMark, Optional<VehicleInfo> vehicleOpt) {
 
     public static DepartureEntry parse(SoapSaneObject obj, Map<Long, Vehicle> vehicleMap, IdStorage storage) {
         if (obj == null) return null;
@@ -39,9 +39,17 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
 
         int connectionId = obj.getInt("ConnectionID");
         long key = ((long) connectionId <<32) | ((long)line.id());
-        Optional<Vehicle> vehicle = Optional.ofNullable(vehicleMap.get(key));
 
-        return new DepartureEntry(line, finalStop, postID , lowFloor, timeMark, vehicle);
+        Optional<VehicleInfo> info;
+        if (vehicleMap.containsKey(key)) {
+            Vehicle vehicle = vehicleMap.get(key);
+
+            info = Optional.of(new VehicleInfo(vehicle.id(), vehicle.delay()));
+        } else {
+            info = Optional.empty();
+        }
+
+        return new DepartureEntry(line, finalStop, postID , lowFloor, timeMark, info);
     }
 
     public View createDepartureEntryView(BaseActivity activity, ViewGroup parent, Context context) {
@@ -55,9 +63,9 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
 
         TextView arrival = view.findViewById(R.id.departure_arrival);
 
-        String arrivalText = timeMark.getFormattedString(60);
+        String arrivalText = timeMark.getFormattedString(30);
         if (vehicleOpt.isPresent()) {
-            Vehicle vehicle = vehicleOpt.get();
+            var vehicle = vehicleOpt.get();
             int color = vehicle.getDelayColor();
 
             String delayStr = "";
@@ -72,8 +80,8 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
 
             view.setOnClickListener(v -> activity.startActivity(VehicleMapActivity.class, intent -> {
                 intent.putExtra("following", vehicle.id());
-                intent.putExtra("lat", vehicle.location().latitude());
-                intent.putExtra("lng", vehicle.location().longitude());
+//                intent.putExtra("lat", vehicle.location().latitude());
+//                intent.putExtra("lng", vehicle.location().longitude());
             }));
         } else {
             arrival.setText(arrivalText);

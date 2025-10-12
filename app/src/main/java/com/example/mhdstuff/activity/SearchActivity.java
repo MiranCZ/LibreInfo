@@ -15,11 +15,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mhdstuff.ItemAdapter;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
+import com.example.mhdstuff.activity.data.DelaysDataHolder;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.storage.StopStorage;
 import com.example.mhdstuff.parsing.types.Stop;
 import com.example.mhdstuff.util.Container;
 import com.example.mhdstuff.util.FuzzySearch;
+import com.example.mhdstuff.util.request.RequestHelper;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -45,6 +47,12 @@ public class SearchActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
+
+        new Thread(() -> {
+            var delays = RequestHelper.getRouteDelays();
+
+            runOnUiThread(() -> DelaysDataHolder.setDelays(delays));
+        }).start();
 
         recyclerView = findViewById(R.id.recycler_view_items);
         searchView = findViewById(R.id.search_view);

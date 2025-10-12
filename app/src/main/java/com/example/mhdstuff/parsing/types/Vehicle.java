@@ -166,6 +166,10 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
     }
 
     public int getDelayColor() {
+        return getDelayColor(delay);
+    }
+
+    public static int getDelayColor(int delay) {
         int color;
         if (delay == 0) {
             color = Color.GREEN;

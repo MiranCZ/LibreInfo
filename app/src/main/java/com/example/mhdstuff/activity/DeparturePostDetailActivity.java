@@ -9,11 +9,13 @@ import androidx.annotation.Nullable;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
+import com.example.mhdstuff.activity.data.DelaysDataHolder;
 import com.example.mhdstuff.activity.data.PostDataHolder;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Post;
 import com.example.mhdstuff.parsing.types.departure.Departure;
 import com.example.mhdstuff.util.OfflineDepartures;
+import com.google.gson.JsonObject;
 
 import java.util.List;
 
@@ -33,11 +35,12 @@ public class DeparturePostDetailActivity extends BaseActivity {
         setContentView(R.layout.activity_deparute_post_detail);
 
         Context context = this;
+        JsonObject delays = DelaysDataHolder.getDelays();
 
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();
 
-            List<Departure> departureList = OfflineDepartures.getOffline(storage, post.stopID(), 100);
+            List<Departure> departureList = OfflineDepartures.getOffline(storage, post.stopID(), 100, delays);
 
             Departure departure = departureList.stream().filter(dep -> dep.postID() == post.postID()).findFirst().orElse(null);
 

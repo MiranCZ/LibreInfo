@@ -28,34 +28,6 @@ public class CacheHelper {
         return CacheHelper.readOrFetchJson("news.json", RequestHelper::getNews, context);
     }
 
-    public static String getCalendar(Context context) {
-        if (!isCached(context, "data", "calendar")) {
-            InputStream is = RequestHelper.getCalendar();
-
-            try {
-                writeToCache(is.readAllBytes(), context, "data", "calendar");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        return readCache(context, "data", "calendar");
-    }
-
-    public static String getCalendarDates(Context context) {
-        if (!isCached(context, "data", "calendar_dates")) {
-            InputStream is = RequestHelper.getCalendarDates();
-
-            try {
-                writeToCache(is.readAllBytes(), context, "data", "calendar_dates");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        return readCache(context, "data", "calendar_dates");
-    }
-
     public static RandomAccessFile getRouteStopsRAF(Context context) {
 
         if (!isCached(context, "data", "route_stops")) {
@@ -70,6 +42,33 @@ public class CacheHelper {
             return new RandomAccessFile(getCachedPath(context, "data", "route_stops").toFile(), "r");
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static DataInputStream getApi(Context context) {
+        try {
+            return readOrFetch(RequestHelper::getApi, context, "data", "api");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static DataInputStream getCalendar(Context context) {
+        try {
+            return readOrFetch(RequestHelper::getCalendar, context, "data", "calendar");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static DataInputStream getCalendarDates(Context context) {
+        try {
+            return readOrFetch(RequestHelper::getCalendarDates, context, "data", "calendar_dates");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

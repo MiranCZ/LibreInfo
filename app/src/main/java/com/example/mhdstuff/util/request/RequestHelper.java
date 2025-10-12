@@ -17,6 +17,18 @@ public class RequestHelper {
     private static final String URL_START = "10.0.2.2/api";
     private static final String STATIC_DATA_URL = "https://mirancz.github.io/gtfsstatic/";
 
+    public static InputStream getApi() {
+        return readUrl(STATIC_DATA_URL+ "parsed/api");
+    }
+
+    public static InputStream getCalendar() {
+        return readUrl(STATIC_DATA_URL+ "parsed/calendar");
+    }
+
+    public static InputStream getCalendarDates() {
+        return readUrl(STATIC_DATA_URL+ "parsed/calendar_dates");
+    }
+
     public static InputStream getStops() {
         return readUrl(STATIC_DATA_URL+ "parsed/stops");
     }
@@ -47,16 +59,18 @@ public class RequestHelper {
         return result.get().get("News").getAsJsonArray();
     }
 
+    public static JsonArray getDiversions() {
+        Optional<JsonArray> result = makeOwnRequest("diversions", JsonArray.class);
+        return result.orElseGet(JsonArray::new);
+    }
+
+    public static JsonObject getRouteDelays() {
+        Optional<JsonObject> result = makeOwnRequest("routedelays", JsonObject.class);
+        return result.orElseGet(JsonObject::new);
+    }
+
     public static InputStream getRouteStops() {
         return readUrl("https://mirancz.github.io/gtfsstatic/parsed/route_stops");
-    }
-
-    public static InputStream getCalendar() {
-        return readUrl("https://mirancz.github.io/gtfsstatic/unzipped/calendar");
-    }
-
-    public static InputStream getCalendarDates() {
-        return readUrl("https://mirancz.github.io/gtfsstatic/unzipped/calendar_dates");
     }
 
     public static ZipInputStream getStaticGTFS() {
@@ -69,6 +83,21 @@ public class RequestHelper {
     private static <T extends JsonElement> Optional<T> makeRequest(String endpoint, Class<T> type) {
         try {
             InputStream stream = readUrl(URL_START+endpoint);
+            if (stream == null) return Optional.empty();
+
+            String output = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+            stream.close();
+
+            return Optional.ofNullable(new Gson().fromJson(output, type));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
+    }
+
+    private static <T extends JsonElement> Optional<T> makeOwnRequest(String endpoint, Class<T> type) {
+        try {
+            InputStream stream = readUrl("http://138.3.254.103:5000/"+endpoint);
             if (stream == null) return Optional.empty();
 
             String output = new String(stream.readAllBytes(), StandardCharsets.UTF_8);

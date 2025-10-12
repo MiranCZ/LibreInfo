@@ -19,7 +19,7 @@ import java.util.prefs.PreferenceChangeEvent;
 
 public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostStorage postStorage,
                         TripStorage tripStorage, RouteStopStorage routeStopStorage,
-                        CalendarStorage calendarStorage) {
+                        CalendarStorage calendarStorage, ApiStorage apiStorage) {
 
 
     private static final Object mutex = new Object();
@@ -46,6 +46,9 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         PostStorage postStorage = PostStorage.parse(CacheHelper.getPosts(context), lineStorage, stopStorage);
         onLoaded(PostStorage.class, postStorage);
 
+        ApiStorage apiStorage = ApiStorage.parse(CacheHelper.getApi(context));
+        onLoaded(ApiStorage.class, apiStorage);
+
         TripStorage tripStorage = TripStorage.parse(CacheHelper.getTrips(context));
         RouteStopStorage routeStopStorage = RouteStopStorage.parse(
                 CacheHelper.getStopTimes(context), CacheHelper.getRouteStopsRAF(context)
@@ -56,7 +59,7 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         );
 
         synchronized (mutex) {
-            storage = new IdStorage(lineStorage, stopStorage, postStorage, tripStorage, routeStopStorage, calendarStorage);
+            storage = new IdStorage(lineStorage, stopStorage, postStorage, tripStorage, routeStopStorage, calendarStorage, apiStorage);
             System.out.println("Saying on loaded");
             onLoaded(IdStorage.class, storage);
         }
