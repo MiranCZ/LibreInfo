@@ -5,35 +5,35 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-public record TimeMark(LocalTime time, boolean certain) {
+public record TimeMark(Time time, boolean certain) {
 
-    public TimeMark(LocalTime time) {
+    public TimeMark(Time time) {
         this(time, true);
     }
 
     public static TimeMark parse(String str) {
         if (str == null) return null;
         if (str.equals("**")) {
-            return new TimeMark(LocalTime.MIN);
+            return new TimeMark(Time.MIN);
         }
 
         if (str.endsWith("min")) {
             str = str.substring(0, str.length()-"min".length()).strip();
 
             int minutes = Integer.parseInt(str);
-            LocalTime now = LocalTime.now();
+            Time now = Time.now();
 
             return new TimeMark(now.plusMinutes(minutes));
         } else {
-            return new TimeMark(LocalTime.parse(str, DateTimeFormatter.ofPattern("HH:mm")));
+            return new TimeMark(Time.parse(str));
         }
     }
 
     public String getFormattedString(int minutesThreshold) {
-        if (time == LocalTime.MIN) return "**";
+        if (time == Time.MIN) return "**";
 
-        LocalTime now = LocalTime.now();
-        long elapsed = Duration.between(now, time).toMinutes();
+        Time now = Time.now();
+        long elapsed = time.getMinsDiff(now);
         if (elapsed < 0) {
             elapsed += Duration.ofDays(1).toMinutes();
         }
@@ -43,12 +43,12 @@ public record TimeMark(LocalTime time, boolean certain) {
             return prefix + elapsed + " min";
         } else {
             // do not add "uncertain" prefix for connections far away
-            return time.format(DateTimeFormatter.ofPattern("HH:mm"));
+            return time.format();
         }
     }
 
     public boolean isLeaving() {
-        return time == LocalTime.MIN;
+        return time == Time.MIN;
     }
 
 }

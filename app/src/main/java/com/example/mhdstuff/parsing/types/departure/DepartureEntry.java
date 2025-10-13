@@ -55,7 +55,14 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
     public View createDepartureEntryView(BaseActivity activity, ViewGroup parent, Context context) {
         View view = LayoutInflater.from(context).inflate(R.layout.departure_entry_layout, parent , false);
 
+        populateDepartureViewEntry(activity, context, view);
+
+        return view;
+    }
+
+    public void populateDepartureViewEntry(BaseActivity activity, Context context, View view) {
         FrameLayout icon = view.findViewById(R.id.departure_line_icon);
+        icon.removeAllViews();
         icon.addView(line.createLineIconView(icon, context),0);
 
         TextView heading = view.findViewById(R.id.departure_heading);
@@ -102,7 +109,5 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
         if (!lowFloor) {
             view.findViewById(R.id.departure_wheelchair_icon).setVisibility(View.GONE);
         }
-
-        return view;
     }
 }

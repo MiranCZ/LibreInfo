@@ -36,7 +36,7 @@ public class OfflineDepartures {
         return getOffline(storage, stopId, maxSize, null);
     }
 
-    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, JsonObject delays) {
+    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, Time fromTime, JsonObject delays) {
         RouteStop[] stops = storage.routeStopStorage().getRouteStopsParsed(stopId);
 
         CalendarStorage calendarStorage = storage.calendarStorage();
@@ -75,8 +75,6 @@ public class OfflineDepartures {
 
             List<Holder> entries = entry.getValue();
 
-            Time now = Time.now();
-
             int ind = 0;
 
             entries.sort(Comparator.comparing(h -> h.stop.departure()));
@@ -87,15 +85,15 @@ public class OfflineDepartures {
                 if (found.contains(stop)) continue;
                 found.add(stop);
 
-                if (ind > (maxSize-1)) break;
-                if (now.compareTo(stop.departure()) <= 0) {
+                if (maxSize != -1 && ind > (maxSize-1)) break;
+                if (fromTime.compareTo(stop.departure()) <= 0) {
                     Trip trip = storage.tripStorage().getTrips()[stop.tripId()];;
                     String heading = storage.tripStorage().getTripHeadsign(trip);
 
                     if (!calendarStorage.available(nowDate, trip.serviceId())) continue;
 
                     TimeMark timeMark = new TimeMark(
-                            LocalTime.now().plusMinutes(stop.departure().getMinsDiff(Time.now())),
+                            stop.departure(),
                             holder.info.isPresent()
                     );
                     departureEntries.add(new DepartureEntry(
