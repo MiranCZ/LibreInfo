@@ -84,6 +84,11 @@
         </activity>
 
         <activity
+            android:name=".activity.TripDetailActivity"
+            android:parentActivityName=".activity.DeparturePostDetailActivity">
+        </activity>
+
+        <activity
             android:name=".activity.DeparturesActivity"
             android:parentActivityName=".activity.SearchActivity">
         </activity>

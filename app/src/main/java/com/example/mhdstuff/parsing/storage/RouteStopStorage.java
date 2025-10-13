@@ -6,7 +6,9 @@ import com.example.mhdstuff.parsing.types.Time;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class RouteStopStorage {
@@ -38,7 +40,7 @@ public class RouteStopStorage {
     }
 
 
-    private static final int ROUTE_STOP_SIZE_BYTES = Integer.BYTES + 2 * Short.BYTES + 4 * Byte.BYTES;
+    private static final int ROUTE_STOP_SIZE_BYTES = 2 * Integer.BYTES + 2 * Short.BYTES + 4 * Byte.BYTES;
     private final Map<Integer, int[]> stopIdToRouteStops;
     private final byte[] buffer = new byte[ROUTE_STOP_SIZE_BYTES];
     private final RandomAccessFile routeStops;
@@ -61,7 +63,49 @@ public class RouteStopStorage {
             return new RouteStop[0];
         }
     }
+    public RouteStop[] getRouteStopsFromSegmentParsed(int start, int length) {
+        try {
+            return getRouteStopsFromSegmentParsedInternal(start, length);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new RouteStop[0];
+        }
+    }
+    private RouteStop[] getRouteStopsFromSegmentParsedInternal(int start, int length) throws IOException {
+        RouteStop[] results = new RouteStop[length];
 
+        for (int i = 0; i < length; i++) {
+            int routeId = start+i;
+
+            long pos = (long) (ROUTE_STOP_SIZE_BYTES) * routeId;
+            routeStops.seek(pos);
+
+            int len = routeStops.read(buffer);
+            if (len != buffer.length) {
+                throw new IllegalStateException();
+            }
+
+            int bufferPos = 0;
+            int stopId = readInt(buffer, bufferPos);
+            bufferPos += 4;
+
+            int tripId = readInt(buffer, bufferPos);
+            bufferPos += 4;
+
+            short postId = readShort(buffer, bufferPos);
+            bufferPos += 2;
+
+            short sequence = readShort(buffer, bufferPos);
+            bufferPos += 2;
+
+            Time arrival = new Time(buffer[bufferPos++], buffer[bufferPos++]);
+            Time departure = new Time(buffer[bufferPos++], buffer[bufferPos++]);
+
+            results[i] = new RouteStop(stopId, tripId, postId, sequence, arrival, departure);
+        }
+
+        return results;
+    }
 
     private RouteStop[] getRouteStopsParsedInternal(int stopId) throws IOException {
         int[] routes = getRouteStops(stopId);
@@ -81,6 +125,9 @@ public class RouteStopStorage {
             }
 
             int bufferPos = 0;
+            int sid = readInt(buffer, bufferPos);
+            bufferPos += 4;
+
             int tripId = readInt(buffer, bufferPos);
             bufferPos += 4;
             
@@ -93,7 +140,7 @@ public class RouteStopStorage {
             Time arrival = new Time(buffer[bufferPos++], buffer[bufferPos++]);
             Time departure = new Time(buffer[bufferPos++], buffer[bufferPos++]);
 
-            results[i] = new RouteStop(tripId, postId, sequence, arrival, departure);
+            results[i] = new RouteStop(sid, tripId, postId, sequence, arrival, departure);
         }
         return results;
     }

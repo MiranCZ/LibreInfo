@@ -13,11 +13,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.activity.TripDetailActivity;
 import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.VehicleMapActivity;
+import com.example.mhdstuff.activity.data.TripDataHolder;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.TimeMark;
+import com.example.mhdstuff.parsing.types.Trip;
 import com.example.mhdstuff.parsing.types.Vehicle;
 import com.example.mhdstuff.util.request.soap.SoapSaneObject;
 
@@ -25,7 +28,8 @@ import com.example.mhdstuff.util.request.soap.SoapSaneObject;
 import java.util.Map;
 import java.util.Optional;
 
-public record DepartureEntry(LineAlias line, String finalStop, int postID, boolean lowFloor, TimeMark timeMark, Optional<VehicleInfo> vehicleOpt) {
+public record DepartureEntry(LineAlias line, String finalStop, int postID, boolean lowFloor, TimeMark timeMark,
+                             Trip trip, Optional<VehicleInfo> vehicleOpt) {
 
     public static DepartureEntry parse(SoapSaneObject obj, Map<Long, Vehicle> vehicleMap, IdStorage storage) {
         if (obj == null) return null;
@@ -49,7 +53,7 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
             info = Optional.empty();
         }
 
-        return new DepartureEntry(line, finalStop, postID , lowFloor, timeMark, info);
+        return new DepartureEntry(line, finalStop, postID , lowFloor, timeMark,null, info);
     }
 
     public View createDepartureEntryView(BaseActivity activity, ViewGroup parent, Context context) {
@@ -85,16 +89,23 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
 
             arrival.setText(spannable);
 
-            view.setOnClickListener(v -> activity.startActivity(VehicleMapActivity.class, intent -> {
+            /*view.setOnClickListener(v -> activity.startActivity(VehicleMapActivity.class, intent -> {
                 intent.putExtra("following", vehicle.id());
 //                intent.putExtra("lat", vehicle.location().latitude());
 //                intent.putExtra("lng", vehicle.location().longitude());
-            }));
+            }));*/
         } else {
             arrival.setText(arrivalText);
 
-            view.setOnClickListener(v -> Toast.makeText(context, "Vozidlo nelze zobrazit na mapě", Toast.LENGTH_SHORT).show());
+//            view.setOnClickListener(v -> Toast.makeText(context, "Vozidlo nelze zobrazit na mapě", Toast.LENGTH_SHORT).show());
         }
+
+        view.setOnClickListener(
+                v -> {
+                    TripDataHolder.setTrip(trip);
+                    activity.startActivity(TripDetailActivity.class);
+                }
+        );
 
         if (timeMark.isLeaving()) {
             AlphaAnimation blink = new AlphaAnimation(0.0f, 1.0f);

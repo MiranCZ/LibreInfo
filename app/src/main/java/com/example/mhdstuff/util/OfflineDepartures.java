@@ -29,11 +29,14 @@ public class OfflineDepartures {
     }
 
     public static List<Departure> getOffline(IdStorage storage, int stopId, JsonObject delays) {
-        return getOffline(storage, stopId, 5, delays);
+        return getOffline(storage, stopId, 5, Time.now(), delays);
     }
 
     public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize) {
-        return getOffline(storage, stopId, maxSize, null);
+        return getOffline(storage, stopId, maxSize, Time.now());
+    }
+    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, Time fromTime) {
+        return getOffline(storage, stopId, maxSize,fromTime, null);
     }
 
     public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, Time fromTime, JsonObject delays) {
@@ -102,6 +105,7 @@ public class OfflineDepartures {
                             postId,
                             trip.lowFloor(),
                             timeMark,
+                            trip,
                             holder.info
                     ));
                     ind++;

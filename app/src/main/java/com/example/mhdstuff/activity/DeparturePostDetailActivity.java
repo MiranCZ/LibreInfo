@@ -29,15 +29,19 @@ public class DeparturePostDetailActivity extends AbstractListViewActivity {
 
 
     private final Post post;
+    private final JsonObject delays
+            ;
+
     public DeparturePostDetailActivity() {
         // FIXME departure scrollable layout??
         super(PostDataHolder.getPost().name(), R.layout.activity_deparute_post_detail, R.id.departure_content);
         this.post = PostDataHolder.getPost();
+        this.delays = DelaysDataHolder.getDelays();
     }
 
     @Override
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
-        JsonObject delays = DelaysDataHolder.getDelays();
+
         List<Departure> departureList = OfflineDepartures.getOffline(storage, post.stopID(), -1, Time.ZERO, delays);
 
         Departure departure = departureList.stream().filter(dep -> dep.postID() == post.postID()).findFirst().orElse(null);

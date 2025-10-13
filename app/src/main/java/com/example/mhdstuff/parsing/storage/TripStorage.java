@@ -34,10 +34,10 @@ public class TripStorage {
                 int headsignId = is.readInt();
                 short blockId = is.readShort();
                 byte data = (byte) is.read();
-//                int startPos = is.readInt();
-//                byte length = (byte) is.read();
+                int startPos = is.readInt();
+                byte length = (byte) is.read();
 
-                trips[i] = new Trip(serviceId, lineId, headsignId, data == 1, -1, (byte) 0);
+                trips[i] = new Trip(serviceId, lineId, headsignId, data == 1, startPos, length);
             }
             return new TripStorage(headsignPool, trips);
         } catch (IOException e) {
