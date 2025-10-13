@@ -21,10 +21,21 @@ import java.util.Set;
 
 public class OfflineDepartures {
 
+
     public static List<Departure> getOffline(IdStorage storage, int stopId) {
-        return getOffline(storage, stopId, 5);
+        return getOffline(storage, stopId, Time.now());
     }
+
+
+    public static List<Departure> getOffline(IdStorage storage, int stopId, Time fromTime) {
+        return getOffline(storage, stopId, 5, fromTime);
+    }
+
     public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize) {
+        return getOffline(storage, stopId, maxSize, Time.now());
+    }
+
+    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, Time fromTime) {
         RouteStop[] stops = storage.routeStopStorage().getRouteStopsParsed(stopId);
 
         CalendarStorage calendarStorage = storage.calendarStorage();
@@ -46,8 +57,6 @@ public class OfflineDepartures {
 
             List<RouteStop> entries = entry.getValue();
 
-            Time now = Time.now();
-
             int ind = 0;
 
             entries.sort(Comparator.comparing(RouteStop::departure));
@@ -57,15 +66,15 @@ public class OfflineDepartures {
                 if (found.contains(stop)) continue;
                 found.add(stop);
 
-                if (ind > (maxSize-1)) break;
-                if (now.compareTo(stop.departure()) <= 0) {
+                if (maxSize != -1 && ind > (maxSize-1)) break;
+                if (fromTime.compareTo(stop.departure()) <= 0) {
                     Trip trip = storage.tripStorage().getTrips()[stop.tripId()];;
                     String heading = storage.tripStorage().getTripHeadsign(trip);
 
                     if (!calendarStorage.available(nowDate, trip.serviceId())) continue;
 
                     TimeMark timeMark = new TimeMark(
-                            LocalTime.now().plusMinutes(stop.departure().getMinsDiff(Time.now())),
+                            stop.departure(),
                             false
                     );
                     departureEntries.add(new DepartureEntry(

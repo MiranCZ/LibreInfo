@@ -4,54 +4,61 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.mhdstuff.DepartureEntryItemAdapter;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.data.PostDataHolder;
+import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Post;
+import com.example.mhdstuff.parsing.types.Time;
 import com.example.mhdstuff.parsing.types.departure.Departure;
 import com.example.mhdstuff.util.OfflineDepartures;
 
+import java.time.LocalTime;
 import java.util.List;
 
-public class DeparturePostDetailActivity extends BaseActivity {
+public class DeparturePostDetailActivity extends AbstractListViewActivity {
 
 
     private final Post post;
     public DeparturePostDetailActivity() {
-        super(PostDataHolder.getPost().name());
+        // FIXME departure scrollable layout??
+        super(PostDataHolder.getPost().name(), R.layout.activity_deparute_post_detail, R.id.departure_content);
         this.post = PostDataHolder.getPost();
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
+        List<Departure> departureList = OfflineDepartures.getOffline(storage, post.stopID(), -1, Time.ZERO);
 
-        setContentView(R.layout.activity_deparute_post_detail);
+        Departure departure = departureList.stream().filter(dep -> dep.postID() == post.postID()).findFirst().orElse(null);
 
-        Context context = this;
+        TextView title = findViewById(R.id.departure_title);
+        title.setText(departure.name());
 
-        new Thread(() -> {
-            IdStorage storage = IdStorage.getInstance();
-
-            List<Departure> departureList = OfflineDepartures.getOffline(storage, post.stopID(), 100);
-
-            Departure departure = departureList.stream().filter(dep -> dep.postID() == post.postID()).findFirst().orElse(null);
-
-            runOnUiThread(() -> {
-                FrameLayout layout = findViewById(R.id.departure_content);
-                View departureView = departure.createScrollableDepartureView(this, layout, context);
-                departureView.setFocusable(false);
-                departureView.setClickable(false);
-
-                layout.addView(departureView, 0);
-            });
-        }).start();
+        var adapter = new DepartureEntryItemAdapter(this, departure.entries());
 
 
+        int firstPos = -1;
+        for (int i = 0; i < departure.entries().size(); i++) {
+            var entry = departure.entries().get(i);
+            if (entry.timeMark().time().isAfter(Time.now())) {
+                firstPos = i;
+                break;
+            }
+        }
+        int finalFirstPos = firstPos;
+        runOnUiThread(() -> {
+            RecyclerView recyclerView = findViewById(recycleViewId);
+            recyclerView.scrollToPosition(finalFirstPos);
+        });
 
+        return adapter;
     }
 }
