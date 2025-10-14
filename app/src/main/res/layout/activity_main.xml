@@ -62,7 +62,7 @@
             android:text="@string/diversions"
             app:icon="@drawable/triangle_exclamation_regular"
             app:iconSize="24dp" />
-
+<!--
         <Button
             android:id="@+id/open_news"
             style="@style/MyButtonStyle"
@@ -70,6 +70,15 @@
             android:layout_height="wrap_content"
             android:text="@string/news"
             app:icon="@drawable/message_lines_regular"
+            app:iconSize="24dp" />-->
+
+        <Button
+            android:id="@+id/open_travel_card"
+            style="@style/MyButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Šalinkarta"
+            app:icon="@drawable/address_card_regular"
             app:iconSize="24dp" />
 
         <Button

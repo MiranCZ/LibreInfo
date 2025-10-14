@@ -24,13 +24,13 @@ public class MainActivity extends BaseActivity {
         Button buttonOpenVehicleMap = findViewById(R.id.open_map);
         Button buttonOpenEvents = findViewById(R.id.open_events);
         Button buttonOpenVehiclesList = findViewById(R.id.open_vehicles);
-        Button buttonOpenNews = findViewById(R.id.open_news);
+//        Button buttonOpenNews = findViewById(R.id.open_news);
         Button buttonOpenDiversions = findViewById(R.id.open_diversions);
         Button buttonOpenSettings = findViewById(R.id.open_settings);
         Button buttonOpenAbout = findViewById(R.id.open_about);
 
         buttonOpenSearch.setOnClickListener(v -> startActivity(SearchActivity.class));
-        buttonOpenNews.setOnClickListener(v -> startActivity(NewsActivity.class));
+//        buttonOpenNews.setOnClickListener(v -> startActivity(NewsActivity.class));
         buttonOpenVehicleMap.setOnClickListener(v -> startActivity(VehicleMapActivity.class));
         buttonOpenVehiclesList.setOnClickListener(v -> startActivity(VehiclesListActivity.class));
         buttonOpenSettings.setOnClickListener(v -> startActivity(SettingsActivity.class));
