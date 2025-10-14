@@ -29,8 +29,7 @@ public class DeparturePostDetailActivity extends AbstractListViewActivity {
 
 
     private final Post post;
-    private final JsonObject delays
-            ;
+    private final JsonObject delays;
 
     public DeparturePostDetailActivity() {
         // FIXME departure scrollable layout??

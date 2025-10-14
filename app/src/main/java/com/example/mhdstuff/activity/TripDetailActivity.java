@@ -25,14 +25,12 @@ import com.example.mhdstuff.parsing.types.Vehicle;
 public class TripDetailActivity extends BaseActivity {
 
     public TripDetailActivity() {
-        super("Trasa");
+        super("Trasa", R.layout.activity_trip_info);
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_trip_info);
 
         int tripId = getIntent().getIntExtra("tripId", -1);
 

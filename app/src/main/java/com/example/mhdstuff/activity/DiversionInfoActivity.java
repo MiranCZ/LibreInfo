@@ -25,14 +25,9 @@ import com.google.android.flexbox.FlexboxLayout;
 
 public class DiversionInfoActivity extends BaseActivity {
 
-//    private final Diversion diversion;
-
-//    public DiversionInfoActivity(Diversion diversion) {
-//        this.diversion = diversion;
-//    }
 
     public DiversionInfoActivity() {
-        super("Změny v dopravě");
+        super(R.string.diversions, R.layout.activity_diversion_info);
     }
 
     @Override
@@ -44,8 +39,6 @@ public class DiversionInfoActivity extends BaseActivity {
 
     private void createElements(IdStorage storage) {
         Diversion diversion = DiversionDataHolder.getDiversion();
-
-        setContentView(R.layout.activity_diversion_info);
 
         TextView view = findViewById(R.id.diversion_title);
         view.setText(diversion.title());

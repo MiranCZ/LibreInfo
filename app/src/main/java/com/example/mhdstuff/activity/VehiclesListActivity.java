@@ -11,6 +11,7 @@ import android.widget.PopupWindow;
 import android.widget.RadioButton;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mhdstuff.R;
@@ -32,7 +33,7 @@ public class VehiclesListActivity extends AbstractListViewActivity {
     private final SortInfo sortInfo = new SortInfo();
 
     public VehiclesListActivity() {
-        super("Seznam vozidel", R.layout.activity_vehicles, R.id.recycler_view);
+        super(R.string.vehicles, R.layout.activity_vehicles, R.id.recycler_view);
     }
 
     @Override

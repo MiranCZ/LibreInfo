@@ -40,13 +40,12 @@ public class SearchActivity extends BaseActivity {
     private boolean favorFavourites = true;
 
     public SearchActivity() {
-        super("Aktuální odjezdy");
+        super(R.string.departures, R.layout.activity_search);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search);
 
         new Thread(() -> {
             var delays = RequestHelper.getRouteDelays();

@@ -25,16 +25,34 @@ import java.util.function.Consumer;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
-    private final String name;
+    private final Name name;
+    private final Integer layoutId;
 
-    public BaseActivity(String name) {
-        this.name = name;
+    public BaseActivity(int nameId) {
+        this(nameId, null);
     }
 
+    public BaseActivity(int nameId, Integer layoutId) {
+        this.name = new TranslationName(nameId);
+        this.layoutId = layoutId;
+    }
+
+    public BaseActivity(String name) {
+        this(name, null);
+    }
+
+    public BaseActivity(String name, Integer layoutId) {
+        this.name = new LiteralName(name);
+        this.layoutId = layoutId;
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (layoutId != null) {
+            setContentView(layoutId);
+        }
     }
 
     @Override
@@ -49,7 +67,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         // Setup toolbar as ActionBar
         Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle(name);
+        toolbar.setTitle(name.name());
         setSupportActionBar(toolbar);
 
 
@@ -128,4 +146,26 @@ public abstract class BaseActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.fast_fade_in, R.anim.fast_scale_down);
         return result;
     }
+
+
+    private interface Name {
+        String name();
+    }
+
+    private record LiteralName(String name) implements Name {
+    }
+
+    private class TranslationName implements Name {
+        private final int id;
+
+        TranslationName(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public String name() {
+            return ContextCompat.getString(BaseActivity.this, id);
+        }
+    }
+
 }

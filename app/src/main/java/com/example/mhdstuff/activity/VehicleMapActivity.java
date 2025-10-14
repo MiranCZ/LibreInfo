@@ -83,7 +83,7 @@ public class VehicleMapActivity extends BaseActivity {
     CustomSymbolManager stopLayer;
 
     public VehicleMapActivity() {
-        super("Poloha vozidel");
+        super(R.string.vehicle_map);
     }
 
     @Override

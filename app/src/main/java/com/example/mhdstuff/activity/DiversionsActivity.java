@@ -15,12 +15,14 @@ import com.example.mhdstuff.util.request.RequestHelper;
 public class DiversionsActivity extends AbstractListViewActivity {
 
     public DiversionsActivity() {
-        super("Změny v dopravě", R.layout.activity_diversions, R.id.diversions_view_items);
+        super(R.string.diversions, R.layout.activity_diversions, R.id.diversions_view_items);
     }
 
     @Override
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
-        return new DiversionsItemAdapter(Diversion.parseDiversions(RequestHelper.getDiversions(),storage.lineStorage()), this
+        return new DiversionsItemAdapter(
+                Diversion.parseDiversions(RequestHelper.getDiversions(),storage.lineStorage()),
+                this
         );
     }
 

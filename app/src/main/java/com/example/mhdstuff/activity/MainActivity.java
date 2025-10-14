@@ -11,14 +11,12 @@ public class MainActivity extends BaseActivity {
 
 
     public MainActivity() {
-        super("Dpmb stuff");
+        super("Dpmb stuff", R.layout.activity_main);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_main);
 
         Button buttonOpenSearch = findViewById(R.id.open_departures);
         Button buttonOpenVehicleMap = findViewById(R.id.open_map);

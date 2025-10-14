@@ -21,12 +21,12 @@ public class NewsActivity extends BaseActivity {
     private NewsItemAdapter adapter;
 
     public NewsActivity() {
-        super("Novinky");
+        super(R.string.news, R.layout.activity_news);
     }
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_news);
+
         recyclerView = findViewById(R.id.news_view_items);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 

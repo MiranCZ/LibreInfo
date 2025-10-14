@@ -13,7 +13,7 @@ import com.example.mhdstuff.parsing.storage.IdStorage;
 public class EventsActivity extends AbstractListViewActivity {
 
     public EventsActivity() {
-        super("Mimořádné události", R.layout.activity_diversions, R.id.diversions_view_items);
+        super(R.string.events, R.layout.activity_diversions, R.id.diversions_view_items);
     }
 
     @Override

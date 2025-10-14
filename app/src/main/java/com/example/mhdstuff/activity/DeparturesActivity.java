@@ -37,15 +37,13 @@ public class DeparturesActivity extends BaseActivity {
     private final Stop stop;
 
     public DeparturesActivity() {
-        super(StopDataHolder.getStop().name);
+        super(StopDataHolder.getStop().name, R.layout.activity_departures);
         stop = StopDataHolder.getStop();
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_departures);
 
         Container<View> heartFullCont = new Container<>();
         View heartEmpty = addButtonIcon(R.drawable.heart_regular, v -> {

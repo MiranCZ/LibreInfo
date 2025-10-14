@@ -14,13 +14,15 @@ import com.example.mhdstuff.parsing.storage.IdStorage;
 
 public abstract class AbstractListViewActivity extends BaseActivity {
 
-
-    private final int layoutId;
     protected final int recycleViewId;
 
+    public AbstractListViewActivity(int nameId, int layoutId, int recycleViewId) {
+        super(nameId, layoutId);
+        this.recycleViewId = recycleViewId;
+    }
+
     public AbstractListViewActivity(String name, int layoutId, int recycleViewId) {
-        super(name);
-        this.layoutId = layoutId;
+        super(name, layoutId);
         this.recycleViewId = recycleViewId;
     }
 
@@ -28,7 +30,6 @@ public abstract class AbstractListViewActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(layoutId);
         RecyclerView recyclerView = findViewById(recycleViewId);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
