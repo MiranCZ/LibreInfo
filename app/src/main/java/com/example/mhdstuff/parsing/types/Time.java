@@ -42,7 +42,7 @@ public record Time(byte hours, byte minutes) implements Comparable<Time> {
     public Time addMinutes(int mins) {
         int newMinutes = minutes+mins;
 
-        return new Time((byte) (hours+newMinutes/60), (byte) (minutes+newMinutes%60));
+        return new Time((byte) (hours+newMinutes/60), (byte) (newMinutes%60));
     }
 
     public int getMinsDiff(Time other) {

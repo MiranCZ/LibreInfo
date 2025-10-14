@@ -1,6 +1,7 @@
 package com.example.mhdstuff.parsing.types.departure;
 
 import android.content.Context;
+import android.content.Intent;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
@@ -27,9 +28,11 @@ import com.example.mhdstuff.util.request.soap.SoapSaneObject;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
+import java.util.function.Consumer;
 
 public record DepartureEntry(LineAlias line, String finalStop, int postID, boolean lowFloor, TimeMark timeMark,
-                             Trip trip, Optional<VehicleInfo> vehicleOpt) {
+                             int tripId, Optional<VehicleInfo> vehicleOpt) {
 
     public static DepartureEntry parse(SoapSaneObject obj, Map<Long, Vehicle> vehicleMap, IdStorage storage) {
         if (obj == null) return null;
@@ -53,7 +56,7 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
             info = Optional.empty();
         }
 
-        return new DepartureEntry(line, finalStop, postID , lowFloor, timeMark,null, info);
+        return new DepartureEntry(line, finalStop, postID , lowFloor, timeMark,-1, info);
     }
 
     public View createDepartureEntryView(BaseActivity activity, ViewGroup parent, Context context) {
@@ -101,10 +104,14 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
         }
 
         view.setOnClickListener(
-                v -> {
-                    TripDataHolder.setTrip(trip);
-                    activity.startActivity(TripDetailActivity.class);
-                }
+                v -> activity.startActivity(TripDetailActivity.class, intent -> {
+
+                    vehicleOpt.ifPresent(info -> intent.putExtra("delay", info.delay()));
+
+                    Random r = new Random();
+//                    intent.putExtra("delay", r.nextInt(0,10));
+                    intent.putExtra("tripId", tripId);
+                })
         );
 
         if (timeMark.isLeaving()) {

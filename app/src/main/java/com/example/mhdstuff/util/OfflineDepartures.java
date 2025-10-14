@@ -90,7 +90,7 @@ public class OfflineDepartures {
 
                 if (maxSize != -1 && ind > (maxSize-1)) break;
                 if (fromTime.compareTo(stop.departure()) <= 0) {
-                    Trip trip = storage.tripStorage().getTrips()[stop.tripId()];;
+                    Trip trip = storage.tripStorage().getTrips()[stop.tripId()];
                     String heading = storage.tripStorage().getTripHeadsign(trip);
 
                     if (!calendarStorage.available(nowDate, trip.serviceId())) continue;
@@ -105,7 +105,7 @@ public class OfflineDepartures {
                             postId,
                             trip.lowFloor(),
                             timeMark,
-                            trip,
+                            stop.tripId(),
                             holder.info
                     ));
                     ind++;
