@@ -31,15 +31,14 @@ public class StopTime {
 
         String first = arrival.addMinutes(delay).format();
 
-        int diff = departure.getMinsDiff(arrival);
-        int loweredDelay = Math.max(0, delay - diff);
+        int loweredDelay = getLoweredDelay();
 
         String second = departure.addMinutes(loweredDelay).format();
 
         SpannableString span = new SpannableString(first + " - " + second);
 
-        span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(loweredDelay)), 0, first.length(), 0);
-        span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(delay)), first.length() + 3, span.length(), 0);
+        span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(delay)), 0, first.length(), 0);
+        span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(loweredDelay)), first.length() + 3, span.length(), 0);
 
         return span;
     }
@@ -60,6 +59,12 @@ public class StopTime {
         return delay;
     }
 
+    public int getLoweredDelay() {
+        int diff =  departure.getMinsDiff(arrival);
+
+        return Math.max(0, delay - diff);
+    }
+
     public Time getDeparture(boolean includeDelay) {
         if (!includeDelay) return departure;
 
@@ -67,10 +72,7 @@ public class StopTime {
     }
 
     public Time getDeparture() {
-        int diff =  departure.getMinsDiff(arrival);
-        int loweredDelay = Math.max(0, delay - diff);
-
-        return departure.addMinutes(loweredDelay);
+        return departure.addMinutes(getLoweredDelay());
     }
 
     public Time getArrival() {

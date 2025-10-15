@@ -100,6 +100,7 @@ public class TripDetailActivity extends BaseActivity {
                 } else {
                     departure.setText(stop.stopTime().formatColoredDelay(!lastStop));
                 }
+                delay = stop.stopTime().getLoweredDelay();
 
                 view.addView(info, id++);
             }
