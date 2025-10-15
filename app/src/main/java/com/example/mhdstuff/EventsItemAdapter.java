@@ -1,6 +1,5 @@
 package com.example.mhdstuff;
 
-import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.text.Html;
@@ -14,13 +13,11 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 
-import com.example.mhdstuff.activity.DiversionInfoActivity;
-import com.example.mhdstuff.activity.data.DiversionDataHolder;
 import com.example.mhdstuff.activity.listview.AbstractItemAdapter;
 import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.DateTime;
-import com.example.mhdstuff.parsing.types.Diversion;
+import com.example.mhdstuff.parsing.types.Event;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.TransportLine;
 import com.example.mhdstuff.util.Pair;
@@ -28,24 +25,24 @@ import com.google.android.flexbox.FlexboxLayout;
 
 import java.util.List;
 
-public class EventsItemAdapter extends AbstractItemAdapter<Diversion, EventsItemAdapter.EventItemHodler> {
+public class EventsItemAdapter extends AbstractItemAdapter<Event, EventsItemAdapter.EventItemHodler> {
 
 
     private final AbstractListViewActivity activity;
 
-    public EventsItemAdapter(List<Diversion> items, AbstractListViewActivity activity) {
+    public EventsItemAdapter(List<Event> items, AbstractListViewActivity activity) {
         super(items, R.layout.event_item_layout);
         this.activity = activity;
     }
 
     @Override
-    protected void bindValues(EventItemHodler holder, Diversion item) {
+    protected void bindValues(EventItemHodler holder, Event item) {
         IdStorage.getInstanceOnUIThread(
                 (storage) -> createElement(holder, item, storage), activity
         );
     }
 
-    private void createElement(EventItemHodler holder, Diversion item, IdStorage storage) {
+    private void createElement(EventItemHodler holder, Event item, IdStorage storage) {
         holder.title.setText(item.title());
 
         // FIXME hardcoded strings
@@ -54,18 +51,33 @@ public class EventsItemAdapter extends AbstractItemAdapter<Diversion, EventsItem
         FlexboxLayout lines = holder.lines;
 
         lines.removeAllViews();
-        for (TransportLine line : item.lines()) {
+            for (TransportLine line : item.lines()) {
             LineAlias alias = storage.lineStorage().getAlias(line.id());
 
             lines.addView(alias.createLineIconView(lines, activity));
         }
 
-        holder.content.setText(Html.fromHtml(item.publicText(), 0));
+        holder.content.setText(Html.fromHtml(item.text(), 0));
     }
 
     private SpannableString createSpannable(DateTime from, DateTime to) {
         Pair<Integer, String> formatted = DateTime.toShortenedInformedString(from, to);
         int first = formatted.left();
+
+        // only one element
+        if (first == -1) {
+            SpannableString spannable = new SpannableString(formatted.right());
+            spannable.setSpan(new ForegroundColorSpan(ContextCompat.getColor(activity, R.color.secondary_color_light_tone)), 0,spannable.length() , 0);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                Typeface font = ResourcesCompat.getFont(activity, R.font.roboto_bold);
+                if (font != null) {
+                    spannable.setSpan(new TypefaceSpan(font), 0, spannable.length(), 0);
+                }
+            }
+
+            return spannable;
+        }
 
         SpannableString spannable = new SpannableString(formatted.right());
         spannable.setSpan(new ForegroundColorSpan(ContextCompat.getColor(activity, R.color.secondary_color_light_tone)), 0,first , 0);

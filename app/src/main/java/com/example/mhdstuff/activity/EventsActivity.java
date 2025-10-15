@@ -7,8 +7,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mhdstuff.EventsItemAdapter;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
-import com.example.mhdstuff.parsing.TrafficChangesManager;
 import com.example.mhdstuff.parsing.storage.IdStorage;
+import com.example.mhdstuff.parsing.types.Event;
+import com.example.mhdstuff.util.request.RequestHelper;
 
 public class EventsActivity extends AbstractListViewActivity {
 
@@ -18,12 +19,7 @@ public class EventsActivity extends AbstractListViewActivity {
 
     @Override
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
-        return new EventsItemAdapter(
-                TrafficChangesManager.parse(
-                        ".views-infinite-scroll-content-wrapper",
-                        storage.lineStorage()
-                ), this
-        );
+        return new EventsItemAdapter(Event.parseEvents(RequestHelper.getEvents(), storage.lineStorage()), this);
     }
 
 }

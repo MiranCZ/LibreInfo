@@ -5,11 +5,19 @@ import androidx.annotation.NonNull;
 
 import com.example.mhdstuff.util.Pair;
 
+import java.time.LocalDateTime;
 import java.util.Locale;
 
 public record DateTime(int day, int month, int year, int hours, int minutes) {
 
     public static final DateTime NONE = new DateTime(-1, -1, -1, -1, -1);
+
+
+    public static DateTime now() {
+        LocalDateTime now = LocalDateTime.now();
+
+        return new DateTime(now.getDayOfMonth(), now.getMonthValue(), now.getYear(), now.getHour(), now.getMinute());
+    }
 
     /**
      * The format seems to be {@code DD.MM.YYYY HH:mm}
@@ -38,11 +46,28 @@ public record DateTime(int day, int month, int year, int hours, int minutes) {
     }
 
     public static Pair<Integer, String> toShortenedInformedString(DateTime from, DateTime to) {
-        if (from.year != to.year) {
+        DateTime now = now();
+
+        if (to == NONE) {
+            if (from.year != now.year) {
+                String fromStr = from.toString();
+                return new Pair<>(-1, fromStr);
+            }
+
+            if (from.month != now.month || from.day != now.day) {
+                String fromStr = from.toYearlessString();
+                return new Pair<>(-1, fromStr);
+            }
+
+            String fromStr = from.toTimeString();
+            return new Pair<>(-1, fromStr);
+        }
+
+        if (from.year != to.year || to.year != now.year) {
             String fromStr = from.toString();
             return new Pair<>(fromStr.length(), fromStr + " - "+to);
         }
-        if (from.month != to.month || from.day != to.day) {
+        if (from.month != to.month || from.day != to.day || to.month != now.month || to.day != now.day) {
             String fromStr = from.toYearlessString();
             return new Pair<>(fromStr.length(), fromStr + " - " + to.toYearlessString());
         }

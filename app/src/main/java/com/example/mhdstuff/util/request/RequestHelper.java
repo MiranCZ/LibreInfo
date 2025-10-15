@@ -64,6 +64,11 @@ public class RequestHelper {
         return result.orElseGet(JsonArray::new);
     }
 
+    public static JsonArray getEvents() {
+        Optional<JsonArray> result = makeOwnRequest("events", JsonArray.class);
+        return result.orElseGet(JsonArray::new);
+    }
+
     public static JsonObject getRouteDelays() {
         Optional<JsonObject> result = makeOwnRequest("routedelays", JsonObject.class);
         return result.orElseGet(JsonObject::new);

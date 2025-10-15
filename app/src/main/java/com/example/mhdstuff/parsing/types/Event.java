@@ -2,13 +2,15 @@ package com.example.mhdstuff.parsing.types;
 
 import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public record Event(long number, DateTime validFrom, DateTime validTo, DateTime publicFrom, DateTime publicTo,
-                    String title, String place, String cause, MinuteRange delay, String text,
-                    List<TransportLine> affectedLines, Location location) {
+public record Event(DateTime from, DateTime to,
+                    String title, MinuteRange delay, String text,
+                    List<TransportLine> lines) {
 
     public static List<Event> parseEvents(JsonArray array, LineStorage storage) {
         return TypeHelper.parseList(array, (o) -> parse(o, storage));
@@ -16,28 +18,36 @@ public record Event(long number, DateTime validFrom, DateTime validTo, DateTime 
 
     public static Event parse(JsonObject obj, LineStorage storage) {
         if (obj == null) return null;
-        long number = obj.get("Number").getAsLong();
 
-        DateTime validFrom = DateTime.parse(obj.get("ValidFrom").getAsString());
-        DateTime validTo = DateTime.parse(obj.get("ValidTo").getAsString());
-        DateTime publicFrom = DateTime.parse(obj.get("PublicFrom").getAsString());
-        DateTime publicTo = DateTime.parse(obj.get("PublicTo").getAsString());
+        String title = obj.get("title").getAsString();
 
-        String title = obj.get("Title").getAsString();
-        String place = obj.get("Place").getAsString();
-        String cause = obj.get("Cause").getAsString();
+        DateTime from = DateTime.parse(obj.get("from").getAsString());
+        DateTime to = DateTime.parse(obj.get("to").getAsString());
 
-        MinuteRange delay = MinuteRange.parse(obj.get("Delay").getAsString());
 
-        String text = obj.get("Text").getAsString();
+//        String place = obj.get("Place").getAsString();
+//        String cause = obj.get("Cause").getAsString();
 
-        List<TransportLine> affectedLines = TransportLine.parseTransportLines(
-                obj.get("AffectedLines").getAsString(), storage
-        );
+        JsonElement delayEl = obj.get("delay");
 
-        Location location = Location.parse(obj);
 
-        return new Event(number, validFrom, validTo, publicFrom, publicTo, title, place, cause, delay, text, affectedLines, location);
+        MinuteRange delay;
+        if (delayEl != null) {
+            delay = MinuteRange.parse(delayEl.getAsString());
+        } else {
+            delay = MinuteRange.NONE;
+        }
+
+        String text = obj.get("content").getAsString();
+
+        List<TransportLine> lines = new ArrayList<>();
+
+        for (JsonElement element : obj.get("lines").getAsJsonArray()) {
+            lines.add(TransportLine.parse(element.getAsString(), storage));
+        }
+
+
+        return new Event(from, to, title, delay, text, lines);
     }
 
 }
