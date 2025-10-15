@@ -42,7 +42,7 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
         int postID = obj.getInt("PostID");
 
         boolean lowFloor = obj.getBoolean("IsBarrierLess");
-        TimeMark timeMark = TimeMark.parse(obj.getString("TimeMark")); // TODO make this into an object with DriveOrderSign
+        TimeMark timeMark = null;// TimeMark.parse(obj.getString("TimeMark")); // TODO make this into an object with DriveOrderSign
 
         int connectionId = obj.getInt("ConnectionID");
         long key = ((long) connectionId <<32) | ((long)line.id());
@@ -62,12 +62,12 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
     public View createDepartureEntryView(BaseActivity activity, ViewGroup parent, Context context) {
         View view = LayoutInflater.from(context).inflate(R.layout.departure_entry_layout, parent , false);
 
-        populateDepartureViewEntry(activity, context, view);
+        populateDepartureViewEntry(activity, context, view, true);
 
         return view;
     }
 
-    public void populateDepartureViewEntry(BaseActivity activity, Context context, View view) {
+    public void populateDepartureViewEntry(BaseActivity activity, Context context, View view, boolean showDelay) {
         FrameLayout icon = view.findViewById(R.id.departure_line_icon);
         icon.removeAllViews();
         icon.addView(line.createLineIconView(icon, context),0);
@@ -77,13 +77,13 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
 
         TextView arrival = view.findViewById(R.id.departure_arrival);
 
-        String arrivalText = timeMark.getFormattedString(30);
+        String arrivalText = timeMark.getFormattedString(30, showDelay);
         if (vehicleOpt.isPresent()) {
             var vehicle = vehicleOpt.get();
             int color = vehicle.getDelayColor();
 
             String delayStr = "";
-            if (vehicle.delay() > 0) {
+            if (vehicle.delay() > 0 && showDelay) {
                 delayStr = " ("+vehicle.delay()+") ";
             }
 
@@ -114,7 +114,7 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
                 })
         );
 
-        if (timeMark.isLeaving()) {
+        if (timeMark.leaving()) {
             AlphaAnimation blink = new AlphaAnimation(0.0f, 1.0f);
             blink.setDuration(500);
             blink.setStartOffset(20);

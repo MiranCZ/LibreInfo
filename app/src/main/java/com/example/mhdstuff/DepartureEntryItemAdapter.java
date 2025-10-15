@@ -28,9 +28,11 @@ public class DepartureEntryItemAdapter extends AbstractItemAdapter<DepartureEntr
 
     @Override
     protected void bindValues(DepartureEntryHolder holder, DepartureEntry item) {
-        item.populateDepartureViewEntry(parent, parent, holder.itemView);
+        boolean alreadyLeft = !item.timeMark().time().isAfter(Time.now()) && !item.timeMark().leaving();
 
-        if (item.timeMark().time().isBefore(Time.now()) && !item.timeMark().isLeaving()) {
+        item.populateDepartureViewEntry(parent, parent, holder.itemView, !alreadyLeft);
+
+        if (alreadyLeft) {
             TextView text = holder.itemView.findViewById(R.id.departure_heading);
 
             SpannableString str = new SpannableString(text.getText());

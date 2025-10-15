@@ -58,9 +58,11 @@ public class OfflineDepartures {
                 if (delays.has(key)) {
                     System.out.println(key);
 
-                    stop = stop.withDelay(delays.get(key).getAsJsonObject().get("delay").getAsInt());
+                    stop.setDelay(delays.get(key).getAsJsonObject().get("delay").getAsInt());
 
                     info = Optional.of(new VehicleInfo(delays.get(key).getAsJsonObject().get("id").getAsInt(), stop.delay()));
+                } else {
+                    stop.setDelay(0);
                 }
             }
 
@@ -95,9 +97,11 @@ public class OfflineDepartures {
 
                     if (!calendarStorage.available(nowDate, trip.serviceId())) continue;
 
+                    // TODO is leaving?
                     TimeMark timeMark = new TimeMark(
-                            stop.departure(),
-                            holder.info.isPresent()
+                            stop.stopTime(),
+                            holder.info.isPresent(),
+                            false
                     );
                     departureEntries.add(new DepartureEntry(
                             storage.lineStorage().getAlias(trip.lineId()),

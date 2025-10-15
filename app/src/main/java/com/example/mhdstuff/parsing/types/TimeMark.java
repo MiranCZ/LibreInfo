@@ -5,32 +5,13 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-public record TimeMark(Time time, boolean certain) {
+public record TimeMark(StopTime stopTime, boolean certain, boolean leaving) {
 
-    public TimeMark(Time time) {
-        this(time, true);
-    }
 
-    public static TimeMark parse(String str) {
-        if (str == null) return null;
-        if (str.equals("**")) {
-            return new TimeMark(Time.MIN);
-        }
+    public String getFormattedString(int minutesThreshold, boolean includeDelay) {
+        Time time = stopTime.getDeparture(includeDelay);
 
-        if (str.endsWith("min")) {
-            str = str.substring(0, str.length()-"min".length()).strip();
-
-            int minutes = Integer.parseInt(str);
-            Time now = Time.now();
-
-            return new TimeMark(now.plusMinutes(minutes));
-        } else {
-            return new TimeMark(Time.parse(str));
-        }
-    }
-
-    public String getFormattedString(int minutesThreshold) {
-        if (time == Time.MIN) return "**";
+        if (leaving) return "**";
 
         Time now = Time.now();
         long elapsed = time.getMinsDiff(now);
@@ -47,8 +28,8 @@ public record TimeMark(Time time, boolean certain) {
         }
     }
 
-    public boolean isLeaving() {
-        return time == Time.MIN;
+    public Time time() {
+        return stopTime.getDeparture();
     }
 
 }

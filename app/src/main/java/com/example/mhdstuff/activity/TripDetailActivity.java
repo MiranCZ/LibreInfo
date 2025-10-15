@@ -93,37 +93,12 @@ public class TripDetailActivity extends BaseActivity {
 
                 TextView departure = info.findViewById(R.id.departure_time);
 
-                boolean waitsAtStop = !stop.departure().equals(stop.arrival()) && (i+1)<stops.length;
-
+                boolean lastStop = (i+1)>=stops.length;
+                stop.setDelay(delay);
                 if (delay == -1) {
-                    String depStr = stop.arrival().format();
-
-                    if (waitsAtStop) {
-                        depStr = depStr + " - "+stop.departure().format();
-                    }
-                    departure.setText(depStr);
+                    departure.setText(stop.stopTime().formatWithoutDelay(!lastStop));
                 } else {
-                    if (waitsAtStop) {
-                        String first = stop.arrival().addMinutes(delay).format();
-                        int prevDelay = delay;
-
-                        int diff = stop.departure().getMinsDiff(stop.arrival());
-                        delay = Math.max(0, delay - diff);
-
-                        String second = stop.departure().addMinutes(delay).format();
-
-                        SpannableString span = new SpannableString(first + " - " + second);
-
-                        span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(prevDelay)), 0, first.length(), 0);
-                        span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(delay)), first.length() + 3, span.length(), 0);
-
-                        departure.setText(span);
-                    } else {
-                        SpannableString span = new SpannableString(stop.arrival().addMinutes(delay).format());
-                        span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(delay)), 0, span.length(), 0);
-
-                        departure.setText(span);
-                    }
+                    departure.setText(stop.stopTime().formatColoredDelay(!lastStop));
                 }
 
                 view.addView(info, id++);
