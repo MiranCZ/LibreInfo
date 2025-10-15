@@ -21,7 +21,6 @@ import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Diversion;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.DateTime;
-import com.example.mhdstuff.parsing.types.TransportLine;
 import com.google.android.flexbox.FlexboxLayout;
 
 import java.util.List;
@@ -58,9 +57,7 @@ public class DiversionsItemAdapter extends AbstractItemAdapter<Diversion, Divers
         FlexboxLayout lines = holder.lines;
 
         lines.removeAllViews();
-        for (TransportLine line : item.lines()) {
-            LineAlias alias = storage.lineStorage().getAlias(line.id());
-
+        for (LineAlias alias : item.lines()) {
             lines.addView(alias.createLineIconView(lines, activity));
         }
     }

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public record Diversion(String title, Location location, DateTime from, DateTime to,
-                        String publicText, List<TransportLine> lines) {
+                        String publicText, List<LineAlias> lines) {
 
     public static List<Diversion> parseDiversions(JsonArray array, LineStorage storage) {
         return TypeHelper.parseList(array, (o) -> parse(o, storage));
@@ -25,10 +25,10 @@ public record Diversion(String title, Location location, DateTime from, DateTime
 
         String publicText = obj.get("content").getAsString();
 
-        List<TransportLine> lines = new ArrayList<>();
+        List<LineAlias> lines = new ArrayList<>();
 
         for (JsonElement element : obj.get("lines").getAsJsonArray()) {
-            lines.add(TransportLine.parse(element.getAsString(), storage));
+            lines.add(LineAlias.parse(element.getAsString(), storage));
         }
 
         return new Diversion(title, location, from, to, publicText, lines);

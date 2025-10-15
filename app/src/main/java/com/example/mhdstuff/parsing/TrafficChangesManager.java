@@ -3,7 +3,7 @@ package com.example.mhdstuff.parsing;
 import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.example.mhdstuff.parsing.types.DateTime;
 import com.example.mhdstuff.parsing.types.Diversion;
-import com.example.mhdstuff.parsing.types.TransportLine;
+import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.util.Pair;
 
 import org.jsoup.Jsoup;
@@ -100,7 +100,7 @@ public class TrafficChangesManager {
             DateTime to = timeInfo.right();
 
             infos.add(new Diversion(title, null, from, to, content.toString(),
-                    lines.stream().map(s -> TransportLine.parse(s, lineStorage)).collect(Collectors.toList())
+                    lines.stream().map(s -> LineAlias.parse(s, lineStorage)).collect(Collectors.toList())
             ));
         }
 

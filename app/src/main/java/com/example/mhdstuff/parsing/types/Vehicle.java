@@ -87,7 +87,7 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         // *probably* how many people are currently in it? not sure
         int bearing = obj.get("Bearing").getAsInt();
 
-        TransportLine line = TransportLine.parseFromIdAndName(storage.lineStorage(), obj.get("LineID").getAsInt(), obj.get("LineName").getAsString());
+//        TransportLine line = TransportLine.parseFromIdAndName(storage.lineStorage(), obj.get("LineID").getAsInt(), obj.get("LineName").getAsString());
 
         //TODO figure out what this means
         int routeId = obj.get("RouteID").getAsInt();

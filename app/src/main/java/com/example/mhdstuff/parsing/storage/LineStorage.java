@@ -3,7 +3,6 @@ package com.example.mhdstuff.parsing.storage;
 import android.graphics.Color;
 
 import com.example.mhdstuff.parsing.types.LineAlias;
-import com.example.mhdstuff.parsing.types.TransportLine;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -86,20 +85,12 @@ public class LineStorage {
 
     public LineAlias getAlias(String name) {
         LineAlias alias = nameToAlias.get(name);
-        if (alias == null) return new LineAlias(0, name, 0,"",0,"");
+        if (alias == null) return new LineAlias(0, name, android.graphics.Color.MAGENTA, "#FF00FF", Color.WHITE, "#FFFFFF");
         return alias;
     }
 
     public Optional<LineAlias> getOptionalAlias(String name) {
         return Optional.ofNullable(nameToAlias.get(name));
-    }
-
-    public TransportLine getLine(int id) {
-        return getAlias(id).toTransportLine();
-    }
-
-    public TransportLine getLine(String name) {
-        return getAlias(name).toTransportLine();
     }
 
     public List<LineAlias> getAllAliases() {

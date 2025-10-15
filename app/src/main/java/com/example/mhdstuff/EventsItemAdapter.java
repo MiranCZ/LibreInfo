@@ -19,7 +19,6 @@ import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.DateTime;
 import com.example.mhdstuff.parsing.types.Event;
 import com.example.mhdstuff.parsing.types.LineAlias;
-import com.example.mhdstuff.parsing.types.TransportLine;
 import com.example.mhdstuff.util.Pair;
 import com.google.android.flexbox.FlexboxLayout;
 
@@ -37,12 +36,10 @@ public class EventsItemAdapter extends AbstractItemAdapter<Event, EventsItemAdap
 
     @Override
     protected void bindValues(EventItemHodler holder, Event item) {
-        IdStorage.getInstanceOnUIThread(
-                (storage) -> createElement(holder, item, storage), activity
-        );
+        createElement(holder, item);
     }
 
-    private void createElement(EventItemHodler holder, Event item, IdStorage storage) {
+    private void createElement(EventItemHodler holder, Event item) {
         holder.title.setText(item.title());
 
         // FIXME hardcoded strings
@@ -51,9 +48,7 @@ public class EventsItemAdapter extends AbstractItemAdapter<Event, EventsItemAdap
         FlexboxLayout lines = holder.lines;
 
         lines.removeAllViews();
-            for (TransportLine line : item.lines()) {
-            LineAlias alias = storage.lineStorage().getAlias(line.id());
-
+            for (LineAlias alias : item.lines()) {
             lines.addView(alias.createLineIconView(lines, activity));
         }
 

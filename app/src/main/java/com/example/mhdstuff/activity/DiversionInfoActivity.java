@@ -20,7 +20,6 @@ import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Diversion;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.DateTime;
-import com.example.mhdstuff.parsing.types.TransportLine;
 import com.google.android.flexbox.FlexboxLayout;
 
 public class DiversionInfoActivity extends BaseActivity {
@@ -52,9 +51,7 @@ public class DiversionInfoActivity extends BaseActivity {
 
         FlexboxLayout lines = findViewById(R.id.diversion_line_list);
 
-        for (TransportLine line : diversion.lines()) {
-            LineAlias alias = storage.lineStorage().getAlias(line.id());
-
+        for (LineAlias alias : diversion.lines()) {
             lines.addView(alias.createLineIconView(lines, this));
         }
 

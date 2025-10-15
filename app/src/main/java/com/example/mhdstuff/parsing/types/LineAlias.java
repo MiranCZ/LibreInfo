@@ -159,11 +159,6 @@ public record LineAlias(int id, String lineDisplayName, int backgroundColor, Str
         return obj;
     }
 
-
-    public TransportLine toTransportLine() {
-        return new TransportLine(id, lineDisplayName);
-    }
-
     public View createLineIconView(ViewGroup parent, Context context) {
         View itemView = LayoutInflater.from(context).inflate(R.layout.line_icon_layout, parent , false);
         TextView title = itemView.findViewById(R.id.line_name);

@@ -14,7 +14,7 @@ import java.util.List;
  * @param stopID ID of the stop this post corresponds to
  * @param postID ID unique to the stop
  */
-public record Post(int stopID, int postID, String name, Location location, boolean isPublic, List<TransportLine> lines) {
+public record Post(int stopID, int postID, String name, Location location, boolean isPublic, List<LineAlias> lines) {
 
 
     public static List<Post> parsePosts(DataInputStream array, LineStorage lineStorage) throws IOException {
@@ -45,13 +45,13 @@ public record Post(int stopID, int postID, String name, Location location, boole
         double lng = is.readDouble();
 
         boolean isPublic = is.readBoolean();
-        List<TransportLine> lines = new ArrayList<>();
+        List<LineAlias> lines = new ArrayList<>();
 
         int lineSize = is.readInt();
 
         for (int j = 0; j < lineSize; j++) {
             int id = is.readInt();
-            lines.add(lineStorage.getLine(id));
+            lines.add(lineStorage.getAlias(id));
         }
 
 
