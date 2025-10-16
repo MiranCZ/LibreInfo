@@ -23,7 +23,7 @@ public class StopTime {
 
     public SpannableString formatColoredDelay(boolean canIncludeBoth) {
         if (arrival.equals(departure) || !canIncludeBoth) {
-            SpannableString span = new SpannableString(arrival.addMinutes(delay).format());
+            SpannableString span = new SpannableString("("+delay+") "+ arrival.addMinutes(delay).format());
             span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(delay)), 0, span.length(), 0);
 
             return span;
