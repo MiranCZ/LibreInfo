@@ -7,10 +7,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mhdstuff.DiversionsItemAdapter;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
-import com.example.mhdstuff.parsing.TrafficChangesManager;
+import com.example.mhdstuff.exception.AppException;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Diversion;
 import com.example.mhdstuff.util.request.RequestHelper;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DiversionsActivity extends AbstractListViewActivity {
 
@@ -20,10 +23,16 @@ public class DiversionsActivity extends AbstractListViewActivity {
 
     @Override
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
-        return new DiversionsItemAdapter(
-                Diversion.parseDiversions(RequestHelper.getDiversions(),storage.lineStorage()),
-                this
-        );
+        List<Diversion> diversions;
+
+        try {
+            diversions = Diversion.parseDiversions(RequestHelper.getDiversions(),storage.lineStorage());
+        } catch (AppException e) {
+            e.showErrPopup(this);
+            diversions = new ArrayList<>();
+        }
+
+        return new DiversionsItemAdapter(diversions, this);
     }
 
 

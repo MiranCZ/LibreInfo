@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Looper;
 import android.util.Log;
 
+import com.example.mhdstuff.activity.base.BaseActivity;
+import com.example.mhdstuff.exception.AppException;
 import com.example.mhdstuff.util.CacheHelper;
 import com.example.mhdstuff.util.Pair;
 import com.example.mhdstuff.util.PreferencesHolder;
@@ -29,7 +31,33 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
     private static final Map<Class<?>, Object> instances = new HashMap<>();
     private static boolean initCalled = false;
 
+    private static AppException error;
+
+
     public static void init(Context context) {
+        init(context, false);
+    }
+
+    public static void init(Context context, boolean force) {
+        if (force) {
+            initCalled = false;
+        }
+
+        try {
+            initInternal(context);
+        } catch (AppException e) {
+            e.printStackTrace();
+            error = e;
+        }
+    }
+
+    public static void onActivity(BaseActivity activity) {
+        if (error != null) {
+            error.showErrPopup(activity);
+        }
+    }
+
+    private static void initInternal(Context context) throws AppException {
         if (initCalled) return;
         initCalled = true;
         Log.d("IdStorage", "Initializing...");

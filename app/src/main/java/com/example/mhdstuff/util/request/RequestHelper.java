@@ -1,5 +1,6 @@
 package com.example.mhdstuff.util.request;
 
+import com.example.mhdstuff.exception.RequestException;
 import com.google.gson.*;
 
 import java.io.IOException;
@@ -14,117 +15,106 @@ import java.util.zip.ZipInputStream;
 public class RequestHelper {
 
 
-    private static final String URL_START = "10.0.2.2/api";
-    private static final String STATIC_DATA_URL = "https://mirancz.github.io/gtfsstatic/";
+//    private static final String URL_START = "10.0.2.2/api";
+//    private static final String STATIC_DATA_URL = "https://mirancz.github.io/gtfsstatic/";
 
-    public static InputStream getApi() {
-        return readUrl(STATIC_DATA_URL+ "parsed/api");
+    public static InputStream getApi() throws RequestException {
+        return readStaticGtfs("api");
     }
 
-    public static InputStream getCalendar() {
-        return readUrl(STATIC_DATA_URL+ "parsed/calendar");
+    public static InputStream getCalendar() throws RequestException {
+        return readStaticGtfs("calendar");
     }
 
-    public static InputStream getCalendarDates() {
-        return readUrl(STATIC_DATA_URL+ "parsed/calendar_dates");
+    public static InputStream getCalendarDates() throws RequestException {
+        return readStaticGtfs("calendar_dates");
     }
 
-    public static InputStream getStops() {
-        return readUrl(STATIC_DATA_URL+ "parsed/stops");
+    public static InputStream getStops() throws RequestException {
+        return readStaticGtfs("stops");
     }
 
-    public static InputStream getStopTimes() {
-        return readUrl(STATIC_DATA_URL+ "parsed/stop_times");
+    public static InputStream getStopTimes() throws RequestException {
+        return readStaticGtfs("stop_times");
     }
 
-    public static InputStream getTrips() {
-        return readUrl(STATIC_DATA_URL+ "parsed/trips");
+    public static InputStream getTrips() throws RequestException {
+        return readStaticGtfs("trips");
     }
 
-    public static InputStream getLineAliases() {
-        return readUrl(STATIC_DATA_URL+ "parsed/lines");
+    public static InputStream getLineAliases() throws RequestException {
+        return readStaticGtfs("lines");
+    }
+    
+    public static InputStream getRouteStops() throws RequestException {
+        return readStaticGtfs("route_stops");
     }
 
-    public static InputStream getPosts() {
-        return readUrl(STATIC_DATA_URL+ "parsed/posts");
+    public static InputStream getPosts() throws RequestException {
+        return readStaticGtfs("posts");
+    }
+
+    private static InputStream readStaticGtfs(String endpoint) throws RequestException {
+        return readUrl(Endpoint.STATIC_GTFS.resolve("parsed", endpoint));
     }
 
     // we are just fucked
     public static JsonArray getNews() {
-        if (true) return new JsonArray();
-
-        Optional<JsonObject> result = makeRequest("news", JsonObject.class);
-        if (result.isEmpty()) return new JsonArray();
-
-        return result.get().get("News").getAsJsonArray();
+        return new JsonArray(); // TODO
     }
 
-    public static JsonArray getDiversions() {
-        Optional<JsonArray> result = makeOwnRequest("diversions", JsonArray.class);
-        return result.orElseGet(JsonArray::new);
+    public static JsonArray getEvents() throws RequestException {
+        return makeOwnRequest("events", JsonArray.class);
     }
 
-    public static JsonArray getEvents() {
-        Optional<JsonArray> result = makeOwnRequest("events", JsonArray.class);
-        return result.orElseGet(JsonArray::new);
+    public static JsonArray getDiversions() throws RequestException {
+        return makeOwnRequest("diversions", JsonArray.class);
     }
 
-    public static JsonObject getRouteDelays() {
-        Optional<JsonObject> result = makeOwnRequest("routedelays", JsonObject.class);
-        return result.orElseGet(JsonObject::new);
+    public static JsonObject getRouteDelays() throws RequestException {
+        return makeOwnRequest("routedelays", JsonObject.class);
     }
 
-    public static InputStream getRouteStops() {
-        return readUrl("https://mirancz.github.io/gtfsstatic/parsed/route_stops");
-    }
 
-    public static ZipInputStream getStaticGTFS() {
-        InputStream stream = readUrl("https://kordis-jmk.cz/gtfs/gtfs.zip");
-        if (stream == null) return null;
-
-        return new ZipInputStream(stream);
-    }
-
-    private static <T extends JsonElement> Optional<T> makeRequest(String endpoint, Class<T> type) {
+    private static <T extends JsonElement> T makeOwnRequest(String endpoint, Class<T> type) throws RequestException {
         try {
-            InputStream stream = readUrl(URL_START+endpoint);
-            if (stream == null) return Optional.empty();
+            InputStream stream = readUrl(Endpoint.APP_SERVER.resolve(endpoint));
+            if (stream == null) {
+                throw RequestException.reachError(Endpoint.APP_SERVER);
+            }
 
             String output = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
             stream.close();
 
-            return Optional.ofNullable(new Gson().fromJson(output, type));
+            if (output.isBlank()) {
+                throw RequestException.readError(Endpoint.APP_SERVER);
+            }
+
+            return new Gson().fromJson(output, type);
+        } catch (RequestException e) {
+            throw e;
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RequestException("IO Exception "+e.getMessage(), Endpoint.APP_SERVER);
+        } catch (JsonSyntaxException e) {
+            e.printStackTrace();
+            throw RequestException.parseError(Endpoint.APP_SERVER);
         } catch (Exception e) {
             e.printStackTrace();
-            return Optional.empty();
+            throw new RequestException("Unexpected error ",Endpoint.APP_SERVER);
         }
     }
 
-    private static <T extends JsonElement> Optional<T> makeOwnRequest(String endpoint, Class<T> type) {
+    private static InputStream readUrl(Endpoint endpoint) throws RequestException {
         try {
-            InputStream stream = readUrl("http://138.3.254.103:5000/"+endpoint);
-            if (stream == null) return Optional.empty();
-
-            String output = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-            stream.close();
-
-            return Optional.ofNullable(new Gson().fromJson(output, type));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
-    }
-
-    private static InputStream readUrl(String stringUrl) {
-        try {
-            URL url = new URL(stringUrl);
+            URL url = new URL(endpoint.url);
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
             return con.getInputStream();
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
+            throw RequestException.reachError(endpoint);
         }
     }
 }

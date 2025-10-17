@@ -3,6 +3,8 @@ package com.example.mhdstuff.util;
 import android.content.Context;
 import android.util.Log;
 
+import com.example.mhdstuff.exception.AppException;
+import com.example.mhdstuff.exception.RequestException;
 import com.example.mhdstuff.util.request.RequestHelper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -18,6 +20,7 @@ import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 import kotlin.text.Charsets;
@@ -45,88 +48,52 @@ public class CacheHelper {
         }
     }
 
-    public static DataInputStream getApi(Context context) {
-        try {
-            return readOrFetch(RequestHelper::getApi, context, "data", "api");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static DataInputStream getApi(Context context) throws AppException {
+        return readOrFetch(RequestHelper::getApi, context, "data", "api");
     }
 
-    public static DataInputStream getCalendar(Context context) {
-        try {
-            return readOrFetch(RequestHelper::getCalendar, context, "data", "calendar");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static DataInputStream getCalendar(Context context) throws AppException {
+        return readOrFetch(RequestHelper::getCalendar, context, "data", "calendar");
     }
 
-    public static DataInputStream getCalendarDates(Context context) {
-        try {
-            return readOrFetch(RequestHelper::getCalendarDates, context, "data", "calendar_dates");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static DataInputStream getCalendarDates(Context context) throws AppException {
+        return readOrFetch(RequestHelper::getCalendarDates, context, "data", "calendar_dates");
     }
 
-    public static DataInputStream getStopTimes(Context context) {
-        try {
-            return readOrFetch(RequestHelper::getStopTimes, context, "data", "stop_times");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static DataInputStream getStopTimes(Context context) throws AppException {
+        return readOrFetch(RequestHelper::getStopTimes, context, "data", "stop_times");
     }
 
-    public static DataInputStream getTrips(Context context) {
-        try {
-            return readOrFetch(RequestHelper::getTrips, context, "data", "trips");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static DataInputStream getTrips(Context context) throws AppException {
+        return readOrFetch(RequestHelper::getTrips, context, "data", "trips");
     }
 
-    public static DataInputStream getStops(Context context) {
-        try {
-            return readOrFetch(RequestHelper::getStops, context, "data", "stops");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static DataInputStream getStops(Context context) throws AppException {
+        return readOrFetch(RequestHelper::getStops, context, "data", "stops");
     }
 
-    public static DataInputStream getLineAliases(Context context) {
-        try {
-            return readOrFetch(RequestHelper::getLineAliases, context, "data", "lines");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static DataInputStream getLineAliases(Context context) throws AppException {
+        return readOrFetch(RequestHelper::getLineAliases, context, "data", "lines");
     }
 
-    public static DataInputStream getPosts(Context context) {
-        try {
-            return readOrFetch(RequestHelper::getPosts, context, "data", "posts");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static DataInputStream getPosts(Context context) throws AppException {
+        return readOrFetch(RequestHelper::getPosts, context, "data", "posts");
     }
 
-    private static DataInputStream readOrFetch(Callable<InputStream> fetchFunc, Context context, String... name) throws FileNotFoundException {
+    private static DataInputStream readOrFetch(Callable<InputStream> fetchFunc, Context context, String... name) throws AppException {
         if (!isCached(context, name)) {
             try {
                 writeToCache(fetchFunc.call().readAllBytes(), context, name);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new AppException("Failed to write to cache");
             }
         }
 
-        return new DataInputStream(new BufferedInputStream(new FileInputStream(getCachedPath(context, name).toFile())));
+        try {
+            return new DataInputStream(new BufferedInputStream(new FileInputStream(getCachedPath(context, name).toFile())));
+        } catch (Exception e) {
+            throw new AppException("Failed to read cache file "+ Arrays.toString(name));
+        }
     }
 
     private static JsonArray readOrFetchJson(String cacheName, Callable<JsonArray> fetchFunc, Context context) {

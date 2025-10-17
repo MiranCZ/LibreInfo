@@ -19,13 +19,14 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.util.Text;
 import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.function.Consumer;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
-    private final Name name;
+    private final Text name;
     private final Integer layoutId;
 
     public BaseActivity(int nameId) {
@@ -33,7 +34,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     public BaseActivity(int nameId, Integer layoutId) {
-        this.name = new TranslationName(nameId);
+        this.name = Text.translatable(nameId);
         this.layoutId = layoutId;
     }
 
@@ -42,7 +43,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     public BaseActivity(String name, Integer layoutId) {
-        this.name = new LiteralName(name);
+        this.name = Text.literal(name);
         this.layoutId = layoutId;
     }
 
@@ -67,7 +68,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         // Setup toolbar as ActionBar
         Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle(name.name());
+        toolbar.setTitle(name.getName(this));
         setSupportActionBar(toolbar);
 
 
@@ -147,25 +148,5 @@ public abstract class BaseActivity extends AppCompatActivity {
         return result;
     }
 
-
-    private interface Name {
-        String name();
-    }
-
-    private record LiteralName(String name) implements Name {
-    }
-
-    private class TranslationName implements Name {
-        private final int id;
-
-        TranslationName(int id) {
-            this.id = id;
-        }
-
-        @Override
-        public String name() {
-            return ContextCompat.getString(BaseActivity.this, id);
-        }
-    }
 
 }

@@ -6,6 +6,7 @@ import android.widget.Button;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.settings.SettingsActivity;
+import com.example.mhdstuff.parsing.storage.IdStorage;
 
 public class MainActivity extends BaseActivity {
 
@@ -17,6 +18,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        IdStorage.onActivity(this);
 
         Button buttonOpenSearch = findViewById(R.id.open_departures);
         Button buttonOpenVehicleMap = findViewById(R.id.open_map);

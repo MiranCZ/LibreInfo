@@ -1,5 +1,6 @@
 package com.example.mhdstuff;
 
+import android.app.Activity;
 import android.content.Context;
 
 import com.example.mhdstuff.parsing.storage.IdStorage;

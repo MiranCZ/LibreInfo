@@ -32,6 +32,12 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="AlertDialogStyle" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+<!--        <item name="android:background">@drawable/round_background</item>-->
+        <item name="fontFamily">@font/roboto_regular</item>
+        <item name="android:radius">30dp</item>
+    </style>
+
     <style name="MyButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:background">@null</item>
         <item name="android:fontFamily">"@font/roboto_regular"</item>

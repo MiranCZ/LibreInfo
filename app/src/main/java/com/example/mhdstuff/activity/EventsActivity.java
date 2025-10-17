@@ -7,9 +7,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mhdstuff.EventsItemAdapter;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
+import com.example.mhdstuff.exception.AppException;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Event;
 import com.example.mhdstuff.util.request.RequestHelper;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class EventsActivity extends AbstractListViewActivity {
 
@@ -19,7 +23,17 @@ public class EventsActivity extends AbstractListViewActivity {
 
     @Override
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
-        return new EventsItemAdapter(Event.parseEvents(RequestHelper.getEvents(), storage.lineStorage()), this);
+        List<Event> events;
+
+        try {
+            events = Event.parseEvents(RequestHelper.getEvents(), storage.lineStorage());
+        } catch (AppException e) {
+            e.printStackTrace();
+            e.showErrPopup(this);
+            events = new ArrayList<>();
+        }
+
+        return new EventsItemAdapter(events, this);
     }
 
 }

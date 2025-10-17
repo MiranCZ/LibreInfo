@@ -16,12 +16,14 @@ import com.example.mhdstuff.ItemAdapter;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.data.DelaysDataHolder;
+import com.example.mhdstuff.exception.RequestException;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.storage.StopStorage;
 import com.example.mhdstuff.parsing.types.Stop;
 import com.example.mhdstuff.util.Container;
 import com.example.mhdstuff.util.FuzzySearch;
 import com.example.mhdstuff.util.request.RequestHelper;
+import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -48,7 +50,13 @@ public class SearchActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         new Thread(() -> {
-            var delays = RequestHelper.getRouteDelays();
+            JsonObject delays;
+            try {
+                delays = RequestHelper.getRouteDelays();
+            } catch (RequestException e) {
+                e.showErrPopup(this);
+                return;
+            }
 
             runOnUiThread(() -> DelaysDataHolder.setDelays(delays));
         }).start();
