@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.function.Consumer;
 
-public record DepartureEntry(LineAlias line, String finalStop, int postID, boolean lowFloor, TimeMark timeMark,
+public record DepartureEntry(LineAlias line, String finalStop, int stopId, int postID, boolean lowFloor, TimeMark timeMark,
                              int tripId, Optional<VehicleInfo> vehicleOpt) {
 
     public static DepartureEntry parse(SoapSaneObject obj, Map<Long, Vehicle> vehicleMap, IdStorage storage) {
@@ -56,7 +56,7 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
             info = Optional.empty();
         }
 
-        return new DepartureEntry(line, finalStop, postID , lowFloor, timeMark,-1, info);
+        return new DepartureEntry(line, finalStop, 0, postID , lowFloor, timeMark,-1, info);
     }
 
     public View createDepartureEntryView(BaseActivity activity, ViewGroup parent, Context context) {
@@ -107,10 +107,9 @@ public record DepartureEntry(LineAlias line, String finalStop, int postID, boole
                 v -> activity.startActivity(TripDetailActivity.class, intent -> {
 
                     vehicleOpt.ifPresent(info -> intent.putExtra("delay", info.delay()));
-
-                    Random r = new Random();
-//                    intent.putExtra("delay", r.nextInt(0,10));
+                    intent.putExtra("stopId", stopId);
                     intent.putExtra("tripId", tripId);
+                    intent.putExtra("vehicleId", vehicleOpt.map(VehicleInfo::id).orElse(-1));
                 })
         );
 

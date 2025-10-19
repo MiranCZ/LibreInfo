@@ -1,7 +1,9 @@
 package com.example.mhdstuff.parsing.types;
 
+import android.content.res.Configuration;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.content.Context;
 
 import com.example.mhdstuff.util.Pair;
 
@@ -24,7 +26,9 @@ public class StopTime {
     public SpannableString formatColoredDelay(boolean canIncludeBoth) {
         if (arrival.equals(departure) || !canIncludeBoth) {
             SpannableString span = new SpannableString("("+delay+") "+ arrival.addMinutes(delay).format());
-            span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(delay)), 0, span.length(), 0);
+
+            int color = Vehicle.getDelayColor(delay);
+            span.setSpan(new ForegroundColorSpan(color), 0, span.length(), 0);
 
             return span;
         }

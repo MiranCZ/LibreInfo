@@ -106,6 +106,7 @@ public class OfflineDepartures {
                     departureEntries.add(new DepartureEntry(
                             storage.lineStorage().getAlias(trip.lineId()),
                             heading,
+                            stopId,
                             postId,
                             trip.lowFloor(),
                             timeMark,
