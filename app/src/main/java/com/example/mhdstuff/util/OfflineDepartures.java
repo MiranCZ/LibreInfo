@@ -25,7 +25,7 @@ import java.util.Set;
 public class OfflineDepartures {
 
     public static List<Departure> getOffline(IdStorage storage, int stopId) {
-        return getOffline(storage, stopId, 5, null);
+        return getOffline(storage, stopId, 5, Time.now());
     }
 
     public static List<Departure> getOffline(IdStorage storage, int stopId, JsonObject delays) {

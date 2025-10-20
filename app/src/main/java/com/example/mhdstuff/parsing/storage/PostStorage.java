@@ -1,5 +1,6 @@
 package com.example.mhdstuff.parsing.storage;
 
+import com.example.mhdstuff.parsing.types.Location;
 import com.example.mhdstuff.parsing.types.Post;
 import com.example.mhdstuff.parsing.types.Stop;
 import com.google.gson.JsonArray;
@@ -25,7 +26,7 @@ public class PostStorage {
         return new PostStorage(posts, stopStorage);
     }
 
-    private final Map<Stop, List<Post>> postsForStop = new HashMap<>();
+    private final Map<Integer, List<Post>> postsForStop = new HashMap<>();
     private final List<Post> posts;
     private final StopStorage stopStorage;
 
@@ -41,7 +42,7 @@ public class PostStorage {
                 continue;
             }
 
-            postsForStop.computeIfAbsent(stop, k -> new ArrayList<>()).add(post);
+            postsForStop.computeIfAbsent(stop.id, k -> new ArrayList<>()).add(post);
         }
 
         this.posts = posts;
@@ -52,21 +53,24 @@ public class PostStorage {
              if (post.postID() == postID) return post;
         }
 
+        Post dummyPost = new Post(stopID, postID, postID+". nastupiste", Location.NONE, true, List.of());
         System.out.println("[WARN] Unable to find post with args "+stopID + " ; "+postID + " ; "+getPosts(stopID));
-        return null;
-    }
 
-    public List<Post> getPosts(int id) {
-        return getPosts(stopStorage.getStop(id));
+        postsForStop.computeIfAbsent(stopID, k -> new ArrayList<>()).add(dummyPost);
+        return dummyPost;
     }
 
     public List<Post> getPosts(Stop stop) {
-        if (!postsForStop.containsKey(stop)) {
-            System.out.println("[WARN] Tried to get posts for unregistered stop! " + stop);
+        return getPosts(stop.id);
+    }
+
+    public List<Post> getPosts(int stopId) {
+        if (!postsForStop.containsKey(stopId)) {
+            System.out.println("[WARN] Tried to get posts for unregistered stop! " + stopId);
             return List.of();
         }
 
-        return postsForStop.getOrDefault(stop, List.of());
+        return postsForStop.getOrDefault(stopId, List.of());
     }
 
 
