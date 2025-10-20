@@ -50,9 +50,11 @@ public class TripDetailActivity extends BaseActivity {
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();
 
+            var res = storage.apiStorage().getLineIdAndRoute(tripId);
+
             VehicleTripInfo vehicleInfo = VehicleTripInfo.NONE;
             try {
-                vehicleInfo = VehicleTripInfo.parse(RequestHelper.getVehicleInfo(vehicleId));
+                vehicleInfo = VehicleTripInfo.parse(RequestHelper.getVehicleInfo(res.left(), res.right()));
             } catch (RequestException e) {
                 runOnUiThread(() -> e.showErrPopup(this));
             }
@@ -166,6 +168,8 @@ public class TripDetailActivity extends BaseActivity {
             boolean lastStop = (i+1)>=stops.length;
 
             int currentDelay = delay;
+
+            // TODO fix vehicles waiting at stops in the API
             if (alreadyMet) {
                 currentDelay = vehicleInfo.previousStopDelays().getOrDefault(stop.stopId(), -1);
             }

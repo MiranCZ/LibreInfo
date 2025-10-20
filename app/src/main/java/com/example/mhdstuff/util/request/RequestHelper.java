@@ -75,8 +75,8 @@ public class RequestHelper {
         return makeOwnRequest("routedelays", JsonObject.class);
     }
 
-    public static JsonObject getVehicleInfo(int vehicleId) throws RequestException {
-        return makeOwnRequest("vehicleinfo?id="+vehicleId, JsonObject.class);
+    public static JsonObject getVehicleInfo(int lineId, int routeId) throws RequestException {
+        return makeOwnRequest("vehicleinfo?lineid="+lineId+"&routeid="+routeId, JsonObject.class);
     }
 
     private static <T extends JsonElement> T makeOwnRequest(String endpoint, Class<T> type) throws RequestException {
