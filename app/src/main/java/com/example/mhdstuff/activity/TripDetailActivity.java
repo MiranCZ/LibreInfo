@@ -67,7 +67,6 @@ public class TripDetailActivity extends BaseActivity {
         int delay = getIntent().getIntExtra("delay", -1);
         int highlightedStopId = getIntent().getIntExtra("stopId", -1);
 
-        // TODO check correctness
         var res = storage.apiStorage().getLineIdAndRoute(tripId);
         int lineId = res.left();
 

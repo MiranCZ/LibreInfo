@@ -53,7 +53,7 @@ public class OfflineDepartures {
 
             Optional<VehicleInfo> info = Optional.empty();
             if (delays != null) {
-                Pair<Integer, Integer> lineRoute = storage.apiStorage().getLineIdAndRoute(stop.tripId()+1);
+                Pair<Integer, Integer> lineRoute = storage.apiStorage().getLineIdAndRoute(stop.tripId());
                 String key = lineRoute.left()+"/"+ lineRoute.right();
                 if (delays.has(key)) {
                     System.out.println(key);
