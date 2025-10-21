@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
-import java.util.prefs.PreferenceChangeEvent;
 
 public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostStorage postStorage,
                         TripStorage tripStorage, RouteStopStorage routeStopStorage,
@@ -53,7 +52,7 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
 
     public static void onActivity(BaseActivity activity) {
         if (error != null) {
-            error.showErrPopup(activity);
+            error.showError(activity);
         }
     }
 

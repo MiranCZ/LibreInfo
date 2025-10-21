@@ -149,4 +149,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
 
+    public View getContentView() {
+        return findViewById(R.id.content_frame);
+    }
 }

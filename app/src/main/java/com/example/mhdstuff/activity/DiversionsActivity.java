@@ -28,7 +28,7 @@ public class DiversionsActivity extends AbstractListViewActivity {
         try {
             diversions = Diversion.parseDiversions(RequestHelper.getDiversions(),storage.lineStorage());
         } catch (AppException e) {
-            e.showErrPopup(this);
+            e.showError(this, AppException.NotificationType.SNACK_BAR);
             diversions = new ArrayList<>();
         }
 

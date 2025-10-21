@@ -21,6 +21,7 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
+import com.example.mhdstuff.exception.AppException;
 import com.example.mhdstuff.exception.RequestException;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.LineAlias;
@@ -56,7 +57,7 @@ public class TripDetailActivity extends BaseActivity {
             try {
                 vehicleInfo = VehicleTripInfo.parse(RequestHelper.getVehicleInfo(res.left(), res.right()));
             } catch (RequestException e) {
-                runOnUiThread(() -> e.showErrPopup(this));
+                runOnUiThread(() -> e.showError(this, AppException.NotificationType.SNACK_BAR));
             }
 
             VehicleTripInfo finalVehicleInfo = vehicleInfo;

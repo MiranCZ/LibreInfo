@@ -16,6 +16,7 @@ import com.example.mhdstuff.ItemAdapter;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.data.DelaysDataHolder;
+import com.example.mhdstuff.exception.AppException;
 import com.example.mhdstuff.exception.RequestException;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.storage.StopStorage;
@@ -54,7 +55,7 @@ public class SearchActivity extends BaseActivity {
             try {
                 delays = RequestHelper.getRouteDelays();
             } catch (RequestException e) {
-                e.showErrPopup(this);
+                e.showError(this, AppException.NotificationType.SNACK_BAR);
                 return;
             }
 
