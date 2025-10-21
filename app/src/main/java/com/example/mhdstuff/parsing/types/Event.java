@@ -31,6 +31,7 @@ public record Event(DateTime from, DateTime to,
         JsonElement delayEl = obj.get("delay");
 
 
+        // TODO better parsing
         MinuteRange delay;
         if (delayEl != null) {
             delay = MinuteRange.parse(delayEl.getAsString());

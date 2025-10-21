@@ -52,4 +52,8 @@ public record MinuteRange(int from, int to) {
 
         return new MinuteRange(Integer.parseInt(from), Integer.parseInt(to));
     }
+
+    public String format() {
+        return from + " - "+to;
+    }
 }

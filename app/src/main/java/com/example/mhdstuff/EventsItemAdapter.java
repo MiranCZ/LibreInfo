@@ -19,6 +19,7 @@ import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.DateTime;
 import com.example.mhdstuff.parsing.types.Event;
 import com.example.mhdstuff.parsing.types.LineAlias;
+import com.example.mhdstuff.parsing.types.Vehicle;
 import com.example.mhdstuff.util.Pair;
 import com.google.android.flexbox.FlexboxLayout;
 
@@ -45,6 +46,12 @@ public class EventsItemAdapter extends AbstractItemAdapter<Event, EventsItemAdap
         // FIXME hardcoded strings
         holder.times.setText(createSpannable(item.from(), item.to()));
 
+        final String text = "Zdržení"+" ";
+        SpannableString span = new SpannableString(text+item.delay().format());
+        span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(item.delay().from())), text.length(), span.length(), 0);
+
+        holder.delay.setText(span);
+
         FlexboxLayout lines = holder.lines;
 
         lines.removeAllViews();
@@ -52,7 +59,12 @@ public class EventsItemAdapter extends AbstractItemAdapter<Event, EventsItemAdap
             lines.addView(alias.createLineIconView(lines, activity));
         }
 
-        holder.content.setText(Html.fromHtml(item.text(), 0));
+        if (item.text().isBlank()) {
+            holder.content.setVisibility(View.GONE);
+        } else {
+            holder.content.setVisibility(View.VISIBLE);
+            holder.content.setText(Html.fromHtml(item.text(), 0));
+        }
     }
 
     private SpannableString createSpannable(DateTime from, DateTime to) {
@@ -102,6 +114,7 @@ public class EventsItemAdapter extends AbstractItemAdapter<Event, EventsItemAdap
         View view;
         TextView title;
         TextView times;
+        TextView delay;
         FlexboxLayout lines;
         TextView content;
 
@@ -110,6 +123,7 @@ public class EventsItemAdapter extends AbstractItemAdapter<Event, EventsItemAdap
             view = itemView.findViewById(R.id.event_container);
             title = itemView.findViewById(R.id.event_title);
             times = itemView.findViewById(R.id.event_times);
+            delay = itemView.findViewById(R.id.event_delay);
             lines = itemView.findViewById(R.id.event_line_list);
             content = itemView.findViewById(R.id.event_content);
         }
