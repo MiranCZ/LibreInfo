@@ -63,7 +63,10 @@ public class EventsItemAdapter extends AbstractItemAdapter<Event, EventsItemAdap
             holder.content.setVisibility(View.GONE);
         } else {
             holder.content.setVisibility(View.VISIBLE);
-            holder.content.setText(Html.fromHtml(item.text(), 0));
+
+            CharSequence str = Html.fromHtml(item.text(), 0);
+
+            holder.content.setText(str.toString().stripTrailing());
         }
     }
 
