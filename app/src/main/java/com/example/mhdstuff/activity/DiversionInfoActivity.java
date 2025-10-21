@@ -60,7 +60,11 @@ public class DiversionInfoActivity extends BaseActivity {
     }
 
     private SpannableString createSpannable(String info, DateTime time) {
-        SpannableString spannable = new SpannableString(info+time.toString());
+        if (time == null || time == DateTime.NONE) {
+            return new SpannableString("");
+        }
+
+        SpannableString spannable = new SpannableString(info+time);
         spannable.setSpan(new ForegroundColorSpan(ContextCompat.getColor(this, R.color.secondary_color_tone)), 0, info.length(), 0);
 
         spannable.setSpan(new ForegroundColorSpan(ContextCompat.getColor(this, R.color.secondary_color_light_tone)), info.length(), spannable.length(), 0);
