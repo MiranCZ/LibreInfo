@@ -1,7 +1,6 @@
 package com.example.mhdstuff.parsing.types.departure;
 
 import android.content.Context;
-import android.content.Intent;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
@@ -11,25 +10,19 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.TripDetailActivity;
 import com.example.mhdstuff.activity.base.BaseActivity;
-import com.example.mhdstuff.activity.VehicleMapActivity;
-import com.example.mhdstuff.activity.data.TripDataHolder;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.TimeMark;
-import com.example.mhdstuff.parsing.types.Trip;
 import com.example.mhdstuff.parsing.types.Vehicle;
 import com.example.mhdstuff.util.request.soap.SoapSaneObject;
 
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
-import java.util.function.Consumer;
 
 public record DepartureEntry(LineAlias line, String finalStop, int stopId, int postID, boolean lowFloor, TimeMark timeMark,
                              int tripId, Optional<VehicleInfo> vehicleOpt) {

@@ -15,7 +15,7 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
-import com.example.mhdstuff.activity.data.DiversionDataHolder;
+import com.example.mhdstuff.activity.data.Arg;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Diversion;
 import com.example.mhdstuff.parsing.types.LineAlias;
@@ -25,19 +25,23 @@ import com.google.android.flexbox.FlexboxLayout;
 public class DiversionInfoActivity extends BaseActivity {
 
 
+    private final Arg<Diversion> diversion;
     public DiversionInfoActivity() {
         super(R.string.diversions, R.layout.activity_diversion_info);
+        diversion = popArg("diversion", null);
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        diversion.initialize();
+
         IdStorage.getInstanceOnUIThread(this::createElements, this);
     }
 
     private void createElements(IdStorage storage) {
-        Diversion diversion = DiversionDataHolder.getDiversion();
+        Diversion diversion = this.diversion.get();
 
         TextView view = findViewById(R.id.diversion_title);
         view.setText(diversion.title());

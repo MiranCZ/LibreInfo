@@ -1,5 +1,6 @@
 package com.example.mhdstuff;
 
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,13 +12,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.DeparturesActivity;
-import com.example.mhdstuff.activity.data.StopDataHolder;
 import com.example.mhdstuff.parsing.types.Stop;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ButtonViewHolder> {
 
@@ -44,11 +45,10 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ButtonViewHold
         Stop currentItem = items.get(position);
         holder.button.setText(currentItem.name);
 
-        holder.button.setOnClickListener(v -> {
-            StopDataHolder.setStop(currentItem);
-
-            parent.startActivity(DeparturesActivity.class);
-        });
+        holder.button.setOnClickListener(v -> parent.startActivity(
+                DeparturesActivity.class,
+                intent -> BaseActivity.putArg(intent, "stop", currentItem)
+        ));
         if (currentItem.isFavourite()) {
             holder.button.setIconResource(R.drawable.heart_solid);
             holder.button.setIconTint(null);

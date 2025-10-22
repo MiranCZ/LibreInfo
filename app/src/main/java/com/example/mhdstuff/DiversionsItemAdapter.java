@@ -14,7 +14,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.example.mhdstuff.activity.DiversionInfoActivity;
-import com.example.mhdstuff.activity.data.DiversionDataHolder;
+import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.listview.AbstractItemAdapter;
 import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
 import com.example.mhdstuff.parsing.storage.IdStorage;
@@ -24,6 +24,7 @@ import com.example.mhdstuff.parsing.types.DateTime;
 import com.google.android.flexbox.FlexboxLayout;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class DiversionsItemAdapter extends AbstractItemAdapter<Diversion, DiversionsItemAdapter.DiversionViewHolder> {
 
@@ -50,8 +51,10 @@ public class DiversionsItemAdapter extends AbstractItemAdapter<Diversion, Divers
         holder.to.setText(createSpannable("do: ", item.to()));
 
         holder.view.setOnClickListener(view -> {
-            DiversionDataHolder.setDiversion(item);
-            activity.startActivity(DiversionInfoActivity.class);
+            activity.startActivity(
+                    DiversionInfoActivity.class,
+                    intent -> BaseActivity.putArg(intent, "diversion", item)
+            );
         });
 
         FlexboxLayout lines = holder.lines;
