@@ -10,8 +10,11 @@ import androidx.core.content.ContextCompat;
 
 import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.listview.AbstractItemAdapter;
+import com.example.mhdstuff.parsing.storage.ApiStorage;
 import com.example.mhdstuff.parsing.types.Time;
 import com.example.mhdstuff.parsing.types.departure.DepartureEntry;
+import com.example.mhdstuff.util.Pair;
+import com.google.gson.JsonObject;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -20,33 +23,50 @@ public class DepartureEntryItemAdapter extends AbstractItemAdapter<DepartureEntr
 
 
     private final BaseActivity parent;
+    private final ApiStorage apiStorage;
+    private final JsonObject stopDelays;
 
-    public DepartureEntryItemAdapter(BaseActivity parent, List<DepartureEntry> items) {
+    public DepartureEntryItemAdapter(BaseActivity parent, List<DepartureEntry> items, ApiStorage apiStorage, JsonObject stopDelays) {
         super(items, R.layout.departure_entry_layout);
         this.parent = parent;
+        this.apiStorage = apiStorage;
+        this.stopDelays = stopDelays;
     }
 
     @Override
     protected void bindValues(DepartureEntryHolder holder, DepartureEntry item) {
         boolean alreadyLeft = !item.timeMark().time().isAfter(Time.now()) && !item.timeMark().leaving();
 
-        item.populateDepartureViewEntry(parent, parent, holder.itemView, !alreadyLeft);
+        Pair<Integer, Integer> lineRoute = apiStorage.getLineIdAndRoute(item.tripId());
 
+        String lineId = lineRoute.left().toString();
+        String routeId = lineRoute.right().toString();
+
+        boolean showDelay = !alreadyLeft;
         if (alreadyLeft) {
-            TextView text = holder.itemView.findViewById(R.id.departure_heading);
+            int delay = -1;
+            if (stopDelays.has(lineId)) {
+                JsonObject delays = stopDelays.getAsJsonObject(lineId);
 
-            SpannableString str = new SpannableString(text.getText());
-            str.setSpan(new ForegroundColorSpan(ContextCompat.getColor(parent, R.color.secondary_color_dark_tone)), 0, str.length(), 0);
+                if (delays.has(routeId)) {
+                    delay = delays.getAsJsonObject(routeId).get("delay").getAsInt();
+                }
+            }
+            item.vehicleInfo().setDelay(delay);
 
-            text.setText(str);
-
-            text = holder.itemView.findViewById(R.id.departure_arrival);
-
-            str = new SpannableString(text.getText());
-            str.setSpan(new ForegroundColorSpan(ContextCompat.getColor(parent, R.color.secondary_color_dark_tone)), 0, str.length(), 0);
-
-            text.setText(str);
+            showDelay = delay != -1;
         }
+
+        item.populateDepartureViewEntry(parent, parent, holder.itemView, showDelay);
+
+        float alpha = 1;
+        if (alreadyLeft) {
+            // TODO sync alpha across TripDetail
+            alpha = 0.35f;
+        }
+
+        holder.itemView.findViewById(R.id.departure_heading).setAlpha(alpha);
+        holder.itemView.findViewById(R.id.departure_arrival).setAlpha(alpha);
     }
 
     @Override

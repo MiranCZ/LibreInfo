@@ -44,23 +44,21 @@ public class OfflineDepartures {
 
         CalendarStorage calendarStorage = storage.calendarStorage();
 
-        record Holder(RouteStop stop, Optional<VehicleInfo> info) {
+        record Holder(RouteStop stop, VehicleInfo info) {
         }
 
         Map<Short, List<Holder>> postToStop = new HashMap<>();
 
         for (RouteStop stop : stops) {
 
-            Optional<VehicleInfo> info = Optional.empty();
+            VehicleInfo info = new VehicleInfo();
             if (delays != null) {
                 Pair<Integer, Integer> lineRoute = storage.apiStorage().getLineIdAndRoute(stop.tripId());
                 String key = lineRoute.left()+"/"+ lineRoute.right();
                 if (delays.has(key)) {
-                    System.out.println(key);
-
                     stop.setDelay(delays.get(key).getAsJsonObject().get("delay").getAsInt());
 
-                    info = Optional.of(new VehicleInfo(delays.get(key).getAsJsonObject().get("id").getAsInt(), stop.delay()));
+                    info = new VehicleInfo(delays.get(key).getAsJsonObject().get("id").getAsInt(), stop.delay());
                 } else {
                     stop.setDelay(0);
                 }
@@ -100,7 +98,7 @@ public class OfflineDepartures {
                     // TODO is leaving?
                     TimeMark timeMark = new TimeMark(
                             stop.stopTime(),
-                            holder.info.isPresent(),
+                            holder.info.hasBoth(),
                             false
                     );
                     departureEntries.add(new DepartureEntry(

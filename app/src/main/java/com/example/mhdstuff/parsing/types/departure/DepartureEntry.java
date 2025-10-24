@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public record DepartureEntry(LineAlias line, String finalStop, int stopId, int postID, boolean lowFloor, TimeMark timeMark,
-                             int tripId, Optional<VehicleInfo> vehicleOpt) {
+                             int tripId, VehicleInfo vehicleInfo) {
 
     public static DepartureEntry parse(SoapSaneObject obj, Map<Long, Vehicle> vehicleMap, IdStorage storage) {
         if (obj == null) return null;
@@ -40,13 +40,14 @@ public record DepartureEntry(LineAlias line, String finalStop, int stopId, int p
         int connectionId = obj.getInt("ConnectionID");
         long key = ((long) connectionId <<32) | ((long)line.id());
 
-        Optional<VehicleInfo> info;
+//        Optional<VehicleInfo> info;
+
+        VehicleInfo info = new VehicleInfo();
         if (vehicleMap.containsKey(key)) {
             Vehicle vehicle = vehicleMap.get(key);
 
-            info = Optional.of(new VehicleInfo(vehicle.id(), vehicle.delay()));
-        } else {
-            info = Optional.empty();
+            info.setId(vehicle.id());
+            info.setDelay(vehicle.delay());
         }
 
         return new DepartureEntry(line, finalStop, 0, postID , lowFloor, timeMark,-1, info);
@@ -70,39 +71,39 @@ public record DepartureEntry(LineAlias line, String finalStop, int stopId, int p
 
         TextView arrival = view.findViewById(R.id.departure_arrival);
 
-        String arrivalText = timeMark.getFormattedString(30, showDelay);
-        if (vehicleOpt.isPresent()) {
-            var vehicle = vehicleOpt.get();
-            int color = vehicle.getDelayColor();
+        if (vehicleInfo.hasDelay() && showDelay) {
+            int delay = vehicleInfo().delay();
+            int color = vehicleInfo.getDelayColor();
+
+            timeMark.stopTime().setDelay(delay);
+            String arrivalText = timeMark.getFormattedString(30, true);
 
             String delayStr = "";
-            if (vehicle.delay() > 0 && showDelay) {
-                delayStr = " ("+vehicle.delay()+") ";
+            if (delay > 0) {
+                delayStr = " ("+delay+") ";
             }
 
             SpannableString spannable = new SpannableString(delayStr+ arrivalText);
             spannable.setSpan(new ForegroundColorSpan(color), 0, spannable.length(), 0);
 
             arrival.setText(spannable);
-
-            /*view.setOnClickListener(v -> activity.startActivity(VehicleMapActivity.class, intent -> {
-                intent.putExtra("following", vehicle.id());
-//                intent.putExtra("lat", vehicle.location().latitude());
-//                intent.putExtra("lng", vehicle.location().longitude());
-            }));*/
         } else {
-            arrival.setText(arrivalText);
+            String arrivalText = timeMark.getFormattedString(30, false);
 
-//            view.setOnClickListener(v -> Toast.makeText(context, "Vozidlo nelze zobrazit na mapě", Toast.LENGTH_SHORT).show());
+            arrival.setText(arrivalText);
         }
 
         view.setOnClickListener(
                 v -> activity.startActivity(TripDetailActivity.class, intent -> {
 
-                    vehicleOpt.ifPresent(info -> intent.putExtra("delay", info.delay()));
+                    if (vehicleInfo.hasDelay()) {
+                        intent.putExtra("delay", vehicleInfo.delay());
+                    }
+                    if (vehicleInfo.hasId()) {
+                        intent.putExtra("vehicleId", vehicleInfo.id());
+                    }
                     intent.putExtra("stopId", stopId);
                     intent.putExtra("tripId", tripId);
-                    intent.putExtra("vehicleId", vehicleOpt.map(VehicleInfo::id).orElse(-1));
                 })
         );
 

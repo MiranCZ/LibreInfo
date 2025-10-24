@@ -63,8 +63,6 @@ public class DiversionInfoActivity extends BaseActivity {
 
         CharSequence str = Html.fromHtml(diversion.publicText(), 0);
         content.setText(str.toString().stripTrailing());
-
-        System.out.println(str.subSequence(str.length()-10, str.length()));
     }
 
     private SpannableString createSpannable(String info, DateTime time) {

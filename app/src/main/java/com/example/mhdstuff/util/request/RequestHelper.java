@@ -79,6 +79,10 @@ public class RequestHelper {
         return makeOwnRequest("vehicleinfo?lineid="+lineId+"&routeid="+routeId, JsonObject.class);
     }
 
+    public static JsonObject getStopDelays(int stopId) throws RequestException {
+        return makeOwnRequest("stopdelays?stopid="+stopId, JsonObject.class);
+    }
+
     private static <T extends JsonElement> T makeOwnRequest(String endpoint, Class<T> type) throws RequestException {
         try {
             InputStream stream = readUrl(Endpoint.APP_SERVER.resolve(endpoint));
