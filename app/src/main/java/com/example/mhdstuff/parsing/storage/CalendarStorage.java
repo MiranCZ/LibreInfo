@@ -4,6 +4,8 @@ import android.util.Log;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -115,9 +117,7 @@ public class CalendarStorage {
         public boolean availableOn(Date date) {
             if (!date.isBetween(from, to)) return false;
 
-            LocalDateTime dt = LocalDateTime.now();
-
-            switch (dt.getDayOfWeek()) {
+            switch (date.getDayOfWeek()) {
                 case MONDAY -> {
                     return monday;
                 }
@@ -145,7 +145,15 @@ public class CalendarStorage {
 
     }
 
-    public record Date(int day, int month, int year) {
+    public record Date(int day, int month, int year, int dayOfWeek) {
+
+        public Date(int day, int month, int year) {
+            this(day, month, year, LocalDate.of(year, month, day).getDayOfWeek().getValue());
+        }
+
+        public DayOfWeek getDayOfWeek() {
+            return DayOfWeek.of(dayOfWeek);
+        }
 
         public static Date now() {
             LocalDateTime now = LocalDateTime.now();
