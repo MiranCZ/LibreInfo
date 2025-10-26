@@ -1,5 +1,7 @@
 package com.example.mhdstuff.parsing.storage;
 
+import androidx.annotation.NonNull;
+
 import com.example.mhdstuff.parsing.types.RouteStop;
 import com.example.mhdstuff.parsing.types.Time;
 
@@ -63,6 +65,7 @@ public class RouteStopStorage {
             return new RouteStop[0];
         }
     }
+
     public RouteStop[] getRouteStopsFromSegmentParsed(int start, int length) {
         try {
             return getRouteStopsFromSegmentParsedInternal(start, length);
@@ -71,40 +74,55 @@ public class RouteStopStorage {
             return new RouteStop[0];
         }
     }
+
+    public RouteStop getRouteStop(int id) {
+        try {
+            return parseStop(id);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     private RouteStop[] getRouteStopsFromSegmentParsedInternal(int start, int length) throws IOException {
         RouteStop[] results = new RouteStop[length];
 
         for (int i = 0; i < length; i++) {
             int routeId = start+i;
 
-            long pos = (long) (ROUTE_STOP_SIZE_BYTES) * routeId;
-            routeStops.seek(pos);
-
-            int len = routeStops.read(buffer);
-            if (len != buffer.length) {
-                throw new IllegalStateException();
-            }
-
-            int bufferPos = 0;
-            int stopId = readInt(buffer, bufferPos);
-            bufferPos += 4;
-
-            int tripId = readInt(buffer, bufferPos);
-            bufferPos += 4;
-
-            short postId = readShort(buffer, bufferPos);
-            bufferPos += 2;
-
-            short sequence = readShort(buffer, bufferPos);
-            bufferPos += 2;
-
-            Time arrival = new Time(buffer[bufferPos++], buffer[bufferPos++]);
-            Time departure = new Time(buffer[bufferPos++], buffer[bufferPos++]);
-
-            results[i] = new RouteStop(stopId, tripId, postId, sequence, arrival, departure);
+            RouteStop stop = parseStop(routeId);
+            results[i] = stop;
         }
 
         return results;
+    }
+
+
+    private RouteStop parseStop(int routeId) throws IOException {
+        long pos = (long) (ROUTE_STOP_SIZE_BYTES) * routeId;
+        routeStops.seek(pos);
+
+        int len = routeStops.read(buffer);
+        if (len != buffer.length) {
+            throw new IllegalStateException();
+        }
+
+        int bufferPos = 0;
+        int stopId = readInt(buffer, bufferPos);
+        bufferPos += 4;
+
+        int tripId = readInt(buffer, bufferPos);
+        bufferPos += 4;
+
+        short postId = readShort(buffer, bufferPos);
+        bufferPos += 2;
+
+        short sequence = readShort(buffer, bufferPos);
+        bufferPos += 2;
+
+        Time arrival = new Time(buffer[bufferPos++], buffer[bufferPos++]);
+        Time departure = new Time(buffer[bufferPos++], buffer[bufferPos++]);
+
+        return new RouteStop(stopId, tripId, postId, sequence, arrival, departure);
     }
 
     private RouteStop[] getRouteStopsParsedInternal(int stopId) throws IOException {

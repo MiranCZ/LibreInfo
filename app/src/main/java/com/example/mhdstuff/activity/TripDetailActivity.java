@@ -23,14 +23,23 @@ import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.exception.AppException;
 import com.example.mhdstuff.exception.RequestException;
+import com.example.mhdstuff.parsing.storage.CalendarStorage;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.RouteStop;
+import com.example.mhdstuff.parsing.types.Stop;
 import com.example.mhdstuff.parsing.types.Time;
 import com.example.mhdstuff.parsing.types.Trip;
 import com.example.mhdstuff.parsing.types.Vehicle;
 import com.example.mhdstuff.parsing.types.VehicleTripInfo;
+import com.example.mhdstuff.parsing.types.departure.VehicleInfo;
 import com.example.mhdstuff.util.request.RequestHelper;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class TripDetailActivity extends BaseActivity {
@@ -66,6 +75,7 @@ public class TripDetailActivity extends BaseActivity {
 
     }
 
+    // FIXME delays not displaying for all trips in multi-trip routes; further stops are ignored
     private void create(IdStorage storage, int tripId, FrameLayout lineIcon, VehicleTripInfo vehicleInfo) {
         int delay = getIntent().getIntExtra("delay", -1);
         int highlightedStopId = getIntent().getIntExtra("stopId", -1);
@@ -77,13 +87,60 @@ public class TripDetailActivity extends BaseActivity {
 
         TextView heading = findViewById(R.id.vehicle_heading);
 
+
         if (tripId == -1) {
             heading.setText("Unknown final stop");
             return;
         }
+        TextView routeInfo = findViewById(R.id.vehicle_route_info);
+
 
         Trip trip = storage.tripStorage().getTrips()[tripId];
-        heading.setText(storage.tripStorage().getTripHeadsign(trip));
+        String headsign = storage.tripStorage().getTripHeadsign(trip);
+
+        String routeInfoText = "Trasa " + res.left() + "/" + res.right();
+
+
+        RouteStop[] stops = trip.getRouteStops(storage.routeStopStorage());
+
+        if (trip.blockId() != -1) {
+            List<Trip> neighbors = new ArrayList<>(storage.tripStorage().getTripsForBlock(trip.blockId()));
+
+            neighbors.removeIf(t ->  !storage.calendarStorage().available(CalendarStorage.Date.now(), t.serviceId()));
+
+            neighbors.sort(Comparator.comparing(t -> storage.routeStopStorage().getRouteStop(t.startPos()).departure()));
+
+            headsign = storage.tripStorage().getHeadsignForTripList(neighbors, storage);
+
+            routeInfoText = "Trasa ";
+
+
+            List<RouteStop> stopsList = new ArrayList<>();
+
+            for (int i = 0; i < neighbors.size(); i++) {
+                Trip neighbor = neighbors.get(i);
+                var info = storage.apiStorage().getLineIdAndRoute(neighbor.id());
+
+                if (i != 0) {
+                    routeInfoText += " => ";
+                }
+                routeInfoText += info.left() + "/" + info.right();
+
+                RouteStop[] routeStops = neighbor.getRouteStops(storage.routeStopStorage());
+                for (int j = 0; j < routeStops.length; j++) {
+                    RouteStop routeStop = routeStops[j];
+
+                    if (i != 0 && j == 0 && stopsList.get(stopsList.size()-1).stopId() == routeStop.stopId()) continue;
+                    stopsList.add(routeStop);
+                }
+            }
+
+            stops = stopsList.toArray(new RouteStop[0]);
+        }
+
+        heading.setText(headsign);
+        routeInfo.setText(routeInfoText);
+
 
         TextView delayText = findViewById(R.id.vehicle_delay_info);
 
@@ -105,11 +162,6 @@ public class TripDetailActivity extends BaseActivity {
             }
         }
 
-        TextView routeInfo = findViewById(R.id.vehicle_route_info);
-
-        routeInfo.setText("Trasa " + res.left() + "/" + res.right());
-
-        RouteStop[] stops = trip.getRouteStops(storage.routeStopStorage());
 
         LinearLayout view = findViewById(R.id.vehicle_stops);
 

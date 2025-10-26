@@ -96,6 +96,7 @@ public class OfflineDepartures {
             entries.sort(Comparator.comparing(h -> h.stop.departure()));
 
             Set<RouteStop> found = new HashSet<>();
+            Set<Trip> includedTrips = new HashSet<>();
             for (Holder holder : entries) {
                 RouteStop stop = holder.stop;
                 if (found.contains(stop)) continue;
@@ -104,9 +105,20 @@ public class OfflineDepartures {
                 if (maxSize != -1 && ind > (maxSize - 1)) break;
                 if (fromTime.compareTo(stop.departure()) <= 0) {
                     Trip trip = storage.tripStorage().getTrips()[stop.tripId()];
-                    String heading = storage.tripStorage().getTripHeadsign(trip);
 
                     if (!calendarStorage.available(nowDate, trip.serviceId())) continue;
+                    if (includedTrips.contains(trip)) continue;
+
+                    String heading = storage.tripStorage().getTripHeadsign(trip);
+
+                    if (trip.blockId() != -1) {
+                        List<Trip> neighbors = new ArrayList<>(storage.tripStorage().getTripsForBlock(trip.blockId()));
+
+                        neighbors.removeIf(t ->  !calendarStorage.available(nowDate, t.serviceId()));
+
+                        heading = storage.tripStorage().getHeadsignForTripList(neighbors, storage);
+                        includedTrips.addAll(neighbors);
+                    }
 
                     // TODO is leaving?
                     TimeMark timeMark = new TimeMark(
@@ -196,6 +208,7 @@ public class OfflineDepartures {
         entries.sort(Comparator.comparing(h -> h.stop.departure()));
 
         Set<RouteStop> found = new HashSet<>();
+        Set<Trip> includedTrips = new HashSet<>();
         for (Holder holder : entries) {
             RouteStop stop = holder.stop;
             if (found.contains(stop)) continue;
@@ -204,9 +217,19 @@ public class OfflineDepartures {
             if (maxSize != -1 && ind > (maxSize - 1)) break;
             if (fromTime.compareTo(stop.departure()) <= 0) {
                 Trip trip = storage.tripStorage().getTrips()[stop.tripId()];
+                if (!calendarStorage.available(nowDate, trip.serviceId())) continue;
+                if (includedTrips.contains(trip)) continue;
+
                 String heading = storage.tripStorage().getTripHeadsign(trip);
 
-                if (!calendarStorage.available(nowDate, trip.serviceId())) continue;
+                if (trip.blockId() != -1) {
+                    List<Trip> neighbors = new ArrayList<>(storage.tripStorage().getTripsForBlock(trip.blockId()));
+
+                    neighbors.removeIf(t ->  !calendarStorage.available(nowDate, t.serviceId()));
+
+                    heading = storage.tripStorage().getHeadsignForTripList(neighbors, storage);
+                    includedTrips.addAll(neighbors);
+                }
 
                 // TODO is leaving?
                 TimeMark timeMark = new TimeMark(
