@@ -79,7 +79,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             toolbar.setNavigationIcon(R.drawable.chevron_left);
             toolbar.getNavigationIcon().setColorFilter(ContextCompat.getColor(this, R.color.light_blue), PorterDuff.Mode.SRC_ATOP);
 
-            toolbar.setNavigationOnClickListener(v -> onNavigateUp());
+            toolbar.setNavigationOnClickListener(v -> onBackPressed());
         }
 
         if (getSupportActionBar() != null) {
