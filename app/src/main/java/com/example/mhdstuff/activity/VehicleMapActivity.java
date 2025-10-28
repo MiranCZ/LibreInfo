@@ -15,30 +15,37 @@ import static org.maplibre.android.style.layers.PropertyFactory.textSize;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.PointF;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.fragment.app.Fragment;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
+import com.example.mhdstuff.activity.bottomsheet.VehicleInfoBottomSheet;
 import com.example.mhdstuff.activity.testing.OverpassDownloader;
 import com.example.mhdstuff.activity.testing.OverpassToGeoJson;
+import com.example.mhdstuff.exception.RequestException;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.MapVehicle;
 import com.example.mhdstuff.parsing.types.Post;
-import com.example.mhdstuff.parsing.types.Vehicle;
-import com.example.mhdstuff.parsing.types.VehicleBase;
+import com.example.mhdstuff.util.request.RequestHelper;
 import com.example.mhdstuff.util.request.VehicleWebsocket;
-import com.example.mhdstuff.util.request.soap.SoapHelper;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 
 import org.maplibre.android.MapLibre;
 import org.maplibre.android.camera.CameraPosition;
+import org.maplibre.android.camera.CameraUpdateFactory;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.maps.MapLibreMap;
 import org.maplibre.android.maps.MapView;
@@ -65,6 +72,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 // FIXME the text rendering is still not the best ugh
 // TODO refactor, cleanup
@@ -77,6 +85,7 @@ public class VehicleMapActivity extends BaseActivity {
 
     private static final String ROUTE_SOURCE_ID = "route-source";
     private static final String ROUTE_LAYER_ID = "route-layer";
+    private static final String VEHICLE_LAYER_ID = "text-layer";
     GeoJsonSource routeSource;
     LineLayer routeLayer;
     IdStorage storage;
@@ -93,6 +102,9 @@ public class VehicleMapActivity extends BaseActivity {
         MapLibre.getInstance(this);
         setContentView(R.layout.activity_vehicle_map);
 
+        View bottomSheet = findViewById(R.id.bottom_sheet_container);
+        selectedContext.setBehavior(BottomSheetBehavior.from(bottomSheet), this);
+
         selectedContext.setSelected(getIntent().getIntExtra("following", -1));
 
         mapView = findViewById(R.id.vehicle_map);
@@ -104,7 +116,7 @@ public class VehicleMapActivity extends BaseActivity {
 
             final CountDownLatch latch = new CountDownLatch(1);
             var ref = new Object() {
-                final List<VehicleBase> vehicles = new ArrayList<>();
+                final List<MapVehicle> vehicles = new ArrayList<>();
             };
 
             runOnUiThread(() -> setupMap(storage, (geoJson, map) -> {
@@ -116,10 +128,21 @@ public class VehicleMapActivity extends BaseActivity {
                     }
 
                     updateGeoJson(geoJson, map, ref.vehicles);
+
+                    for (MapVehicle vehicle : ref.vehicles) {
+                        idToVehMap.put(vehicle.id(), vehicle);
+                    }
                 }).start();
             }));
 
-            ref.vehicles.addAll(Vehicle.parseVehicles(SoapHelper.getVehicles(), storage));
+            try {
+                for (JsonElement vehicle : RequestHelper.getVehicles()) {
+                    ref.vehicles.add(MapVehicle.parse(vehicle.getAsJsonObject(), storage));
+                }
+            } catch (RequestException e) {
+                e.showError(this);
+            }
+
             latch.countDown();
         }).start();
     }
@@ -171,7 +194,7 @@ public class VehicleMapActivity extends BaseActivity {
                 stopLayer.getLayer().setMinZoom(13f);
                 stopLayer.setIconAllowOverlap(false);
 
-                SymbolLayer text = new SymbolLayer("text-layer", "points-source");
+                SymbolLayer text = new SymbolLayer(VEHICLE_LAYER_ID, "points-source");
                 text.setProperties(
                         textSize(11f),
                         textAllowOverlap(true),
@@ -190,6 +213,25 @@ public class VehicleMapActivity extends BaseActivity {
 
                 onReady.accept(source, map);
 
+                map.addOnMapClickListener(point -> {
+                    PointF screenPoint = map.getProjection().toScreenLocation(point);
+                    List<Feature> features = map.queryRenderedFeatures(screenPoint, VEHICLE_LAYER_ID);
+                    if (features.isEmpty()) {
+                        selectedContext.setSelected(-1);
+                        return false;
+                    }
+
+                    List<MapVehicle> vehicles = features.stream()
+                            .map(feature -> idToVehMap.get((int) ((double) Double.valueOf(feature.getNumberProperty("id")+""))))
+                            .collect(Collectors.toList());
+
+                    if (vehicles.size() > 1) {
+                        showVehicleSelectionDialog(vehicles);
+                    } else {
+                        selectedContext.setSelected(vehicles.get(0).id());
+                    }
+                    return true;
+                });
 
                 VehicleWebsocket.subscribe(VehicleMapActivity.class, message -> {
                     MapVehicle vehicle = MapVehicle.parse(new Gson().fromJson(message, JsonObject.class), storage);
@@ -209,28 +251,46 @@ public class VehicleMapActivity extends BaseActivity {
         });
     }
 
-    private void updateGeoJson(GeoJsonSource source, MapLibreMap map, List<VehicleBase> vehicles) {
-        updateGeoJson(source, map, vehicles.toArray(new VehicleBase[0]));
+    private void showVehicleSelectionDialog(List<MapVehicle> vehicles) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.select_poi);
+
+        String[] vehicleNames = vehicles.stream()
+                .map(vehicle -> vehicle.line().lineDisplayName() + " -> " + vehicle.finalStop().name)
+                .toArray(String[]::new);
+
+        builder.setItems(vehicleNames, (dialog, which) -> {
+            selectedContext.setSelected(vehicles.get(which).id());
+        });
+
+        builder.create().show();
+    }
+
+    private void updateGeoJson(GeoJsonSource source, MapLibreMap map, List<MapVehicle> vehicles) {
+        updateGeoJson(source, map, vehicles.toArray(new MapVehicle[0]));
     }
 
     // TODO add dynamic timer so that when a lot of elements is updated the map is redrawn prematurely
     HashMap<Integer, Integer> idMap = new HashMap<>();
+    HashMap<Integer, MapVehicle> idToVehMap = new HashMap<>();
     int id = 0;
-    private void updateGeoJson(GeoJsonSource source, MapLibreMap map, VehicleBase... vehicles) {
+    private void updateGeoJson(GeoJsonSource source, MapLibreMap map, MapVehicle... vehicles) {
         if (timer == null) setupCountdown(source);
 
 
         int id = 0;
-        for (VehicleBase vehicle : vehicles) {
+        for (MapVehicle vehicle : vehicles) {
             Feature feature = Feature.fromGeometry(Point.fromLngLat(vehicle.location().longitude(), vehicle.location().latitude()));
             feature.addStringProperty("color", vehicle.line().backgroundColorStr());
             feature.addStringProperty("textColor", vehicle.line().textColorStr());
             feature.addStringProperty("name", vehicle.line().lineDisplayName());
             feature.addNumberProperty("bearing", vehicle.bearing());
+            feature.addNumberProperty("id", vehicle.id());
 
             if (!idMap.containsKey(vehicle.id())) {
                 idMap.put(vehicle.id(), id++);
             }
+            idToVehMap.put(vehicle.id(), vehicle);
             // FIXME this is still not the best
             feature.addNumberProperty("sort", idMap.get(vehicle.id()) % 100);
 
@@ -368,13 +428,58 @@ public class VehicleMapActivity extends BaseActivity {
         boolean fetchedLine = false;
         boolean changed = false;
 
+        private BottomSheetBehavior<View> behavior;
+        private BaseActivity parent;
+
+        public void setBehavior(BottomSheetBehavior<View> behavior, BaseActivity parent) {
+            this.behavior = behavior;
+            this.parent = parent;
+            this.behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+            DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+            int peekHeight = Math.round(100 * displayMetrics.density); // TODO calculate so that the line icon is always visible
+            behavior.setPeekHeight(peekHeight);
+            behavior.setHideable(false);
+        }
+
         public void setSelected(int selected) {
             this.selected = selected;
             following = false;
             fetchedLine = false;
             changed = true;
-        }
 
+            if (selected != -1) {
+                MapVehicle vehicle = idToVehMap.get(selected);
+
+                VehicleInfoBottomSheet fragment = new VehicleInfoBottomSheet(vehicle, parent);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.bottom_sheet_fragment_container, fragment)
+                        .commit();
+                if (behavior != null) {
+                    behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                }
+
+                mapView.getMapAsync(mapLibreMap ->
+                        mapLibreMap.animateCamera(
+                                new CameraUpdateFactory.CameraPositionUpdate(
+                                        0,
+                                        vehicle.location().toLatLng(),
+                                        0,
+                                        16.5,
+                                        new double[4]
+                                )
+                        )
+                );
+            } else {
+                if (behavior != null) {
+                    behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                }
+                Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.bottom_sheet_fragment_container);
+                if (fragment != null) {
+                    getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+                }
+            }
+        }
     }
 
 }

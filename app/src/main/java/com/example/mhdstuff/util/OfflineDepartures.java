@@ -35,8 +35,9 @@ public class OfflineDepartures {
     public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize) {
         return getOffline(storage, stopId, maxSize, Time.now());
     }
+
     public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, Time fromTime) {
-        return getOffline(storage, stopId, maxSize,fromTime, null);
+        return getOffline(storage, stopId, maxSize, fromTime, null);
     }
 
     public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, Time fromTime, JsonObject delays) {
@@ -52,16 +53,28 @@ public class OfflineDepartures {
         for (RouteStop stop : stops) {
 
             VehicleInfo info = new VehicleInfo();
+            boolean delaySet = false;
             if (delays != null) {
                 Pair<Integer, Integer> lineRoute = storage.apiStorage().getLineIdAndRoute(stop.tripId());
-                String key = lineRoute.left()+"/"+ lineRoute.right();
-                if (delays.has(key)) {
-                    stop.setDelay(delays.get(key).getAsJsonObject().get("delay").getAsInt());
 
-                    info = new VehicleInfo(delays.get(key).getAsJsonObject().get("id").getAsInt(), stop.delay());
-                } else {
-                    stop.setDelay(0);
+                String lineId = lineRoute.left().toString();
+                String routeId = lineRoute.right().toString();
+
+                if (delays.has(lineId)) {
+                    JsonObject delaysList = delays.getAsJsonObject(lineId);
+
+                    if (delaysList.has(routeId)) {
+                        int delay = delaysList.getAsJsonObject(routeId).get("delay").getAsInt();
+
+                        stop.setDelay(delay);
+                        delaySet = true;
+
+                        info = new VehicleInfo(delay, stop.delay());
+                    }
                 }
+            }
+            if (!delaySet) {
+                stop.setDelay(0);
             }
 
             postToStop.computeIfAbsent(stop.postId(), k -> new ArrayList<>()).add(new Holder(stop, info));
@@ -88,7 +101,7 @@ public class OfflineDepartures {
                 if (found.contains(stop)) continue;
                 found.add(stop);
 
-                if (maxSize != -1 && ind > (maxSize-1)) break;
+                if (maxSize != -1 && ind > (maxSize - 1)) break;
                 if (fromTime.compareTo(stop.departure()) <= 0) {
                     Trip trip = storage.tripStorage().getTrips()[stop.tripId()];
                     String heading = storage.tripStorage().getTripHeadsign(trip);
@@ -124,6 +137,106 @@ public class OfflineDepartures {
                 result.add(departure);
             }
         }
+        result.sort(Comparator.comparingInt(Departure::postID));
+
+        return result;
+    }
+
+    public static List<Departure> getOfflineForPost(IdStorage storage, int stopId, int postId, int maxSize, Time fromTime, JsonObject delays) {
+        RouteStop[] stops = storage.routeStopStorage().getRouteStopsParsed(stopId);
+
+        CalendarStorage calendarStorage = storage.calendarStorage();
+
+        record Holder(RouteStop stop, VehicleInfo info) {
+        }
+
+        List<Holder> entries = new ArrayList<>();
+
+        for (RouteStop stop : stops) {
+            if (stop.postId() != postId) continue;
+
+            VehicleInfo info = new VehicleInfo();
+            boolean delaySet = false;
+            if (delays != null) {
+                Pair<Integer, Integer> lineRoute = storage.apiStorage().getLineIdAndRoute(stop.tripId());
+
+                String lineId = lineRoute.left().toString();
+                String routeId = lineRoute.right().toString();
+
+                if (delays.has(lineId)) {
+                    JsonObject delaysList = delays.getAsJsonObject(lineId);
+
+                    if (delaysList.has(routeId)) {
+                        int delay = delaysList.getAsJsonObject(routeId).get("delay").getAsInt();
+
+                        stop.setDelay(delay);
+                        delaySet = true;
+
+                        info = new VehicleInfo(delay, stop.delay());
+                    }
+                }
+            }
+            if (!delaySet) {
+                stop.setDelay(0);
+            }
+
+            entries.add(new Holder(stop, info));
+        }
+
+        List<Departure> result = new ArrayList<>();
+
+        CalendarStorage.Date nowDate = CalendarStorage.Date.now();
+
+
+        List<DepartureEntry> departureEntries = new ArrayList<>();
+
+
+        int ind = 0;
+
+        entries.sort(Comparator.comparing(h -> h.stop.departure()));
+
+        Set<RouteStop> found = new HashSet<>();
+        for (Holder holder : entries) {
+            RouteStop stop = holder.stop;
+            if (found.contains(stop)) continue;
+            found.add(stop);
+
+            if (maxSize != -1 && ind > (maxSize - 1)) break;
+            if (fromTime.compareTo(stop.departure()) <= 0) {
+                Trip trip = storage.tripStorage().getTrips()[stop.tripId()];
+                String heading = storage.tripStorage().getTripHeadsign(trip);
+
+                if (!calendarStorage.available(nowDate, trip.serviceId())) continue;
+
+                // TODO is leaving?
+                TimeMark timeMark = new TimeMark(
+                        stop.stopTime(),
+                        holder.info.hasBoth(),
+                        false
+                );
+                departureEntries.add(new DepartureEntry(
+                        storage.lineStorage().getAlias(trip.lineId()),
+                        heading,
+                        stopId,
+                        postId,
+                        trip.lowFloor(),
+                        timeMark,
+                        stop.tripId(),
+                        holder.info
+                ));
+                ind++;
+            }
+        }
+
+        if (!departureEntries.isEmpty()) {
+            Departure departure = new Departure(
+                    postId,
+                    storage.postStorage().getPost(stopId, postId).name(),
+                    departureEntries
+            );
+            result.add(departure);
+        }
+
         result.sort(Comparator.comparingInt(Departure::postID));
 
         return result;

@@ -68,7 +68,9 @@ public class OverpassDownloader {
             }
 
         }catch (Exception e) {
-            throw new RuntimeException(e);
+            return "{}";
+
+//            throw new RuntimeException(e);
         }
     }
 

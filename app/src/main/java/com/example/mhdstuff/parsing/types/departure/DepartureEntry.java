@@ -117,7 +117,9 @@ public record DepartureEntry(LineAlias line, String finalStop, int stopId, int p
             arrival.startAnimation(blink);
         }
 
-        if (!lowFloor) {
+        if (lowFloor) {
+            view.findViewById(R.id.departure_wheelchair_icon).setVisibility(View.VISIBLE);
+        } else {
             view.findViewById(R.id.departure_wheelchair_icon).setVisibility(View.GONE);
         }
     }

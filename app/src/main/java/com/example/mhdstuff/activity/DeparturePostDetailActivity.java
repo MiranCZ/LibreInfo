@@ -46,14 +46,14 @@ public class DeparturePostDetailActivity extends AbstractListViewActivity {
     @Override
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
         Post post = this.post.get();
-        JsonObject stopDelays = null;
+        JsonObject stopDelays = new JsonObject();
         try {
             stopDelays = RequestHelper.getStopDelays(post.stopID());
         } catch (RequestException e) {
             runOnUiThread(() -> e.showError(this, AppException.NotificationType.SNACK_BAR));
         }
 
-        List<Departure> departureList = OfflineDepartures.getOffline(storage, post.stopID(), -1, Time.ZERO, delays);
+        List<Departure> departureList = OfflineDepartures.getOfflineForPost(storage, post.stopID(),post.postID(), -1, Time.ZERO, delays);
 
         Departure departure = departureList.stream().filter(dep -> dep.postID() == post.postID()).findFirst().orElse(null);
 
@@ -62,10 +62,12 @@ public class DeparturePostDetailActivity extends AbstractListViewActivity {
 
         var adapter = new DepartureEntryItemAdapter(this, departure.entries(),storage.apiStorage(), stopDelays);
 
+        Time now = Time.now();
+
         int firstPos = -1;
         for (int i = 0; i < departure.entries().size(); i++) {
             var entry = departure.entries().get(i);
-            if (entry.timeMark().time().isAfter(Time.now())) {
+            if (entry.timeMark().time().isAfter(now)) {
                 firstPos = i;
                 break;
             }
