@@ -4,7 +4,7 @@ import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.google.gson.JsonObject;
 
-public record MapVehicle(int id, Location location, int bearing, LineAlias line, Stop finalStop) implements VehicleBase{
+public record MapVehicle(int id, Location location, int bearing, int delay, LineAlias line, Stop prevStop, Stop finalStop) implements VehicleBase{
 
 
 
@@ -21,9 +21,13 @@ public record MapVehicle(int id, Location location, int bearing, LineAlias line,
 
         LineAlias line = storage.lineStorage().getAlias(lineId);
 
+
+        Stop prevStop = storage.stopStorage().getStop(attrs.get("laststopid").getAsInt());
         Stop finalStop = storage.stopStorage().getStop(attrs.get("finalstopid").getAsInt());
 
-        return new MapVehicle(id, location, bearing, line, finalStop);
+        int delay = attrs.get("delay").getAsInt();
+
+        return new MapVehicle(id, location, bearing, delay, line,prevStop, finalStop);
     }
 
 }

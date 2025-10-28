@@ -75,6 +75,10 @@ public class RequestHelper {
         return makeOwnRequest("routedelays", JsonObject.class);
     }
 
+    public static JsonArray getVehicles() throws RequestException {
+        return makeOwnRequest("vehicles", JsonArray.class);
+    }
+
     public static JsonObject getVehicleInfo(int lineId, int routeId) throws RequestException {
         return makeOwnRequest("vehicleinfo?lineid="+lineId+"&routeid="+routeId, JsonObject.class);
     }
