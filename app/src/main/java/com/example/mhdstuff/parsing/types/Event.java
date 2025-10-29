@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public record Event(DateTime from, DateTime to,
-                    String title, MinuteRange delay, String text,
+                    String title, String delay, String text,
                     List<LineAlias> lines) {
 
     public static List<Event> parseEvents(JsonArray array, LineStorage storage) {
@@ -28,16 +28,8 @@ public record Event(DateTime from, DateTime to,
 //        String place = obj.get("Place").getAsString();
 //        String cause = obj.get("Cause").getAsString();
 
-        JsonElement delayEl = obj.get("delay");
+        String delay = obj.get("delay").getAsString();
 
-
-        // TODO better parsing
-        MinuteRange delay;
-        if (delayEl != null) {
-            delay = MinuteRange.parse(delayEl.getAsString());
-        } else {
-            delay = MinuteRange.NONE;
-        }
 
         String text = obj.get("content").getAsString();
 

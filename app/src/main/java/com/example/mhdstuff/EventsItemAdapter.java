@@ -1,5 +1,6 @@
 package com.example.mhdstuff;
 
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.text.Html;
@@ -46,9 +47,9 @@ public class EventsItemAdapter extends AbstractItemAdapter<Event, EventsItemAdap
         // FIXME hardcoded strings
         holder.times.setText(createSpannable(item.from(), item.to()));
 
-        final String text = "Zdržení"+" ";
-        SpannableString span = new SpannableString(text+item.delay().format());
-        span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(item.delay().from())), text.length(), span.length(), 0);
+        final String text = "Zdržení:"+" ";
+        SpannableString span = new SpannableString(text+item.delay()+" min");
+        span.setSpan(new ForegroundColorSpan(Color.RED), text.length(), span.length(), 0);
 
         holder.delay.setText(span);
 
