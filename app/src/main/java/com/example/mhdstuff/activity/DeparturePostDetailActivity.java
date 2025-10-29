@@ -67,7 +67,7 @@ public class DeparturePostDetailActivity extends AbstractListViewActivity {
         int firstPos = -1;
         for (int i = 0; i < departure.entries().size(); i++) {
             var entry = departure.entries().get(i);
-            if (entry.timeMark().time().isAfter(now)) {
+            if (!entry.timeMark().time().isBefore(now)) {
                 firstPos = i;
                 break;
             }

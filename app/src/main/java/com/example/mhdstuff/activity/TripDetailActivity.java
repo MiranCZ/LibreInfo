@@ -9,6 +9,7 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.TypefaceSpan;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.widget.NestedScrollView;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
@@ -172,6 +174,7 @@ public class TripDetailActivity extends BaseActivity {
 
         int id = 0;
         boolean alreadyMet = true;
+        int highlightViewId = -1;
 
         for (int i = 0; i < stops.length; i++) {
             RouteStop stop = stops[i];
@@ -248,11 +251,37 @@ public class TripDetailActivity extends BaseActivity {
                 departure.setAlpha(0.4f);
             }
 
+            if (stop.stopId() == highlightedStopId) {
+                highlightViewId = id;
+            }
+
             view.addView(info, id++);
 
             if (vehicleInfo.lastStopId() == stop.stopId()) {
                 alreadyMet = false;
             }
+        }
+        NestedScrollView scrollView = findViewById(R.id.scroll_view);
+
+        if (highlightViewId != -1) {
+            View centerView = view.getChildAt(Math.min(highlightViewId+4, id-1));
+
+            scrollView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    // Remove listener so it only runs once
+                    scrollView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                    int targetY = centerView.getTop() + centerView.getHeight() / 2;
+
+                    int scrollTo = targetY - scrollView.getHeight() / 2;
+
+                    scrollView.setScrollY(scrollTo);
+                }
+            });
+
+
+
         }
     }
 }

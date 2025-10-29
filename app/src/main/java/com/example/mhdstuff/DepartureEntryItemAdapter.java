@@ -35,7 +35,7 @@ public class DepartureEntryItemAdapter extends AbstractItemAdapter<DepartureEntr
 
     @Override
     protected void bindValues(DepartureEntryHolder holder, DepartureEntry item) {
-        boolean alreadyLeft = !item.timeMark().time().isAfter(Time.now()) && !item.timeMark().leaving();
+        boolean alreadyLeft = item.timeMark().time().isBefore(Time.now()) && !item.timeMark().leaving();
 
         Pair<Integer, Integer> lineRoute = apiStorage.getLineIdAndRoute(item.tripId());
 
