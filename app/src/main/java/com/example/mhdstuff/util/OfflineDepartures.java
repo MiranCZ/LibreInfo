@@ -64,12 +64,13 @@ public class OfflineDepartures {
                     JsonObject delaysList = delays.getAsJsonObject(lineId);
 
                     if (delaysList.has(routeId)) {
-                        int delay = delaysList.getAsJsonObject(routeId).get("delay").getAsInt();
+                        JsonObject entry = delaysList.getAsJsonObject(routeId);
+                        int delay = entry.get("delay").getAsInt();
 
                         stop.setDelay(delay);
                         delaySet = true;
 
-                        info = new VehicleInfo(delay, stop.delay());
+                        info = new VehicleInfo(entry.get("car_id").getAsInt(), delay);
                     }
                 }
             }
@@ -179,12 +180,13 @@ public class OfflineDepartures {
                     JsonObject delaysList = delays.getAsJsonObject(lineId);
 
                     if (delaysList.has(routeId)) {
-                        int delay = delaysList.getAsJsonObject(routeId).get("delay").getAsInt();
+                        JsonObject entry = delaysList.getAsJsonObject(routeId);
+                        int delay = entry.get("delay").getAsInt();
 
                         stop.setDelay(delay);
                         delaySet = true;
 
-                        info = new VehicleInfo(delay, stop.delay());
+                        info = new VehicleInfo(entry.get("car_id").getAsInt(), delay);
                     }
                 }
             }

@@ -92,8 +92,16 @@ public class TripDetailActivity extends BaseActivity {
             heading.setText("Unknown final stop");
             return;
         }
+        TextView vehicleIdInfo = findViewById(R.id.vehicle_id_info);
         TextView routeInfo = findViewById(R.id.vehicle_route_info);
 
+        int vehicleId = getIntent().getIntExtra("vehicleId", -1);
+
+        if (vehicleId != -1) {
+            vehicleIdInfo.setText("Vůz "+vehicleId);
+        } else {
+            vehicleIdInfo.setVisibility(View.GONE);
+        }
 
         Trip trip = storage.tripStorage().getTrips()[tripId];
         String headsign = storage.tripStorage().getTripHeadsign(trip);
@@ -149,17 +157,14 @@ public class TripDetailActivity extends BaseActivity {
         } else {
             delayText.setVisibility(View.VISIBLE);
 
+            SpannableString span;
             if (delay > 0) {
-                String delayString = "Zpoždění";
-
-                SpannableString span = new SpannableString(delayString + " " + delay + " min");
-                span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(delay)), delayString.length(), span.length(), 0);
-                delayText.setText(span);
+                span = new SpannableString(delay + " min");
             } else {
-                SpannableString span = new SpannableString("Včas");
-                span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(delay)), 0, span.length(), 0);
-                delayText.setText(span);
+                span = new SpannableString("Včas");
             }
+            span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(delay)), 0, span.length(), 0);
+            delayText.setText(span);
         }
 
 
