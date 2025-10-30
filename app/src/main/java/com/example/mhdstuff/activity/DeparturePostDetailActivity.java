@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mhdstuff.DepartureEntryItemAdapter;
 import com.example.mhdstuff.R;
-import com.example.mhdstuff.activity.data.Arg;
 import com.example.mhdstuff.activity.data.DelaysDataHolder;
 import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
 import com.example.mhdstuff.exception.AppException;
@@ -27,12 +26,11 @@ import java.util.List;
 public class DeparturePostDetailActivity extends AbstractListViewActivity {
 
 
-    private final Arg<Post> post;
     private final JsonObject delays;
+    private Post post;
 
     public DeparturePostDetailActivity() {
         super("", R.layout.activity_deparute_post_detail, R.id.departure_content);
-        this.post = popArg("post", null);
 
         this.delays = DelaysDataHolder.getDelays();
     }
@@ -40,12 +38,12 @@ public class DeparturePostDetailActivity extends AbstractListViewActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setName(post.get().name());
+        post = getIntent().getParcelableExtra("post");
+        setName(post.name());
     }
 
     @Override
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
-        Post post = this.post.get();
         JsonObject stopDelays = new JsonObject();
         try {
             stopDelays = RequestHelper.getStopDelays(post.stopID());

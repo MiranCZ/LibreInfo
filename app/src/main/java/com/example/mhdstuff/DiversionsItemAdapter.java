@@ -53,7 +53,7 @@ public class DiversionsItemAdapter extends AbstractItemAdapter<Diversion, Divers
         holder.view.setOnClickListener(view -> {
             activity.startActivity(
                     DiversionInfoActivity.class,
-                    intent -> BaseActivity.putArg(intent, "diversion", item)
+                    intent -> intent.putExtra("diversion", item)
             );
         });
 

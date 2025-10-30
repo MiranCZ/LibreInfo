@@ -1,6 +1,9 @@
 package com.example.mhdstuff.parsing.types;
 
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
 import com.example.mhdstuff.util.Pair;
@@ -8,10 +11,26 @@ import com.example.mhdstuff.util.Pair;
 import java.time.LocalDateTime;
 import java.util.Locale;
 
-public record DateTime(int day, int month, int year, int hours, int minutes) {
+public record DateTime(int day, int month, int year, int hours, int minutes) implements Parcelable {
 
     public static final DateTime NONE = new DateTime(-1, -1, -1, -1, -1);
 
+
+    private DateTime(Parcel in) {
+        this(in.readInt(), in.readInt(),in.readInt(),in.readInt(),in.readInt());
+    }
+
+    public static final Creator<DateTime> CREATOR = new Creator<>() {
+        @Override
+        public DateTime createFromParcel(Parcel in) {
+            return new DateTime(in);
+        }
+
+        @Override
+        public DateTime[] newArray(int size) {
+            return new DateTime[size];
+        }
+    };
 
     public static DateTime now() {
         LocalDateTime now = LocalDateTime.now();
@@ -91,4 +110,17 @@ public record DateTime(int day, int month, int year, int hours, int minutes) {
         return String.format(Locale.getDefault(),"%02d:%02d", hours, minutes);
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeInt(day);
+        dest.writeInt(month);
+        dest.writeInt(year);
+        dest.writeInt(hours);
+        dest.writeInt(minutes);
+    }
 }

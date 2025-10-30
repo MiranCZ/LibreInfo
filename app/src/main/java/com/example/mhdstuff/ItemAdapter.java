@@ -47,7 +47,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ButtonViewHold
 
         holder.button.setOnClickListener(v -> parent.startActivity(
                 DeparturesActivity.class,
-                intent -> BaseActivity.putArg(intent, "stop", currentItem)
+                intent -> intent.putExtra("stop", currentItem)
         ));
         if (currentItem.isFavourite()) {
             holder.button.setIconResource(R.drawable.heart_solid);

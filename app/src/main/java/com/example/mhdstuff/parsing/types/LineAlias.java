@@ -3,11 +3,15 @@ package com.example.mhdstuff.parsing.types;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.parsing.storage.LineStorage;
@@ -22,7 +26,23 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public record LineAlias(int id, String lineDisplayName, int backgroundColor, String backgroundColorStr, int textColor, String textColorStr) {
+public record LineAlias(int id, String lineDisplayName, int backgroundColor, String backgroundColorStr, int textColor, String textColorStr) implements Parcelable {
+
+    private LineAlias(Parcel in) {
+        this(in.readInt(), in.readString(), in.readInt(), in.readString(), in.readInt(), in.readString());
+    }
+
+    public static final Creator<LineAlias> CREATOR = new Creator<>() {
+        @Override
+        public LineAlias createFromParcel(Parcel in) {
+            return new LineAlias(in);
+        }
+
+        @Override
+        public LineAlias[] newArray(int size) {
+            return new LineAlias[size];
+        }
+    };
 
     public static List<LineAlias> parseLineAliases(JsonArray array) {
         return TypeHelper.parseList(array, LineAlias::parse);
@@ -179,4 +199,18 @@ public record LineAlias(int id, String lineDisplayName, int backgroundColor, Str
         return itemView;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeString(lineDisplayName);
+        dest.writeInt(backgroundColor);
+        dest.writeString(backgroundColorStr);
+        dest.writeInt(textColor);
+        dest.writeString(textColorStr);
+    }
 }

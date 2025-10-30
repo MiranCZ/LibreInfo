@@ -1,7 +1,6 @@
 package com.example.mhdstuff.activity;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.View;
@@ -13,7 +12,6 @@ import androidx.core.content.ContextCompat;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
-import com.example.mhdstuff.activity.data.Arg;
 import com.example.mhdstuff.activity.data.DelaysDataHolder;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Post;
@@ -22,32 +20,27 @@ import com.example.mhdstuff.parsing.types.departure.Departure;
 import com.example.mhdstuff.parsing.types.departure.Departures;
 import com.example.mhdstuff.util.Container;
 import com.example.mhdstuff.util.OfflineDepartures;
-import com.example.mhdstuff.util.request.RequestHelper;
-import com.example.mhdstuff.util.request.soap.SoapHelper;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 public class DeparturesActivity extends BaseActivity {
 
 
 
-    private final Arg<Stop> stop;
 
     public DeparturesActivity() {
         super("", R.layout.activity_departures);
-        stop = popArg("stop", Stop.NONE);
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Stop stop = this.stop.get();
+        Stop stop = getIntent().getParcelableExtra("stop");
         setName(stop.name);
 
         Container<View> heartFullCont = new Container<>();
@@ -79,23 +72,23 @@ public class DeparturesActivity extends BaseActivity {
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();
 
-            Departures departures = getOffline(storage, delays);
+            Departures departures = getOffline(storage, delays, stop.id);
 
             LinearLayout layout = findViewById(R.id.departure_items);
 
-            createEntries(departures, layout, context, storage);
+            createEntries(departures, layout, stop.id, context, storage);
         }).start();
     }
 
 
-    private Departures getOffline(IdStorage storage, JsonObject delays) {
+    private Departures getOffline(IdStorage storage, JsonObject delays, int stopId) {
         return new Departures(
                 "Work in progress...",
-                OfflineDepartures.getOffline(storage, stop.get().id, delays)
+                OfflineDepartures.getOffline(storage, stopId, delays)
         );
     }
 
-    private void createEntries(Departures departures, LinearLayout layout, Context context, IdStorage storage) {
+    private void createEntries(Departures departures, LinearLayout layout, int stopId, Context context, IdStorage storage) {
         List<Departure> departureList = new ArrayList<>(departures.departures());
         AtomicInteger index = new AtomicInteger(1);
 
@@ -123,10 +116,10 @@ public class DeparturesActivity extends BaseActivity {
                     Departure departure = departureList.remove(0);
 
                     View departureView = departure.createDepartureView(this, layout, context);
-                    Post post = storage.postStorage().getPost(stop.get().id, departure.postID());
+                    Post post = storage.postStorage().getPost(stopId, departure.postID());
                     departureView.setOnClickListener(v -> startActivity(
                             DeparturePostDetailActivity.class,
-                            intent -> BaseActivity.putArg(intent, "post",post)
+                            intent -> intent.putExtra("post", post)
                     ));
 
                     layout.addView(departureView, index.getAndIncrement());
@@ -144,7 +137,5 @@ public class DeparturesActivity extends BaseActivity {
     @Override
     public void onPause() {
         super.onPause();
-
-        stop.get().flush();
     }
 }

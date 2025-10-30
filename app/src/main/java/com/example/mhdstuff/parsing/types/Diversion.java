@@ -1,5 +1,10 @@
 package com.example.mhdstuff.parsing.types;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+
 import com.example.mhdstuff.parsing.storage.LineStorage;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -8,8 +13,29 @@ import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public record Diversion(String title, Location location, DateTime from, DateTime to,
-                        String publicText, List<LineAlias> lines) {
+public record Diversion(String title, DateTime from, DateTime to,
+                        String publicText, List<LineAlias> lines) implements Parcelable {
+
+    private Diversion(Parcel in) {
+        this(in.readString(),
+                in.readParcelable(DateTime.class.getClassLoader()),
+                in.readParcelable(DateTime.class.getClassLoader()),
+                in.readString(),
+                in.createTypedArrayList(LineAlias.CREATOR)
+        );
+    }
+
+    public static final Creator<Diversion> CREATOR = new Creator<>() {
+        @Override
+        public Diversion createFromParcel(Parcel in) {
+            return new Diversion(in);
+        }
+
+        @Override
+        public Diversion[] newArray(int size) {
+            return new Diversion[size];
+        }
+    };
 
     public static List<Diversion> parseDiversions(JsonArray array, LineStorage storage) {
         return TypeHelper.parseList(array, (o) -> parse(o, storage));
@@ -19,7 +45,6 @@ public record Diversion(String title, Location location, DateTime from, DateTime
         if (obj == null) return null;
 
         String title = obj.get("title").getAsString();
-        Location location = Location.parse(obj);
         DateTime from = DateTime.parse(obj.get("from").getAsString());
         DateTime to = DateTime.parse(obj.get("to").getAsString());
 
@@ -31,6 +56,20 @@ public record Diversion(String title, Location location, DateTime from, DateTime
             lines.add(LineAlias.parse(element.getAsString(), storage));
         }
 
-        return new Diversion(title, location, from, to, publicText, lines);
+        return new Diversion(title, from, to, publicText, lines);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString(title);
+        dest.writeParcelable(from, flags);
+        dest.writeParcelable(to, flags);
+        dest.writeString(publicText);
+        dest.writeTypedList(lines);
     }
 }

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
@@ -156,6 +157,31 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
 
     public static StopStorage getStopStorage() {
         return getInstanceOf(StopStorage.class);
+    }
+
+    public static StopStorage getStopStorageOrThrow() {
+        return getInstanceOrThrow(StopStorage.class);
+    }
+
+    public static PostStorage getPostStorageOrThrow() {
+        return getInstanceOrThrow(PostStorage.class);
+    }
+
+    public static <T> T getInstanceOrThrow(Class<T> clazz) {
+        synchronized (mutex) {
+            Object instance = instances.get(clazz);
+            if (instance != null) return (T) instance;
+        }
+
+        synchronized (mutex) {
+            T obj = (T) instances.get(clazz);
+
+            if (obj == null) {
+                throw new NoSuchElementException();
+            } else {
+                return obj;
+            }
+        }
     }
 
 

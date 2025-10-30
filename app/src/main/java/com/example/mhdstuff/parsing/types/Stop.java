@@ -1,7 +1,11 @@
 package com.example.mhdstuff.parsing.types;
 
-import android.content.SharedPreferences;
+import android.os.Parcel;
+import android.os.Parcelable;
 
+import androidx.annotation.NonNull;
+
+import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.util.PreferencesHolder;
 
 import java.io.DataInputStream;
@@ -11,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class Stop {
+public final class Stop implements Parcelable {
 
 
     public static Stop NONE = new Stop(-1, "UNKNOWN", Location.NONE, PreferencesHolder.NONE);
@@ -30,6 +34,19 @@ public final class Stop {
         this.favStops = favStops;
         this.favourite = favStops.getBoolean(id, false);
     }
+
+    public static final Creator<Stop> CREATOR = new Creator<Stop>() {
+        @Override
+        public Stop createFromParcel(Parcel in) {
+            int id = in.readInt();
+            return IdStorage.getStopStorageOrThrow().getStop(id);
+        }
+
+        @Override
+        public Stop[] newArray(int size) {
+            return new Stop[size];
+        }
+    };
 
     public static List<Stop> parseStops(DataInputStream is, PreferencesHolder favStops) throws IOException {
         List<Stop> result = new ArrayList<>();
@@ -97,4 +114,13 @@ public final class Stop {
                 "location=" + location + ']';
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeInt(id);
+    }
 }

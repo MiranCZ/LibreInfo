@@ -99,7 +99,7 @@ public class TrafficChangesManager {
             DateTime from = timeInfo.left();
             DateTime to = timeInfo.right();
 
-            infos.add(new Diversion(title, null, from, to, content.toString(),
+            infos.add(new Diversion(title,  from, to, content.toString(),
                     lines.stream().map(s -> LineAlias.parse(s, lineStorage)).collect(Collectors.toList())
             ));
         }

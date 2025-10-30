@@ -20,8 +20,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
 import com.example.mhdstuff.R;
-import com.example.mhdstuff.activity.data.Arg;
-import com.example.mhdstuff.activity.data.DataHolder;
 import com.example.mhdstuff.util.Text;
 import com.google.android.material.appbar.MaterialToolbar;
 
@@ -141,24 +139,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         intentSetup.accept(intent);
         startActivity(intent);
         overridePendingTransition(R.anim.fast_scale_up, R.anim.fast_fade_out);
-    }
-
-    protected <T> Arg<T> popArg(String name, T defaultValue) {
-        return new Arg<>(() -> {
-            int index = getIntent().getIntExtra(name, -1);
-
-            T result = DataHolder.popArg(index);
-
-            if (result == null) return defaultValue;
-
-            return result;
-        });
-    }
-
-    public static <T> void putArg(Intent intent, String name, T arg) {
-        int pointer = DataHolder.createArg(arg);
-
-        intent.putExtra(name, pointer);
     }
 
     @Override
