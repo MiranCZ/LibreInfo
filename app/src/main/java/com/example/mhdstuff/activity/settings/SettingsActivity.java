@@ -12,7 +12,7 @@ public class SettingsActivity extends BaseActivity {
 
 
     public SettingsActivity() {
-        super("Nastavení");
+        super(R.string.settings);
     }
 
     @Override

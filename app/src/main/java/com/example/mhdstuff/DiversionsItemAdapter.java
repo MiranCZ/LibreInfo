@@ -46,9 +46,8 @@ public class DiversionsItemAdapter extends AbstractItemAdapter<Diversion, Divers
     private void createElement(DiversionViewHolder holder, Diversion item, IdStorage storage) {
         holder.title.setText(item.title());
 
-        // FIXME hardcoded strings
-        holder.from.setText(createSpannable("od: ", item.from()));
-        holder.to.setText(createSpannable("do: ", item.to()));
+        holder.from.setText(createSpannable(activity.getString(R.string.from)+": ", item.from()));
+        holder.to.setText(createSpannable(activity.getString(R.string.to)+": ", item.to()));
 
         holder.view.setOnClickListener(view -> {
             activity.startActivity(

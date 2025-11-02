@@ -39,7 +39,7 @@ public class VehicleItemAdapter extends AbstractItemAdapter<Vehicle, VehicleItem
         holder.vehicleLineIcon.addView(item.line().createLineIconView(holder.vehicleLineIcon, parent));
 
         holder.vehicleHeading.setText(item.getFinalStopText());
-        holder.vehicleDelay.setText(item.getDelaySpan());
+        holder.vehicleDelay.setText(item.getDelaySpan(parent));
 
         holder.vehicleNextStop.setText(item.lastStop().name);
 

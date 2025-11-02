@@ -15,4 +15,11 @@
     <string name="sort_by">Řadit podle</string>
     <string name="about_text">Neoficiální aplikace pro mhd v Brně. Aplikace byla vytvořena kvůli katastrofálnímu stavu oficiální nové aplikace DPMBinfo. Veškerá data jsou získávána z veřejných zdrojů (plus mínus).</string>
     <string name="select_poi">Vyberte objekt</string>
+    <string name="vehicle_delay">Zdržení:</string>
+    <string name="from">Od</string>
+    <string name="to">Do</string>
+    <string name="on_time">Včas</string>
+    <string name="vehicle_number">Vůz %d</string>
+    <string name="trip">Trasa</string>
+    <string name="trip_number">Trasa %1d/%2d</string>
 </resources>
