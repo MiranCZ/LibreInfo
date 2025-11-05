@@ -38,9 +38,17 @@ import com.example.mhdstuff.util.request.RequestHelper;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
-
+// TODO do not restart blinking when updating
+// add "updated before x seconds" timer
 public class TripDetailActivity extends BaseActivity {
+
+    private Timer timer = null;
 
     public TripDetailActivity() {
         super(R.string.trip, R.layout.activity_trip_info);
@@ -51,7 +59,6 @@ public class TripDetailActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         int tripId = getIntent().getIntExtra("tripId", -1);
-        int vehicleId = getIntent().getIntExtra("vehicleId", -1);
 
         FrameLayout lineIcon = findViewById(R.id.vehicle_line_icon);
 
@@ -161,13 +168,90 @@ public class TripDetailActivity extends BaseActivity {
 
         LinearLayout view = findViewById(R.id.vehicle_stops);
 
+        int highlightViewId = populateViews(
+                (i) -> LayoutInflater.from(this).inflate(R.layout.route_stop_entry, view, false),
+                (i, v) -> view.addView(v, i),
+                storage,
+                vehicleInfo,
+                stops,
+                highlightedStopId,
+                lineId,
+                delay
+        );
+
+        NestedScrollView scrollView = findViewById(R.id.scroll_view);
+
+        if (highlightViewId != -1) {
+            View centerView = view.getChildAt(Math.min(highlightViewId+4, view.getChildCount()-1));
+
+            scrollView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    // Remove listener so it only runs once
+                    scrollView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                    int targetY = centerView.getTop() + centerView.getHeight() / 2;
+
+                    int scrollTo = targetY - scrollView.getHeight() / 2;
+
+                    scrollView.setScrollY(scrollTo);
+                }
+            });
+
+        }
+
+
+
+        BaseActivity thiz = this;
+        RouteStop[] finalStops = stops;
+
+        if (timer != null) {
+            timer.cancel();
+        }
+        timer = new Timer();
+
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                VehicleTripInfo vehicleInfo = VehicleTripInfo.NONE;
+                try {
+                    vehicleInfo = VehicleTripInfo.parse(RequestHelper.getVehicleInfo(res.left(), res.right()));
+                } catch (RequestException e) {
+                    runOnUiThread(() -> e.showError(thiz, AppException.NotificationType.SNACK_BAR));
+
+                    timer.cancel();
+                }
+
+                VehicleTripInfo finalVehicleInfo = vehicleInfo;
+                runOnUiThread(() -> {
+                    if (finalVehicleInfo.delay() == -1) {
+                        delayText.setVisibility(View.GONE);
+                    } else {
+                        delayText.setVisibility(View.VISIBLE);
+
+                        delayText.setText(DelayUtil.getDelaySpan(thiz, finalVehicleInfo.delay()));
+                    }
+
+                    populateViews(view::getChildAt, (i, v) -> {
+                            }, storage, finalVehicleInfo,
+                            finalStops,
+                            highlightedStopId,
+                            lineId,
+                            finalVehicleInfo.delay());
+                });
+            }
+        }, 0, 10_000);
+
+    }
+
+    private int populateViews(Function<Integer, View> viewCreator, BiConsumer<Integer, View> consumer, IdStorage storage, VehicleTripInfo vehicleInfo, RouteStop[] stops, int highlightedStopId, int lineId, int delay) {
         int id = 0;
         boolean alreadyMet = true;
         int highlightViewId = -1;
 
         for (int i = 0; i < stops.length; i++) {
             RouteStop stop = stops[i];
-            View info = LayoutInflater.from(this).inflate(R.layout.route_stop_entry, view, false);
+            View info = viewCreator.apply(i);
 
             if (vehicleInfo == VehicleTripInfo.NONE && !stop.departure().isBefore(Time.now())) {
                 alreadyMet = false;
@@ -214,8 +298,11 @@ public class TripDetailActivity extends BaseActivity {
             } else {
                 icon.setAlpha(0.5f);
             }
+            if (!leavingStop) {
+                icon.clearAnimation();
+            }
 
-            boolean lastStop = (i+1)>=stops.length;
+            boolean lastStop = (i+1)>= stops.length;
 
             int currentDelay = delay;
 
@@ -244,33 +331,20 @@ public class TripDetailActivity extends BaseActivity {
                 highlightViewId = id;
             }
 
-            view.addView(info, id++);
 
             if (vehicleInfo.lastStopId() == stop.stopId()) {
                 alreadyMet = false;
             }
+
+
+            consumer.accept(id++, info);
         }
-        NestedScrollView scrollView = findViewById(R.id.scroll_view);
+        return highlightViewId;
+    }
 
-        if (highlightViewId != -1) {
-            View centerView = view.getChildAt(Math.min(highlightViewId+4, id-1));
-
-            scrollView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    // Remove listener so it only runs once
-                    scrollView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-
-                    int targetY = centerView.getTop() + centerView.getHeight() / 2;
-
-                    int scrollTo = targetY - scrollView.getHeight() / 2;
-
-                    scrollView.setScrollY(scrollTo);
-                }
-            });
-
-
-
-        }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        timer.cancel();
     }
 }
