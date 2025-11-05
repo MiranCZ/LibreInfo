@@ -36,11 +36,11 @@ public class DelayUtil {
             color = 0xFFEED000;
         } else if (delay < 5) {
             color = 0xFFFFA500; //orange
-        } else if (delay < 10){
-            color = Color.RED;
         } else {
+            color = Color.RED;
+        } /*else {
             color = 0xFF8B0000; //darkred
-        }
+        }*/
         return color;
     }
 
