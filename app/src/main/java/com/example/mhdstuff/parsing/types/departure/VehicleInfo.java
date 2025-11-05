@@ -1,6 +1,6 @@
 package com.example.mhdstuff.parsing.types.departure;
 
-import com.example.mhdstuff.parsing.types.Vehicle;
+import com.example.mhdstuff.util.DelayUtil;
 
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -20,7 +20,7 @@ public final class VehicleInfo {
     }
 
     public int getDelayColor() {
-        return Vehicle.getDelayColor(delay());
+        return DelayUtil.getDelayColor(delay());
     }
 
     public int id() {

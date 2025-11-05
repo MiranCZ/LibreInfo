@@ -16,7 +16,7 @@ import androidx.fragment.app.Fragment;
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.parsing.types.MapVehicle;
-import com.example.mhdstuff.parsing.types.Vehicle;
+import com.example.mhdstuff.util.DelayUtil;
 
 public class VehicleInfoBottomSheet extends Fragment {
 
@@ -64,8 +64,8 @@ public class VehicleInfoBottomSheet extends Fragment {
         int delay = vehicle.delay();
 
         // FIXME hardcoded ughhh
-        SpannableString span = new SpannableString(delay == 0 ? "včas": (delay + " min"));
-        span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(delay)), 0, span.length(), 0);
+        SpannableString span = new SpannableString(DelayUtil.getDelayText(parent, delay));
+        span.setSpan(new ForegroundColorSpan(DelayUtil.getDelayColor(delay)), 0, span.length(), 0);
 
         delayText.setText(span);
     }

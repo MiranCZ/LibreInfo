@@ -1,7 +1,6 @@
 package com.example.mhdstuff.parsing.types;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
@@ -12,6 +11,7 @@ import android.widget.TextView;
 
 import com.example.mhdstuff.R;
 import com.example.mhdstuff.parsing.storage.IdStorage;
+import com.example.mhdstuff.util.DelayUtil;
 import com.example.mhdstuff.util.request.soap.SoapSaneObject;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -154,34 +154,12 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         return finalStopName.orElseGet(() -> finalStop.name);
     }
 
-    public SpannableString getDelaySpan() {
-        String text = (delay == 0) ? "včas" : (delay + " min");
-        int color = getDelayColor();
-
-        SpannableString spannable = new SpannableString(text);
-
-        spannable.setSpan(new ForegroundColorSpan(color), 0, text.length(), 0);
-
-        return spannable;
+    public SpannableString getDelaySpan(Context context) {
+        return DelayUtil.getDelaySpan(context, delay);
     }
 
     public int getDelayColor() {
-        return getDelayColor(delay);
+        return DelayUtil.getDelayColor(delay);
     }
 
-    public static int getDelayColor(int delay) {
-        int color;
-        if (delay == 0) {
-            color = Color.GREEN;
-        } else if (delay < 3) {
-            color = 0xFFEED000;
-        } else if (delay < 5) {
-            color = 0xFFFFA500; //orange
-        } else if (delay < 10){
-            color = Color.RED;
-        } else {
-            color = 0xFF8B0000; //darkred
-        }
-        return color;
-    }
 }

@@ -29,25 +29,21 @@ import com.example.mhdstuff.parsing.storage.CalendarStorage;
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.RouteStop;
-import com.example.mhdstuff.parsing.types.Stop;
 import com.example.mhdstuff.parsing.types.Time;
 import com.example.mhdstuff.parsing.types.Trip;
-import com.example.mhdstuff.parsing.types.Vehicle;
 import com.example.mhdstuff.parsing.types.VehicleTripInfo;
-import com.example.mhdstuff.parsing.types.departure.VehicleInfo;
+import com.example.mhdstuff.util.DelayUtil;
 import com.example.mhdstuff.util.request.RequestHelper;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 public class TripDetailActivity extends BaseActivity {
 
     public TripDetailActivity() {
-        super("Trasa", R.layout.activity_trip_info);
+        super(R.string.trip, R.layout.activity_trip_info);
     }
 
     @Override
@@ -100,7 +96,7 @@ public class TripDetailActivity extends BaseActivity {
         int vehicleId = getIntent().getIntExtra("vehicleId", -1);
 
         if (vehicleId != -1) {
-            vehicleIdInfo.setText("Vůz "+vehicleId);
+            vehicleIdInfo.setText(getString(R.string.vehicle_number, vehicleId));
         } else {
             vehicleIdInfo.setVisibility(View.GONE);
         }
@@ -108,7 +104,7 @@ public class TripDetailActivity extends BaseActivity {
         Trip trip = storage.tripStorage().getTrips()[tripId];
         String headsign = storage.tripStorage().getTripHeadsign(trip);
 
-        String routeInfoText = "Trasa " + res.left() + "/" + res.right();
+        String routeInfoText = getString(R.string.trip_number, res.left(), res.right());
 
 
         RouteStop[] stops = trip.getRouteStops(storage.routeStopStorage());
@@ -122,7 +118,7 @@ public class TripDetailActivity extends BaseActivity {
 
             headsign = storage.tripStorage().getHeadsignForTripList(neighbors, storage);
 
-            routeInfoText = "Trasa ";
+            routeInfoText = getString(R.string.trip)+" ";
 
 
             List<RouteStop> stopsList = new ArrayList<>();
@@ -159,14 +155,7 @@ public class TripDetailActivity extends BaseActivity {
         } else {
             delayText.setVisibility(View.VISIBLE);
 
-            SpannableString span;
-            if (delay > 0) {
-                span = new SpannableString(delay + " min");
-            } else {
-                span = new SpannableString("Včas");
-            }
-            span.setSpan(new ForegroundColorSpan(Vehicle.getDelayColor(delay)), 0, span.length(), 0);
-            delayText.setText(span);
+            delayText.setText(DelayUtil.getDelaySpan(this, delay));
         }
 
 

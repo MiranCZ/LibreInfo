@@ -45,10 +45,9 @@ public class EventsItemAdapter extends AbstractItemAdapter<Event, EventsItemAdap
     private void createElement(EventItemHodler holder, Event item) {
         holder.title.setText(item.title());
 
-        // FIXME hardcoded strings
         holder.times.setText(createSpannable(item.from(), item.to()));
 
-        final String text = "Zdržení:"+" ";
+        final String text = activity.getString(R.string.vehicle_delay) + " ";
         SpannableString span = new SpannableString(text+item.delay()+" min");
         span.setSpan(new ForegroundColorSpan(Color.RED), text.length(), span.length(), 0);
 
