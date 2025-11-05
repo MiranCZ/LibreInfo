@@ -1,5 +1,6 @@
 package com.example.mhdstuff.util.request;
 
+import com.example.mhdstuff.exception.AppException;
 import com.example.mhdstuff.exception.RequestException;
 import com.example.mhdstuff.util.IOUtil;
 import com.google.gson.*;
@@ -18,6 +19,22 @@ public class RequestHelper {
 
 //    private static final String URL_START = "10.0.2.2/api";
 //    private static final String STATIC_DATA_URL = "https://mirancz.github.io/gtfsstatic/";
+
+    public static long getLastStaticUpdate() throws AppException {
+        try {
+            InputStream stream = readUrl(Endpoint.STATIC_GTFS.resolve("info"));
+            String output = new String(IOUtil.readAllBytes(stream), StandardCharsets.UTF_8);
+
+            JsonObject json = new Gson().fromJson(output, JsonObject.class);
+
+            if (json.has("lastUpdated")) {
+                return json.get("lastUpdated").getAsLong();
+            }
+            return -1;
+        } catch (IOException e) {
+            throw new AppException("Failed to parse server info");
+        }
+    }
 
     public static InputStream getApi() throws RequestException {
         return readStaticGtfs("api");

@@ -3,7 +3,9 @@ package com.example.mhdstuff;
 import android.app.Activity;
 import android.content.Context;
 
+import com.example.mhdstuff.exception.AppException;
 import com.example.mhdstuff.parsing.storage.IdStorage;
+import com.example.mhdstuff.util.CacheHelper;
 
 public class Application extends android.app.Application {
 
@@ -12,6 +14,13 @@ public class Application extends android.app.Application {
         super.onCreate();
 
         Context context = this;
-        new Thread(() -> IdStorage.init(context)).start();
+        new Thread(() -> {
+            try {
+                CacheHelper.init();
+            } catch (AppException e) {
+                // FIXME silent exception
+            }
+            IdStorage.init(context);
+        }).start();
     }
 }

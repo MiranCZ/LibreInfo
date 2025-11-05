@@ -12,6 +12,7 @@ import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.parsing.types.News;
 import com.example.mhdstuff.util.CacheHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class NewsActivity extends BaseActivity {
@@ -32,7 +33,8 @@ public class NewsActivity extends BaseActivity {
 
         Context context = this;
         new Thread(() -> {
-            items = News.parseNewsList(CacheHelper.getNews(context));
+//            items = News.parseNewsList(CacheHelper.getNews(context));
+            items = new ArrayList<>();
             System.out.println("Loaded "+items);
 
             adapter = new NewsItemAdapter(items, context);

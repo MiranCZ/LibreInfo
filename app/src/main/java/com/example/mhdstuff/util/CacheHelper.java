@@ -26,12 +26,17 @@ import kotlin.text.Charsets;
 
 public class CacheHelper {
 
-    public static JsonArray getNews(Context context) {
+    private static long serverUpdateTime = -1;
+
+    public static void init() throws AppException {
+        serverUpdateTime = RequestHelper.getLastStaticUpdate();
+    }
+
+    public static JsonArray getNews(Context context) throws AppException {
         return CacheHelper.readOrFetchJson("news.json", RequestHelper::getNews, context);
     }
 
-    public static RandomAccessFile getRouteStopsRAF(Context context) {
-
+    public static RandomAccessFile getRouteStopsRAF(Context context) throws AppException {
         if (!isCached(context, "data", "route_stops")) {
             try {
                 writeToCache(IOUtil.readAllBytes(RequestHelper.getRouteStops()), context, "data", "route_stops");
@@ -95,7 +100,7 @@ public class CacheHelper {
         }
     }
 
-    private static JsonArray readOrFetchJson(String cacheName, Callable<JsonArray> fetchFunc, Context context) {
+    private static JsonArray readOrFetchJson(String cacheName, Callable<JsonArray> fetchFunc, Context context) throws AppException {
         if (isCached(context, cacheName)) {
             System.out.println("Using cached version of " + cacheName);
             return readCache(cacheName, JsonArray.class, context);
@@ -113,9 +118,26 @@ public class CacheHelper {
     }
 
 
-    private static boolean isCached(Context context, String... name) {
-        // TODO check date
-        return getCachedPath(context, name).toFile().exists();
+    private static boolean isCached(Context context, String... name) throws AppException {
+        Path metaPath = getCachedMetaPath(context, name);
+        if (!getCachedPath(context, name).toFile().exists() || !metaPath.toFile().exists()) {
+            return false;
+        }
+        if (serverUpdateTime == -1) return true;
+
+        try {
+            byte[] timeB = Files.readAllBytes(metaPath);
+            long time = bytesToLong(timeB);
+
+            if (time < serverUpdateTime) {
+                Log.d("CacheHelper", "found old cache file "+ Arrays.toString(name));
+                return false;
+            }
+        } catch (IOException e) {
+            throw new AppException("Failed to read metadata file");
+        }
+
+        return true;
     }
 
     private static void writeCache(String name, JsonElement element, Context context) {
@@ -130,22 +152,36 @@ public class CacheHelper {
 
     public static void writeToCache(byte[] bytes, Context context, String... name) {
         Path path = getCachedPath(context, name);
+        Path metaPath = getCachedMetaPath(context, name);
 
         try {
             Files.write(path, bytes, StandardOpenOption.CREATE);
+            Files.write(metaPath, currentTimeBytes(), StandardOpenOption.CREATE);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static String readCache(Context context, String... name) {
-        Path path = getCachedPath(context, name);
+    private static byte[] currentTimeBytes() {
+        long current = System.currentTimeMillis();
 
-        try {
-            return new String(Files.readAllBytes(path), Charsets.UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        byte[] bytes = new byte[8];
+        for (int i = 7; i >= 0; i--) {
+            bytes[i] = (byte) (current & 0xFF);
+            current >>= 8;
         }
+        return bytes;
+    }
+
+    public static long bytesToLong(byte[] bytes) {
+        if (bytes.length != 8)
+            throw new IllegalArgumentException("Byte array must be 8 bytes long.");
+
+        long value = 0;
+        for (int i = 0; i < 8; i++) {
+            value = (value << 8) | (bytes[i] & 0xFF);
+        }
+        return value;
     }
 
     private static <T extends JsonElement> T readCache(String name, Class<T> clazz, Context context) {
@@ -171,6 +207,10 @@ public class CacheHelper {
         }
 
         return path;
+    }
+
+    private static Path getCachedMetaPath(Context context, String... name) {
+        return getCachedPath(context,name).getParent().resolve(name[name.length-1] + ".meta");
     }
 
 }
