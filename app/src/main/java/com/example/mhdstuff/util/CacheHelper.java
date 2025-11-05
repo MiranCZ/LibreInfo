@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.example.mhdstuff.exception.AppException;
-import com.example.mhdstuff.exception.RequestException;
 import com.example.mhdstuff.util.request.RequestHelper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -35,7 +34,7 @@ public class CacheHelper {
 
         if (!isCached(context, "data", "route_stops")) {
             try {
-                writeToCache(RequestHelper.getRouteStops().readAllBytes(), context, "data", "route_stops");
+                writeToCache(IOUtil.readAllBytes(RequestHelper.getRouteStops()), context, "data", "route_stops");
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -83,7 +82,7 @@ public class CacheHelper {
     private static DataInputStream readOrFetch(Callable<InputStream> fetchFunc, Context context, String... name) throws AppException {
         if (!isCached(context, name)) {
             try {
-                writeToCache(fetchFunc.call().readAllBytes(), context, name);
+                writeToCache(IOUtil.readAllBytes(fetchFunc.call()), context, name);
             } catch (Exception e) {
                 throw new AppException("Failed to write to cache");
             }

@@ -1,6 +1,7 @@
 package com.example.mhdstuff.util.request;
 
 import com.example.mhdstuff.exception.RequestException;
+import com.example.mhdstuff.util.IOUtil;
 import com.google.gson.*;
 
 import java.io.IOException;
@@ -94,7 +95,7 @@ public class RequestHelper {
                 throw RequestException.reachError(Endpoint.APP_SERVER);
             }
 
-            String output = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+            String output = new String(IOUtil.readAllBytes(stream), StandardCharsets.UTF_8);
             stream.close();
 
             if (output.isBlank()) {

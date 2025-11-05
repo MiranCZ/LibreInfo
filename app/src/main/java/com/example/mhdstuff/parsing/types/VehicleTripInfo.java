@@ -6,10 +6,10 @@ import com.google.gson.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public record VehicleTripInfo(long lastUpdate, int lastStopId, Map<Integer, Integer> previousStopDelays) {
+public record VehicleTripInfo(long lastUpdate, int lastStopId, int delay, Map<Integer, Integer> previousStopDelays) {
 
 
-    public static VehicleTripInfo NONE = new VehicleTripInfo(-1, -1, Map.of());
+    public static VehicleTripInfo NONE = new VehicleTripInfo(-1, -1, -1, Map.of());
 
     public static VehicleTripInfo parse(JsonObject obj) {
         if (obj == null) return null;
@@ -18,6 +18,7 @@ public record VehicleTripInfo(long lastUpdate, int lastStopId, Map<Integer, Inte
 
         long lastUpdate = obj.get("changed_at").getAsLong();
         int lastStopId = obj.get("last_stop").getAsInt();
+        int vehDelay = obj.get("delay").getAsInt();
 
         Map<Integer, Integer> prevStops = new HashMap<>();
 
@@ -30,7 +31,7 @@ public record VehicleTripInfo(long lastUpdate, int lastStopId, Map<Integer, Inte
             prevStops.put(id, delay);
         }
 
-        return new VehicleTripInfo(lastUpdate, lastStopId, prevStops);
+        return new VehicleTripInfo(lastUpdate, lastStopId, vehDelay, prevStops);
     }
 
 }

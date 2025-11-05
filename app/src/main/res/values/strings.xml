@@ -15,4 +15,5 @@
     <string name="sort_by">Řadit podle</string>
     <string name="about_text">Neoficiální aplikace pro mhd v Brně. Aplikace byla vytvořena kvůli katastrofálnímu stavu oficiální nové aplikace DPMBinfo. Veškerá data jsou získávána z veřejných zdrojů (plus mínus).</string>
     <string name="select_poi">Vyberte objekt</string>
+    <string name="nothing_here">Zdá se, že tady nic není…</string>
 </resources>

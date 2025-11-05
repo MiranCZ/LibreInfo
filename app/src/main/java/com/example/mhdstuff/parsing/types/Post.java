@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.storage.LineStorage;
+import com.example.mhdstuff.util.IOUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -54,11 +55,7 @@ public record Post(int stopID, int postID, String name, Location location, boole
         int postId = is.readShort();
 
         int nameLen = is.readInt();
-        byte[] bytes = new byte[nameLen];
-        int l = is.read(bytes);
-        if (l != nameLen) {
-            throw new IllegalStateException();
-        }
+        byte[] bytes = IOUtil.readNBytes(is, nameLen);
 
         String name = new String(bytes, StandardCharsets.UTF_8);
 

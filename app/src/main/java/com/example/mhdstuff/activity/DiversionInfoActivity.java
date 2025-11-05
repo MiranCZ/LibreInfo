@@ -5,6 +5,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.TypefaceSpan;
 import android.widget.TextView;
@@ -19,6 +21,7 @@ import com.example.mhdstuff.parsing.storage.IdStorage;
 import com.example.mhdstuff.parsing.types.Diversion;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.DateTime;
+import com.example.mhdstuff.util.HtmlHelper;
 import com.google.android.flexbox.FlexboxLayout;
 
 public class DiversionInfoActivity extends BaseActivity {
@@ -56,8 +59,7 @@ public class DiversionInfoActivity extends BaseActivity {
 
         TextView content = findViewById(R.id.diversion_content);
 
-        CharSequence str = Html.fromHtml(diversion.publicText(), 0);
-        content.setText(str.toString().stripTrailing());
+        content.setText(HtmlHelper.parseHtml(diversion.publicText()));
     }
 
     private SpannableString createSpannable(String info, DateTime time) {

@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import com.example.mhdstuff.parsing.storage.IdStorage;
+import com.example.mhdstuff.util.IOUtil;
 import com.example.mhdstuff.util.PreferencesHolder;
 
 import java.io.DataInputStream;
@@ -63,11 +64,7 @@ public final class Stop implements Parcelable {
 
         int nameLen = is.readInt();
 
-        byte[] result = new byte[nameLen];
-        int read = is.read(result);
-        if (read != result.length) {
-            throw new IOException("Failed to read stop name");
-        }
+        byte[] result = IOUtil.readNBytes(is, nameLen);
 
         String name = new String(result, StandardCharsets.UTF_8);
 

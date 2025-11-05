@@ -1,6 +1,8 @@
 package com.example.mhdstuff.activity;
 
 import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,6 +32,13 @@ public class DiversionsActivity extends AbstractListViewActivity {
         } catch (AppException e) {
             e.showError(this, AppException.NotificationType.SNACK_BAR);
             diversions = new ArrayList<>();
+        }
+
+        if (diversions.isEmpty()) {
+            runOnUiThread(() -> {
+                ViewGroup content = findViewById(R.id.diversion_content);
+                LayoutInflater.from(this).inflate(R.layout.nothing_here_layout, content);
+            });
         }
 
         return new DiversionsItemAdapter(diversions, this);

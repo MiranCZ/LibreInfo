@@ -79,7 +79,7 @@ public class TripDetailActivity extends BaseActivity {
 
     // FIXME delays not displaying for all trips in multi-trip routes; further stops are ignored
     private void create(IdStorage storage, int tripId, FrameLayout lineIcon, VehicleTripInfo vehicleInfo) {
-        int delay = getIntent().getIntExtra("delay", -1);
+        int delay = vehicleInfo.delay();
         int highlightedStopId = getIntent().getIntExtra("stopId", -1);
 
         var res = storage.apiStorage().getLineIdAndRoute(tripId);

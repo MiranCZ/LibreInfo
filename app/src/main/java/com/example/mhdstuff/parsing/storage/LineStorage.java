@@ -3,6 +3,7 @@ package com.example.mhdstuff.parsing.storage;
 import android.graphics.Color;
 
 import com.example.mhdstuff.parsing.types.LineAlias;
+import com.example.mhdstuff.util.IOUtil;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -24,12 +25,7 @@ public class LineStorage {
                 int routeId = is.readInt();
 
                 int nameLen = is.readInt();
-
-                byte[] result = new byte[nameLen];
-                int read = is.read(result);
-                if (read != result.length) {
-                    throw new IOException("Failed to read line name");
-                }
+                byte[] result = IOUtil.readNBytes(is, nameLen);
 
                 String name = new String(result, StandardCharsets.UTF_8);
 

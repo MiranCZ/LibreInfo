@@ -1,11 +1,15 @@
 package com.example.mhdstuff.activity;
 
 import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mhdstuff.EventsItemAdapter;
 import com.example.mhdstuff.R;
+import com.example.mhdstuff.activity.base.BaseActivity;
 import com.example.mhdstuff.activity.listview.AbstractListViewActivity;
 import com.example.mhdstuff.exception.AppException;
 import com.example.mhdstuff.parsing.storage.IdStorage;
@@ -31,6 +35,13 @@ public class EventsActivity extends AbstractListViewActivity {
             e.printStackTrace();
             e.showError(this);
             events = new ArrayList<>();
+        }
+
+        if (events.isEmpty()) {
+            runOnUiThread(() -> {
+                ViewGroup content = findViewById(R.id.diversion_content);
+                LayoutInflater.from(this).inflate(R.layout.nothing_here_layout, content);
+            });
         }
 
         return new EventsItemAdapter(events, this);

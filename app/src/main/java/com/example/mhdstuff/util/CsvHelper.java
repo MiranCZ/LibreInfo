@@ -2,18 +2,19 @@ package com.example.mhdstuff.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CsvHelper {
 
     public static Csv parseCsvEntries(String csv) {
-        List<String> lines = csv.lines().toList();
+        String[] lines = csv.split("\\r?\\n|\\r", -1);
 
         List<List<String>> result = new ArrayList<>();
-        for (int i = 1; i < lines.size(); i++) {
-            result.add(parseCsvLine(lines.get(i)));
+        for (int i = 1; i < lines.length; i++) {
+            result.add(parseCsvLine(lines[i]));
         }
 
-        return new Csv(parseCsvLine(lines.getFirst()), result);
+        return new Csv(parseCsvLine(lines[0]), result);
     }
 
     private static List<String> parseCsvLine(String line) {

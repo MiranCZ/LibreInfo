@@ -3,6 +3,7 @@ package com.example.mhdstuff.parsing.storage;
 import android.util.SparseArray;
 
 import com.example.mhdstuff.parsing.types.Trip;
+import com.example.mhdstuff.util.IOUtil;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class TripStorage {
                 int key = is.readInt();
                 int byteSize = is.readInt();
 
-                byte[] bytes = is.readNBytes(byteSize);
+                byte[] bytes = IOUtil.readNBytes(is, byteSize);
 
                 String name = new String(bytes, StandardCharsets.UTF_8);
 

@@ -206,7 +206,7 @@ public class SearchActivity extends BaseActivity {
         }
 
         System.out.println("SORTED "+ favourite.size() + " ; "+rest.size());
-        System.out.println(rest.getFirst());
+        System.out.println(rest.get(0));
         rest.addAll(0, favourite);
 
         if (hardUpdate) {

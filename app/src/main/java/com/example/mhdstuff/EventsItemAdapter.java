@@ -21,6 +21,7 @@ import com.example.mhdstuff.parsing.types.DateTime;
 import com.example.mhdstuff.parsing.types.Event;
 import com.example.mhdstuff.parsing.types.LineAlias;
 import com.example.mhdstuff.parsing.types.Vehicle;
+import com.example.mhdstuff.util.HtmlHelper;
 import com.example.mhdstuff.util.Pair;
 import com.google.android.flexbox.FlexboxLayout;
 
@@ -65,9 +66,7 @@ public class EventsItemAdapter extends AbstractItemAdapter<Event, EventsItemAdap
         } else {
             holder.content.setVisibility(View.VISIBLE);
 
-            CharSequence str = Html.fromHtml(item.text(), 0);
-
-            holder.content.setText(str.toString().stripTrailing());
+            holder.content.setText(HtmlHelper.parseHtml(item.text()));
         }
     }
 
