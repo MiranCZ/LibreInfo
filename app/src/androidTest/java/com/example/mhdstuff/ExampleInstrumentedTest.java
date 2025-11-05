@@ -1,4 +1,4 @@
-package com.example.mhdstuff;
+package me.miran.mhdstuff;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.example.mhdstuff", appContext.getPackageName());
+        assertEquals("me.miran.mhdstuff", appContext.getPackageName());
     }
 }

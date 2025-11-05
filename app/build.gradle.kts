@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.mhdstuff"
+    namespace = "me.miran.mhdstuff"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.mhdstuff"
+        applicationId = "me.miran.mhdstuff"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -25,6 +25,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {

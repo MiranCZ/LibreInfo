@@ -1,0 +1,25 @@
+package me.miran.mhdstuff;
+
+import android.content.Context;
+
+import me.miran.mhdstuff.exception.AppException;
+import me.miran.mhdstuff.parsing.storage.IdStorage;
+import me.miran.mhdstuff.util.CacheHelper;
+
+public class Application extends android.app.Application {
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        Context context = this;
+        new Thread(() -> {
+            try {
+                CacheHelper.init();
+            } catch (AppException e) {
+                // FIXME silent exception
+            }
+            IdStorage.init(context);
+        }).start();
+    }
+}

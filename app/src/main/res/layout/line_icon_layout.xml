@@ -6,7 +6,7 @@
 
 
 
-    <com.example.mhdstuff.IconLinerLayout
+    <me.miran.mhdstuff.IconLinerLayout
         android:id="@+id/icon_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -32,5 +32,5 @@
             />
 
 
-    </com.example.mhdstuff.IconLinerLayout>
+    </me.miran.mhdstuff.IconLinerLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
