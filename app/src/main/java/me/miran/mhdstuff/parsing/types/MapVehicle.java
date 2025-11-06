@@ -4,7 +4,7 @@ import me.miran.mhdstuff.parsing.storage.IdStorage;
 
 import com.google.gson.JsonObject;
 
-public record MapVehicle(int id, Location location, int bearing, int delay, LineAlias line, Stop prevStop, Stop finalStop) implements VehicleBase{
+public record MapVehicle(int id, Location location, int bearing, int delay, LineAlias line, Stop prevStop, Stop finalStop) {
 
 
 

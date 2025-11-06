@@ -14,43 +14,12 @@ import android.widget.TextView;
 import me.miran.mhdstuff.R;
 import me.miran.mhdstuff.activity.TripDetailActivity;
 import me.miran.mhdstuff.activity.base.BaseActivity;
-import me.miran.mhdstuff.parsing.storage.IdStorage;
 import me.miran.mhdstuff.parsing.types.LineAlias;
 import me.miran.mhdstuff.parsing.types.TimeMark;
-import me.miran.mhdstuff.parsing.types.Vehicle;
-import me.miran.mhdstuff.util.request.soap.SoapSaneObject;
-
-
-import java.util.Map;
 
 public record DepartureEntry(LineAlias line, String finalStop, int stopId, int postID, boolean lowFloor, TimeMark timeMark,
                              int tripId, VehicleInfo vehicleInfo) {
 
-    public static DepartureEntry parse(SoapSaneObject obj, Map<Long, Vehicle> vehicleMap, IdStorage storage) {
-        if (obj == null) return null;
-
-        LineAlias line = LineAlias.parse(obj.getString("LineName"), storage.lineStorage());
-        String finalStop = obj.getString("FinalStation");
-        int postID = obj.getInt("PostID");
-
-        boolean lowFloor = obj.getBoolean("IsBarrierLess");
-        TimeMark timeMark = null;// TimeMark.parse(obj.getString("TimeMark")); // TODO make this into an object with DriveOrderSign
-
-        int connectionId = obj.getInt("ConnectionID");
-        long key = ((long) connectionId <<32) | ((long)line.id());
-
-//        Optional<VehicleInfo> info;
-
-        VehicleInfo info = new VehicleInfo();
-        if (vehicleMap.containsKey(key)) {
-            Vehicle vehicle = vehicleMap.get(key);
-
-            info.setId(vehicle.id());
-            info.setDelay(vehicle.delay());
-        }
-
-        return new DepartureEntry(line, finalStop, 0, postID , lowFloor, timeMark,-1, info);
-    }
 
     public View createDepartureEntryView(BaseActivity activity, ViewGroup parent, Context context) {
         View view = LayoutInflater.from(context).inflate(R.layout.departure_entry_layout, parent , false);

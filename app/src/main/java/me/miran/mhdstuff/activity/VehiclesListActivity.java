@@ -19,8 +19,8 @@ import me.miran.mhdstuff.activity.listview.AbstractListViewActivity;
 import me.miran.mhdstuff.parsing.storage.IdStorage;
 import me.miran.mhdstuff.parsing.storage.LineStorage;
 import me.miran.mhdstuff.parsing.types.Vehicle;
-import me.miran.mhdstuff.util.request.soap.SoapHelper;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -149,8 +149,9 @@ public class VehiclesListActivity extends AbstractListViewActivity {
     @Override
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
         this.storage = storage;
-        vehicles = Vehicle.parseVehicles(SoapHelper.getVehicles(), storage);
-
+        // TODO implement vehicles
+//        vehicles = Vehicle.parseVehicles(SoapHelper.getVehicles(), storage);
+        vehicles = new ArrayList<>();
         adapter = new VehicleItemAdapter(vehicles, this);
         updateSort();
 
