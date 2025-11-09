@@ -159,9 +159,12 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         return getInstanceOf(StopStorage.class);
     }
 
+    // FIXME this crashes when reopening app
     public static StopStorage getStopStorageOrThrow() {
         return getInstanceOrThrow(StopStorage.class);
     }
+
+    // FIXME this crashes when reopening app
 
     public static PostStorage getPostStorageOrThrow() {
         return getInstanceOrThrow(PostStorage.class);
