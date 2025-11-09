@@ -1,6 +1,5 @@
 package me.miran.mhdstuff.parsing.types;
 
-import me.miran.mhdstuff.util.request.soap.SoapSaneObject;
 import com.google.gson.JsonObject;
 
 import org.maplibre.android.geometry.LatLng;
@@ -17,12 +16,6 @@ public record Location(double latitude, double longitude) {
         double longitude = getLongitude(object);
 
         return new Location(latitude, longitude);
-    }
-
-    public static Location parse(SoapSaneObject obj) {
-        if (obj == null) return null;
-
-        return new Location(obj.getDouble("Latitude"), obj.getDouble("Longitude"));
     }
 
     private static double getLatitude(JsonObject obj) {

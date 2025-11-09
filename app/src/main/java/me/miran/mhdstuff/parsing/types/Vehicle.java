@@ -11,12 +11,9 @@ import android.widget.TextView;
 import me.miran.mhdstuff.R;
 import me.miran.mhdstuff.parsing.storage.IdStorage;
 import me.miran.mhdstuff.util.DelayUtil;
-import me.miran.mhdstuff.util.request.soap.SoapSaneObject;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
-import org.ksoap2.serialization.SoapObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +21,7 @@ import java.util.Optional;
 
 public record Vehicle(int id, int idB, int idC, int vType, int lType, Location location, int bearing,
                       LineAlias line, int routeId, Integer course, boolean lowFloor, int delay,
-                      Stop lastStop, Stop finalStop, Optional<String> finalStopName, boolean inactive, int serviceId) implements VehicleBase {
+                      Stop lastStop, Stop finalStop, Optional<String> finalStopName, boolean inactive, int serviceId)  {
 
     public static List<Vehicle> parseVehicles(JsonArray array, IdStorage storage) {
         List<Vehicle> result = new ArrayList<>();
@@ -36,38 +33,6 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         return result;
     }
 
-    public static List<Vehicle> parseVehicles(SoapSaneObject obj, IdStorage storage) {
-        List<Vehicle> result = new ArrayList<>();
-        for (Object o : obj) {
-            result.add(parse(SoapSaneObject.parse((SoapObject) o), storage));
-        }
-
-        return result;
-    }
-
-    public static Vehicle parse(SoapSaneObject obj, IdStorage storage) {
-        if (obj == null) return null;
-
-        int azimut = obj.getInt("Azimut");
-        int carNum = obj.getInt("CarNum");
-        int carNumB = obj.getInt("VhcBCarNum");
-
-        int delay = obj.getInt("DelayInMins");
-
-        Stop finalStop = storage.stopStorage().getStop(obj.getInt("FinalStopID"));
-        Stop lastStop = storage.stopStorage().getStop(obj.getInt("LastStopID"));
-
-        boolean lowFloor = obj.getBoolean("IsBarrierLess");
-        Location location = Location.parse(obj);
-
-        LineAlias line = LineAlias.parse(obj.getString("LineID"), storage.lineStorage());
-
-        int routeId = obj.getInt("RouteID");
-        int serviceId = obj.getInt("ServiceID");
-
-        return new Vehicle(carNum, carNumB, 0, -1, -1, location, azimut, line,
-                routeId, 0, lowFloor, delay, lastStop, finalStop, Optional.empty(), false, serviceId);
-    }
 
     public static Vehicle parse(JsonObject obj, IdStorage storage) {
         if (obj == null) return null;
