@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import me.miran.mhdstuff.activity.base.BaseActivity;
 import me.miran.mhdstuff.exception.AppException;
 import me.miran.mhdstuff.util.CacheHelper;
@@ -162,29 +164,17 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         return getInstanceOf(StopStorage.class);
     }
 
-    public static StopStorage getStopStorageOrThrow() {
-        return getInstanceOrThrow(StopStorage.class);
+    public static StopStorage getStopStorageOrBlock() {
+        return getInstanceOrBlock(StopStorage.class);
     }
 
-    public static PostStorage getPostStorageOrThrow() {
-        return getInstanceOrThrow(PostStorage.class);
+
+    public static PostStorage getPostStorageOrBlock() {
+        return getInstanceOrBlock(PostStorage.class);
     }
 
-    public static <T> T getInstanceOrThrow(Class<T> clazz) {
-        synchronized (mutex) {
-            Object instance = instances.get(clazz);
-            if (instance != null) return (T) instance;
-        }
-
-        synchronized (mutex) {
-            T obj = (T) instances.get(clazz);
-
-            if (obj == null) {
-                throw new NoSuchElementException();
-            } else {
-                return obj;
-            }
-        }
+    public static <T> T getInstanceOrBlock(Class<T> clazz) {
+        return getInstanceUnchecked(clazz);
     }
 
 
@@ -192,6 +182,10 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
 
     private static <T> T getInstanceOf(Class<T> clazz) {
         checkNotMainThread();
+        return getInstanceUnchecked(clazz);
+    }
+
+    private static <T> @Nullable T getInstanceUnchecked(Class<T> clazz) {
         synchronized (mutex) {
             Object instance = instances.get(clazz);
             if (instance != null) return (T) instance;

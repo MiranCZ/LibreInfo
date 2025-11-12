@@ -40,7 +40,7 @@ public final class Stop implements Parcelable {
         @Override
         public Stop createFromParcel(Parcel in) {
             int id = in.readInt();
-            return IdStorage.getStopStorageOrThrow().getStop(id);
+            return IdStorage.getStopStorageOrBlock().getStop(id);
         }
 
         @Override

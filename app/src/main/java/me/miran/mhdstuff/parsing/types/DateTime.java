@@ -23,6 +23,8 @@ public record DateTime(int day, int month, int year, int hours, int minutes) imp
     public static final Creator<DateTime> CREATOR = new Creator<>() {
         @Override
         public DateTime createFromParcel(Parcel in) {
+            if (in.readByte() == 0) return NONE;
+
             return new DateTime(in);
         }
 
@@ -117,6 +119,12 @@ public record DateTime(int day, int month, int year, int hours, int minutes) imp
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
+        if (this == NONE) {
+            dest.writeByte((byte)0);
+            return;
+        }
+        dest.writeByte((byte)1);
+
         dest.writeInt(day);
         dest.writeInt(month);
         dest.writeInt(year);

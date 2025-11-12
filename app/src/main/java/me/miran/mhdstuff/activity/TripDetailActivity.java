@@ -279,9 +279,9 @@ public class TripDetailActivity extends BaseActivity {
             LineAlias alias = storage.lineStorage().getAlias(lineId);
             icon.setColorFilter(alias.backgroundColor());
 
-            long currentSec = System.currentTimeMillis()/1000;
+            long currentMs = System.currentTimeMillis();
 
-            boolean leavingStop = stop.stopId() == vehicleInfo.lastStopId() && (currentSec- vehicleInfo.lastUpdate()) < 20;
+            boolean leavingStop = stop.stopId() == vehicleInfo.lastStopId() && (currentMs- vehicleInfo.lastUpdate()) < 20_000;
 
             if (leavingStop) {
                 AlphaAnimation blink = new AlphaAnimation(0.2f, 0.9f);

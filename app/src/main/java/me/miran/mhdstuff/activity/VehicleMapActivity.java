@@ -401,7 +401,9 @@ public class VehicleMapActivity extends BaseActivity {
         }
 
         mapView.onDestroy();
-        timer.cancel();
+        if (timer != null) {
+            timer.cancel();
+        }
         super.onDestroy();
         mapView = null;
         vehicleFeatureMap.clear();

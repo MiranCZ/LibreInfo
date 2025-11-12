@@ -28,7 +28,7 @@ public record Post(int stopID, int postID, String name, Location location, boole
             int stopId = in.readInt();
             int postId = in.readInt();
 
-            return IdStorage.getPostStorageOrThrow().getPost(stopId, postId);
+            return IdStorage.getPostStorageOrBlock().getPost(stopId, postId);
         }
 
         @Override
