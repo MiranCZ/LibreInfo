@@ -1,7 +1,11 @@
 package me.miran.mhdstuff.util.request;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.wifi.WifiManager;
+import android.util.Log;
 
 import me.miran.mhdstuff.exception.AppException;
 import me.miran.mhdstuff.exception.RequestException;
@@ -17,9 +21,9 @@ import java.nio.charset.StandardCharsets;
 public class RequestHelper {
 
 
-    public static long getLastStaticUpdate() throws AppException {
+    public static long getLastStaticUpdate(Context context) throws AppException {
         try {
-            InputStream stream = readUrl(Endpoint.STATIC_GTFS.resolve("info"));
+            InputStream stream = readUrl(context, Endpoint.STATIC_GTFS.resolve("info"));
             String output = new String(IOUtil.readAllBytes(stream), StandardCharsets.UTF_8);
 
             JsonObject json = new Gson().fromJson(output, JsonObject.class);
@@ -33,8 +37,8 @@ public class RequestHelper {
         }
     }
 
-    public static InputStream getData() throws RequestException {
-        return readUrl(Endpoint.STATIC_GTFS.resolve("data"));
+    public static InputStream getData(Context context) throws RequestException {
+        return readUrl(context, Endpoint.STATIC_GTFS.resolve("data"));
     }
 
 
@@ -43,33 +47,33 @@ public class RequestHelper {
         return new JsonArray(); // TODO
     }
 
-    public static JsonArray getEvents() throws RequestException {
-        return makeOwnRequest("events", JsonArray.class);
+    public static JsonArray getEvents(Context context) throws RequestException {
+        return makeOwnRequest(context, "events", JsonArray.class);
     }
 
-    public static JsonArray getDiversions() throws RequestException {
-        return makeOwnRequest("diversions", JsonArray.class);
+    public static JsonArray getDiversions(Context context) throws RequestException {
+        return makeOwnRequest(context, "diversions", JsonArray.class);
     }
 
-    public static JsonObject getRouteDelays() throws RequestException {
-        return makeOwnRequest("routedelays", JsonObject.class);
+    public static JsonObject getRouteDelays(Context context) throws RequestException {
+        return makeOwnRequest(context, "routedelays", JsonObject.class);
     }
 
-    public static JsonArray getVehicles() throws RequestException {
-        return makeOwnRequest("vehicles", JsonArray.class);
+    public static JsonArray getVehicles(Context context) throws RequestException {
+        return makeOwnRequest(context, "vehicles", JsonArray.class);
     }
 
-    public static JsonObject getVehicleInfo(int lineId, int routeId) throws RequestException {
-        return makeOwnRequest("vehicleinfo?lineid="+lineId+"&routeid="+routeId, JsonObject.class);
+    public static JsonObject getVehicleInfo(Context context, int lineId, int routeId) throws RequestException {
+        return makeOwnRequest(context, "vehicleinfo?lineid="+lineId+"&routeid="+routeId, JsonObject.class);
     }
 
-    public static JsonObject getStopDelays(int stopId) throws RequestException {
-        return makeOwnRequest("stopdelays?stopid="+stopId, JsonObject.class);
+    public static JsonObject getStopDelays(Context context, int stopId) throws RequestException {
+        return makeOwnRequest(context, "stopdelays?stopid="+stopId, JsonObject.class);
     }
 
-    private static <T extends JsonElement> T makeOwnRequest(String endpoint, Class<T> type) throws RequestException {
+    private static <T extends JsonElement> T makeOwnRequest(Context context, String endpoint, Class<T> type) throws RequestException {
         try {
-            InputStream stream = readUrl(Endpoint.APP_SERVER.resolve(endpoint));
+            InputStream stream = readUrl(context, Endpoint.APP_SERVER.resolve(endpoint));
             if (stream == null) {
                 throw RequestException.reachError(Endpoint.APP_SERVER);
             }
@@ -96,7 +100,12 @@ public class RequestHelper {
         }
     }
 
-    private static InputStream readUrl(Endpoint endpoint) throws RequestException {
+    private static InputStream readUrl(Context context, Endpoint endpoint) throws RequestException {
+        if (!hasNetwork(context)) {
+            Log.d("RequestHelper", "assuming network is unreachable");
+            throw RequestException.reachError(endpoint);
+        }
+        
         try {
             URL url = new URL(endpoint.url);
 
@@ -108,4 +117,20 @@ public class RequestHelper {
             throw RequestException.reachError(endpoint);
         }
     }
+    
+    private static boolean hasNetwork(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE); 
+    
+        if (cm == null) return true; //not sure if its safe to assume wifi is not connected here
+
+        Network network = cm.getActiveNetwork();
+        if (network == null) return false; 
+    
+        NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
+    
+        return capabilities != null
+                && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED); 
+    } 
+    
 }

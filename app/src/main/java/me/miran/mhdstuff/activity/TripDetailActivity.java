@@ -1,6 +1,7 @@
 package me.miran.mhdstuff.activity;
 
 
+import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
@@ -67,7 +68,7 @@ public class TripDetailActivity extends BaseActivity {
 
             VehicleTripInfo vehicleInfo = VehicleTripInfo.NONE;
             try {
-                vehicleInfo = VehicleTripInfo.parse(RequestHelper.getVehicleInfo(res.left(), res.right()));
+                vehicleInfo = VehicleTripInfo.parse(RequestHelper.getVehicleInfo(this, res.left(), res.right()));
             } catch (RequestException e) {
                 runOnUiThread(() -> e.showError(this, AppException.NotificationType.SNACK_BAR));
             }
@@ -207,13 +208,14 @@ public class TripDetailActivity extends BaseActivity {
             timer.cancel();
         }
         timer = new Timer();
+        Context context = this;
 
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 VehicleTripInfo vehicleInfo = VehicleTripInfo.NONE;
                 try {
-                    vehicleInfo = VehicleTripInfo.parse(RequestHelper.getVehicleInfo(res.left(), res.right()));
+                    vehicleInfo = VehicleTripInfo.parse(RequestHelper.getVehicleInfo(context, res.left(), res.right()));
                 } catch (RequestException e) {
                     runOnUiThread(() -> e.showError(thiz, AppException.NotificationType.SNACK_BAR));
 

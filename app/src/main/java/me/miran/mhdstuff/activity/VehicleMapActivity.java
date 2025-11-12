@@ -136,7 +136,7 @@ public class VehicleMapActivity extends BaseActivity {
             }));
 
             try {
-                for (JsonElement vehicle : RequestHelper.getVehicles()) {
+                for (JsonElement vehicle : RequestHelper.getVehicles(this)) {
                     ref.vehicles.add(MapVehicle.parse(vehicle.getAsJsonObject(), storage));
                 }
             } catch (RequestException e) {

@@ -15,7 +15,7 @@ public class Application extends android.app.Application {
         Context context = this;
         new Thread(() -> {
             try {
-                CacheHelper.init();
+                CacheHelper.init(context);
                 long ms = System.currentTimeMillis();
                 CacheHelper.initializeData(context);
                 System.out.println("EXTRACTED IN " + (System.currentTimeMillis()-ms));

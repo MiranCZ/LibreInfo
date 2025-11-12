@@ -29,8 +29,8 @@ public class CacheHelper {
 
     private static long serverUpdateTime = -1;
 
-    public static void init() throws AppException {
-        serverUpdateTime = RequestHelper.getLastStaticUpdate();
+    public static void init(Context context) throws AppException {
+        serverUpdateTime = RequestHelper.getLastStaticUpdate(context);
     }
 
     public static RandomAccessFile getRouteStopsRAF(Context context) throws AppException {
@@ -46,7 +46,7 @@ public class CacheHelper {
 
             // FIXME do buffered or something
             try {
-                writeToCache(IOUtil.readAllBytes(RequestHelper.getData()), context, "data");
+                writeToCache(IOUtil.readAllBytes(RequestHelper.getData(context)), context, "data");
             } catch (Exception e) {
                 throw new AppException("Failed to write to cache");
             }

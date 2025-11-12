@@ -53,7 +53,7 @@ public class SearchActivity extends BaseActivity {
         new Thread(() -> {
             JsonObject delays;
             try {
-                delays = RequestHelper.getRouteDelays();
+                delays = RequestHelper.getRouteDelays(this);
             } catch (RequestException e) {
                 e.showError(this, AppException.NotificationType.SNACK_BAR);
                 return;

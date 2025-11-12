@@ -29,7 +29,7 @@ public class EventsActivity extends AbstractListViewActivity {
         List<Event> events;
 
         try {
-            events = Event.parseEvents(RequestHelper.getEvents(), storage.lineStorage());
+            events = Event.parseEvents(RequestHelper.getEvents(context), storage.lineStorage());
         } catch (AppException e) {
             e.printStackTrace();
             e.showError(this);

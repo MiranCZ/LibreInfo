@@ -46,7 +46,7 @@ public class DeparturePostDetailActivity extends AbstractListViewActivity {
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
         JsonObject stopDelays = new JsonObject();
         try {
-            stopDelays = RequestHelper.getStopDelays(post.stopID());
+            stopDelays = RequestHelper.getStopDelays(context, post.stopID());
         } catch (RequestException e) {
             runOnUiThread(() -> e.showError(this, AppException.NotificationType.SNACK_BAR));
         }
