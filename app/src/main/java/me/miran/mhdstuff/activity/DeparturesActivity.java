@@ -30,8 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DeparturesActivity extends BaseActivity {
 
 
-
-
+    private Stop stop;
     public DeparturesActivity() {
         super("", R.layout.activity_departures);
     }
@@ -40,7 +39,7 @@ public class DeparturesActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Stop stop = getIntent().getParcelableExtra("stop");
+        stop = getIntent().getParcelableExtra("stop");
         setName(stop.name);
 
         Container<View> heartFullCont = new Container<>();
@@ -137,5 +136,6 @@ public class DeparturesActivity extends BaseActivity {
     @Override
     public void onPause() {
         super.onPause();
+        if (stop != null) stop.flush();
     }
 }
