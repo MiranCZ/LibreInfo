@@ -4,6 +4,4 @@ import java.util.List;
 
 public record Departures(String message, List<Departure> departures) {
 
-
-
 }

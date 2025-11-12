@@ -6,21 +6,22 @@ import android.util.Log;
 import me.miran.mhdstuff.exception.AppException;
 import me.miran.mhdstuff.util.request.RequestHelper;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+
+import org.tukaani.xz.XZInputStream;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
 
 import kotlin.text.Charsets;
 
@@ -32,88 +33,104 @@ public class CacheHelper {
         serverUpdateTime = RequestHelper.getLastStaticUpdate();
     }
 
-    public static JsonArray getNews(Context context) throws AppException {
-        return CacheHelper.readOrFetchJson("news.json", RequestHelper::getNews, context);
-    }
-
     public static RandomAccessFile getRouteStopsRAF(Context context) throws AppException {
-        if (!isCached(context, "data", "route_stops")) {
-            try {
-                writeToCache(IOUtil.readAllBytes(RequestHelper.getRouteStops()), context, "data", "route_stops");
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
         try {
-            return new RandomAccessFile(getCachedPath(context, "data", "route_stops").toFile(), "r");
+            return new RandomAccessFile(getCachedPath(context, "route_stops").toFile(), "r");
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static DataInputStream getApi(Context context) throws AppException {
-        return readOrFetch(RequestHelper::getApi, context, "data", "api");
-    }
+    public static void initializeData(Context context) throws AppException {
+        if (!isCached(context, "data")) {
 
-    public static DataInputStream getCalendar(Context context) throws AppException {
-        return readOrFetch(RequestHelper::getCalendar, context, "data", "calendar");
-    }
-
-    public static DataInputStream getCalendarDates(Context context) throws AppException {
-        return readOrFetch(RequestHelper::getCalendarDates, context, "data", "calendar_dates");
-    }
-
-    public static DataInputStream getStopTimes(Context context) throws AppException {
-        return readOrFetch(RequestHelper::getStopTimes, context, "data", "stop_times");
-    }
-
-    public static DataInputStream getTrips(Context context) throws AppException {
-        return readOrFetch(RequestHelper::getTrips, context, "data", "trips");
-    }
-
-    public static DataInputStream getStops(Context context) throws AppException {
-        return readOrFetch(RequestHelper::getStops, context, "data", "stops");
-    }
-
-    public static DataInputStream getLineAliases(Context context) throws AppException {
-        return readOrFetch(RequestHelper::getLineAliases, context, "data", "lines");
-    }
-
-    public static DataInputStream getPosts(Context context) throws AppException {
-        return readOrFetch(RequestHelper::getPosts, context, "data", "posts");
-    }
-
-    private static DataInputStream readOrFetch(Callable<InputStream> fetchFunc, Context context, String... name) throws AppException {
-        if (!isCached(context, name)) {
+            // FIXME do buffered or something
             try {
-                writeToCache(IOUtil.readAllBytes(fetchFunc.call()), context, name);
+                writeToCache(IOUtil.readAllBytes(RequestHelper.getData()), context, "data");
             } catch (Exception e) {
                 throw new AppException("Failed to write to cache");
             }
+        } else {
+            return; // FIXME figure out if it is needed to extract the file, although tbf if someone deletes them its just a skill issue
         }
 
+        try {
+            BufferedInputStream buff = new BufferedInputStream(new FileInputStream(getCachedPath(context, "data").toFile()));
+
+            XZInputStream inputStream = new XZInputStream(buff);
+
+            DataInputStream is = new DataInputStream(inputStream);
+
+            while (is.readBoolean()) {
+                int nameLen = is.readInt();
+                byte[] nameBytes = IOUtil.readNBytes(is, nameLen);
+                String name = new String(nameBytes, StandardCharsets.UTF_8);
+
+                Log.d("DataCache", "extracting "+name);
+                int dataLen = is.readInt();
+
+                byte[] buffer = new byte[1024];
+
+                int len;
+
+                FileOutputStream fos = new FileOutputStream(getCachedPath(context, name).toFile());
+                while ((len = is.read(buffer, 0, Math.min(dataLen, buffer.length))) != -1) {
+                    dataLen -= buffer.length;
+
+                    fos.write(buffer, 0, len);
+                    if (dataLen <= 0) break;
+                }
+
+                fos.close();
+            }
+
+            // write results
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static DataInputStream getApi(Context context) throws AppException {
+        return readCache(context, "api");
+    }
+
+    public static DataInputStream getStopMapping(Context context) throws AppException {
+        return readCache(context, "stop_mapping");
+    }
+
+    public static DataInputStream getCalendar(Context context) throws AppException {
+        return readCache(context, "calendar");
+    }
+
+    public static DataInputStream getCalendarDates(Context context) throws AppException {
+        return readCache(context, "calendar_dates");
+    }
+
+    public static DataInputStream getStopTimes(Context context) throws AppException {
+        return readCache(context, "stop_times");
+    }
+
+    public static DataInputStream getTrips(Context context) throws AppException {
+        return readCache(context, "trips");
+    }
+
+    public static DataInputStream getStops(Context context) throws AppException {
+        return readCache(context, "stops");
+    }
+
+    public static DataInputStream getLineAliases(Context context) throws AppException {
+        return readCache(context, "lines");
+    }
+
+    public static DataInputStream getPosts(Context context) throws AppException {
+        return readCache(context, "posts");
+    }
+
+    private static DataInputStream readCache(Context context, String... name) throws AppException {
         try {
             return new DataInputStream(new BufferedInputStream(new FileInputStream(getCachedPath(context, name).toFile())));
         } catch (Exception e) {
             throw new AppException("Failed to read cache file "+ Arrays.toString(name));
-        }
-    }
-
-    private static JsonArray readOrFetchJson(String cacheName, Callable<JsonArray> fetchFunc, Context context) throws AppException {
-        if (isCached(context, cacheName)) {
-            System.out.println("Using cached version of " + cacheName);
-            return readCache(cacheName, JsonArray.class, context);
-        }
-
-        try {
-            JsonArray result = fetchFunc.call();
-            Log.e("CacheHelper", "Fetched " + cacheName + " from server");
-            writeCache(cacheName, result, context);
-
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -138,16 +155,6 @@ public class CacheHelper {
         }
 
         return true;
-    }
-
-    private static void writeCache(String name, JsonElement element, Context context) {
-        Path path = getCachedPath(context, name);
-
-        try {
-            Files.write(path, element.toString().getBytes(Charsets.UTF_8), StandardOpenOption.CREATE);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public static void writeToCache(byte[] bytes, Context context, String... name) {

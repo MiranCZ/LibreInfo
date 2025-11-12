@@ -1,5 +1,8 @@
 package me.miran.mhdstuff.util.request;
 
+import android.content.Context;
+import android.net.wifi.WifiManager;
+
 import me.miran.mhdstuff.exception.AppException;
 import me.miran.mhdstuff.exception.RequestException;
 import me.miran.mhdstuff.util.IOUtil;
@@ -13,9 +16,6 @@ import java.nio.charset.StandardCharsets;
 
 public class RequestHelper {
 
-
-//    private static final String URL_START = "10.0.2.2/api";
-//    private static final String STATIC_DATA_URL = "https://mirancz.github.io/gtfsstatic/";
 
     public static long getLastStaticUpdate() throws AppException {
         try {
@@ -33,45 +33,10 @@ public class RequestHelper {
         }
     }
 
-    public static InputStream getApi() throws RequestException {
-        return readStaticGtfs("api");
+    public static InputStream getData() throws RequestException {
+        return readUrl(Endpoint.STATIC_GTFS.resolve("data"));
     }
 
-    public static InputStream getCalendar() throws RequestException {
-        return readStaticGtfs("calendar");
-    }
-
-    public static InputStream getCalendarDates() throws RequestException {
-        return readStaticGtfs("calendar_dates");
-    }
-
-    public static InputStream getStops() throws RequestException {
-        return readStaticGtfs("stops");
-    }
-
-    public static InputStream getStopTimes() throws RequestException {
-        return readStaticGtfs("stop_times");
-    }
-
-    public static InputStream getTrips() throws RequestException {
-        return readStaticGtfs("trips");
-    }
-
-    public static InputStream getLineAliases() throws RequestException {
-        return readStaticGtfs("lines");
-    }
-    
-    public static InputStream getRouteStops() throws RequestException {
-        return readStaticGtfs("route_stops");
-    }
-
-    public static InputStream getPosts() throws RequestException {
-        return readStaticGtfs("posts");
-    }
-
-    private static InputStream readStaticGtfs(String endpoint) throws RequestException {
-        return readUrl(Endpoint.STATIC_GTFS.resolve("parsed", endpoint));
-    }
 
     // we are just fucked
     public static JsonArray getNews() {

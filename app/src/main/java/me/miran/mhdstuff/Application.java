@@ -16,6 +16,9 @@ public class Application extends android.app.Application {
         new Thread(() -> {
             try {
                 CacheHelper.init();
+                long ms = System.currentTimeMillis();
+                CacheHelper.initializeData(context);
+                System.out.println("EXTRACTED IN " + (System.currentTimeMillis()-ms));
             } catch (AppException e) {
                 // FIXME silent exception
             }

@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 
 public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostStorage postStorage,
                         TripStorage tripStorage, RouteStopStorage routeStopStorage,
-                        CalendarStorage calendarStorage, ApiStorage apiStorage) {
+                        CalendarStorage calendarStorage, ApiStorage apiStorage, StopMapper stopMapper) {
 
 
     private static final Object mutex = new Object();
@@ -71,6 +71,9 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         LineStorage lineStorage = LineStorage.parse(CacheHelper.getLineAliases(context));
         onLoaded(LineStorage.class, lineStorage);
 
+        StopMapper stopMapper = StopMapper.parse(CacheHelper.getStopMapping(context));
+        onLoaded(StopMapper.class, stopMapper);
+
         PostStorage postStorage = PostStorage.parse(CacheHelper.getPosts(context), lineStorage, stopStorage);
         onLoaded(PostStorage.class, postStorage);
 
@@ -87,7 +90,7 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         );
 
         synchronized (mutex) {
-            storage = new IdStorage(lineStorage, stopStorage, postStorage, tripStorage, routeStopStorage, calendarStorage, apiStorage);
+            storage = new IdStorage(lineStorage, stopStorage, postStorage, tripStorage, routeStopStorage, calendarStorage, apiStorage, stopMapper);
             System.out.println("Saying on loaded");
             onLoaded(IdStorage.class, storage);
         }

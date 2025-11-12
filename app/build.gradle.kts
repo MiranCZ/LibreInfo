@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.gson)
     implementation("org.maplibre.gl:android-sdk:12.0.0")
     implementation("org.maplibre.gl:android-plugin-annotation-v9:3.0.2")
+    implementation("org.tukaani:xz:1.10")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
