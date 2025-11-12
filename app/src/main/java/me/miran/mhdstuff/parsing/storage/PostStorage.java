@@ -16,7 +16,7 @@ public class PostStorage {
 
     public static PostStorage parse(DataInputStream array, LineStorage lineStorage, StopStorage stopStorage) {
         List<Post> posts = null;
-        try {
+        try(array) {
             posts = Post.parsePosts(array, lineStorage);
         } catch (IOException e) {
             throw new RuntimeException(e);

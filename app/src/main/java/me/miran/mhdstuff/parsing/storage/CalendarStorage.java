@@ -18,7 +18,7 @@ public class CalendarStorage {
     private final Map<Integer, Map<Date, ExceptionType>> exceptions;
 
     public static CalendarStorage parse(DataInputStream calendar, DataInputStream calendarDates) {
-        try {
+        try(calendar) {
             return parseInternal(calendar, calendarDates);
         } catch (IOException e) {
             e.printStackTrace();
