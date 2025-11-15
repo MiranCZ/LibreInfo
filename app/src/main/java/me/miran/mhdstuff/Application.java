@@ -20,6 +20,7 @@ public class Application extends android.app.Application {
                 CacheHelper.initializeData(context);
                 System.out.println("EXTRACTED IN " + (System.currentTimeMillis()-ms));
             } catch (AppException e) {
+                e.printStackTrace();
                 // FIXME silent exception
             }
             IdStorage.init(context);

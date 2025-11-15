@@ -168,6 +168,9 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         return getInstanceOrBlock(StopStorage.class);
     }
 
+    public static StopMapper getStopMapper() {
+        return getInstanceOf(StopMapper.class);
+    }
 
     public static PostStorage getPostStorageOrBlock() {
         return getInstanceOrBlock(PostStorage.class);

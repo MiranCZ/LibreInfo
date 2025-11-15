@@ -19,7 +19,7 @@ import java.util.List;
  * @param stopID ID of the stop this post corresponds to
  * @param postID ID unique to the stop
  */
-public record Post(int stopID, int postID, String name, Location location, boolean isPublic, List<LineAlias> lines) implements Parcelable {
+public record Post(int stopID, int postID, String name, Location location) implements Parcelable {
 
 
     public static final Creator<Post> CREATOR = new Creator<Post>() {
@@ -49,7 +49,7 @@ public record Post(int stopID, int postID, String name, Location location, boole
     }
 
     public static Post parse(DataInputStream is, LineStorage lineStorage) throws IOException {
-        int stopId = is.readInt();
+        int stopId = is.readShort();
         int postId = is.readShort();
 
         int nameLen = is.readInt();
@@ -60,18 +60,7 @@ public record Post(int stopID, int postID, String name, Location location, boole
         double lat = is.readDouble();
         double lng = is.readDouble();
 
-        boolean isPublic = is.readBoolean();
-        List<LineAlias> lines = new ArrayList<>();
-
-        int lineSize = is.readInt();
-
-        for (int j = 0; j < lineSize; j++) {
-            int id = is.readInt();
-            lines.add(lineStorage.getAlias(id));
-        }
-
-
-        return new Post(stopId, postId, name, new Location(lat, lng), isPublic, lines);
+        return new Post(stopId, postId, name, new Location(lat, lng));
     }
 
     @Override

@@ -68,7 +68,7 @@ public class TripDetailActivity extends BaseActivity {
 
             VehicleTripInfo vehicleInfo = VehicleTripInfo.NONE;
             try {
-                vehicleInfo = VehicleTripInfo.parse(RequestHelper.getVehicleInfo(this, res.left(), res.right()));
+                vehicleInfo = VehicleTripInfo.parse(storage.stopMapper(), RequestHelper.getVehicleInfo(this, res.left(), res.right()));
             } catch (RequestException e) {
                 runOnUiThread(() -> e.showError(this, AppException.NotificationType.SNACK_BAR));
             }
@@ -215,7 +215,7 @@ public class TripDetailActivity extends BaseActivity {
             public void run() {
                 VehicleTripInfo vehicleInfo = VehicleTripInfo.NONE;
                 try {
-                    vehicleInfo = VehicleTripInfo.parse(RequestHelper.getVehicleInfo(context, res.left(), res.right()));
+                    vehicleInfo = VehicleTripInfo.parse(storage.stopMapper(), RequestHelper.getVehicleInfo(context, res.left(), res.right()));
                 } catch (RequestException e) {
                     runOnUiThread(() -> e.showError(thiz, AppException.NotificationType.SNACK_BAR));
 

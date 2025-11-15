@@ -52,7 +52,7 @@ public class PostStorage {
              if (post.postID() == postID) return post;
         }
 
-        Post dummyPost = new Post(stopID, postID, postID+". nastupiste", Location.NONE, true, List.of());
+        Post dummyPost = new Post(stopID, postID, postID+". nastupiste", Location.NONE);
         System.out.println("[WARN] Unable to find post with args "+stopID + " ; "+postID + " ; "+getPosts(stopID));
 
         postsForStop.computeIfAbsent(stopID, k -> new ArrayList<>()).add(dummyPost);

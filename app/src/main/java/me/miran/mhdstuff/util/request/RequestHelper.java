@@ -9,6 +9,8 @@ import android.util.Log;
 
 import me.miran.mhdstuff.exception.AppException;
 import me.miran.mhdstuff.exception.RequestException;
+import me.miran.mhdstuff.parsing.storage.IdStorage;
+import me.miran.mhdstuff.parsing.storage.StopMapper;
 import me.miran.mhdstuff.util.IOUtil;
 import com.google.gson.*;
 
@@ -68,6 +70,9 @@ public class RequestHelper {
     }
 
     public static JsonObject getStopDelays(Context context, int stopId) throws RequestException {
+        StopMapper mapper = IdStorage.getStopMapper();
+        stopId = mapper.getOriginal(stopId);
+
         return makeOwnRequest(context, "stopdelays?stopid="+stopId, JsonObject.class);
     }
 
