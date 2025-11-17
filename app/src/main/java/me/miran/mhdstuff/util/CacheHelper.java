@@ -48,6 +48,7 @@ public class CacheHelper {
             try {
                 writeToCache(IOUtil.readAllBytes(RequestHelper.getData(context)), context, "data");
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new AppException("Failed to write to cache");
             }
         } else {
@@ -114,8 +115,16 @@ public class CacheHelper {
         return readCache(context, "trips");
     }
 
+    public static DataInputStream getTransfers(Context context) throws AppException {
+        return readCache(context, "transfers");
+    }
+
     public static DataInputStream getStops(Context context) throws AppException {
         return readCache(context, "stops");
+    }
+
+    public static DataInputStream getStopToRoute(Context context) throws AppException {
+        return readCache(context, "stop_to_route");
     }
 
     public static DataInputStream getLineAliases(Context context) throws AppException {

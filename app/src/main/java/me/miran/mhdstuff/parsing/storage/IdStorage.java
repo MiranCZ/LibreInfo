@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import me.miran.mhdstuff.activity.base.BaseActivity;
 import me.miran.mhdstuff.exception.AppException;
+import me.miran.mhdstuff.raptor.Raptor;
 import me.miran.mhdstuff.util.CacheHelper;
 import me.miran.mhdstuff.util.Pair;
 import me.miran.mhdstuff.util.PreferencesHolder;
@@ -23,7 +24,8 @@ import java.util.function.Consumer;
 
 public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostStorage postStorage,
                         TripStorage tripStorage, RouteStopStorage routeStopStorage,
-                        CalendarStorage calendarStorage, ApiStorage apiStorage, StopMapper stopMapper) {
+                        CalendarStorage calendarStorage, ApiStorage apiStorage, TransferStorage transferStorage,
+                        StopRouteContainerStorage stopRouteContainerStorage, StopMapper stopMapper) {
 
 
     private static final Object mutex = new Object();
@@ -83,6 +85,8 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         onLoaded(ApiStorage.class, apiStorage);
 
         TripStorage tripStorage = TripStorage.parse(CacheHelper.getTrips(context));
+        onLoaded(TripStorage.class, tripStorage);
+
         RouteStopStorage routeStopStorage = RouteStopStorage.parse(
                 CacheHelper.getStopTimes(context), CacheHelper.getRouteStopsRAF(context)
         );
@@ -90,9 +94,16 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         CalendarStorage calendarStorage = CalendarStorage.parse(
                 CacheHelper.getCalendar(context), CacheHelper.getCalendarDates(context)
         );
+        onLoaded(CalendarStorage.class, calendarStorage);
+
+        TransferStorage transferStorage = TransferStorage.parse(CacheHelper.getTransfers(context));
+        onLoaded(TransferStorage.class, transferStorage);
+
+        StopRouteContainerStorage stopRouteContainerStorage = StopRouteContainerStorage.parse(CacheHelper.getStopToRoute(context));
+        onLoaded(StopRouteContainerStorage.class, stopRouteContainerStorage);
 
         synchronized (mutex) {
-            storage = new IdStorage(lineStorage, stopStorage, postStorage, tripStorage, routeStopStorage, calendarStorage, apiStorage, stopMapper);
+            storage = new IdStorage(lineStorage, stopStorage, postStorage, tripStorage, routeStopStorage, calendarStorage, apiStorage, transferStorage, stopRouteContainerStorage, stopMapper);
             System.out.println("Saying on loaded");
             onLoaded(IdStorage.class, storage);
         }

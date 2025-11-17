@@ -21,6 +21,7 @@ public class MainActivity extends BaseActivity {
         IdStorage.onActivity(this);
 
         Button buttonOpenSearch = findViewById(R.id.open_departures);
+        Button buttonOpenConnections = findViewById(R.id.open_connections);
         Button buttonOpenVehicleMap = findViewById(R.id.open_map);
         Button buttonOpenEvents = findViewById(R.id.open_events);
         Button buttonOpenVehiclesList = findViewById(R.id.open_vehicles);
@@ -31,6 +32,7 @@ public class MainActivity extends BaseActivity {
 
         buttonOpenSearch.setOnClickListener(v -> startActivity(SearchActivity.class));
 //        buttonOpenNews.setOnClickListener(v -> startActivity(NewsActivity.class));
+        buttonOpenConnections.setOnClickListener(v -> startActivity(ConnectionsResultScreen.class));
         buttonOpenVehicleMap.setOnClickListener(v -> startActivity(VehicleMapActivity.class));
         buttonOpenVehiclesList.setOnClickListener(v -> startActivity(VehiclesListActivity.class));
         buttonOpenSettings.setOnClickListener(v -> startActivity(SettingsActivity.class));

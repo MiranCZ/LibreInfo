@@ -28,6 +28,16 @@
             app:iconSize="24dp" />
 
         <Button
+            android:id="@+id/open_connections"
+            style="@style/MyButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Najit spojeni"
+            app:icon="@drawable/bus_light_full"
+            app:iconSize="24dp" />
+
+
+        <Button
             android:id="@+id/open_map"
             style="@style/MyButtonStyle"
             android:layout_width="match_parent"

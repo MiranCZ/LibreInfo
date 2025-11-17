@@ -1,8 +1,8 @@
 package me.miran.mhdstuff.parsing.types;
 
-public record RouteStop(int stopId, int tripId, short postId, short sequence, StopTime stopTime) {
+public record RouteStop(short stopId, int tripId, short postId, short sequence, StopTime stopTime) {
 
-    public RouteStop(int stopId, int tripId, short postId, short sequence, Time arrival, Time departure) {
+    public RouteStop(short stopId, int tripId, short postId, short sequence, Time arrival, Time departure) {
         this(stopId, tripId, postId, sequence, new StopTime(arrival, departure));
     }
 

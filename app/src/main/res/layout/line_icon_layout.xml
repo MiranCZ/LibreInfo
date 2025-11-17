@@ -23,14 +23,30 @@
 
 
         <TextView
-            android:id="@+id/line_name"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:textAlignment="center"
+            android:text="1"
             android:fontFamily="@font/roboto_bold"
             android:textSize="16sp"
+            android:visibility="invisible"
             />
 
 
     </me.miran.mhdstuff.IconLinerLayout>
+
+    <TextView
+        android:id="@+id/line_name"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:textAlignment="center"
+        android:fontFamily="@font/roboto_bold"
+        android:textSize="16sp"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

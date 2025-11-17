@@ -4,6 +4,7 @@ import java.time.LocalTime;
 
 public record Time(byte hours, byte minutes) implements Comparable<Time> {
 
+    public static final Time INF = new Time(Byte.MAX_VALUE, Byte.MAX_VALUE);
     public static final Time ZERO = new Time(0, 0);
     public static final Time MIN = new Time(Byte.MIN_VALUE, Byte.MIN_VALUE);
 
@@ -29,12 +30,18 @@ public record Time(byte hours, byte minutes) implements Comparable<Time> {
 
     @Override
     public int compareTo(Time o) {
-        int hourRes = Integer.compare(hours, o.hours);
-
-        if (hourRes == 0) {
-            return Integer.compare(minutes, o.minutes);
+        if (hours == o.hours) {
+            return minutes - o.minutes;
         }
-        return hourRes;
+        return hours - o.hours;
+    }
+
+    public boolean isLower(Time other) {
+        return compareTo(other) < 0;
+    }
+
+    public boolean isHigher(Time other) {
+        return compareTo(other) > 0;
     }
 
     public Time addMinutes(int mins) {
@@ -45,6 +52,10 @@ public record Time(byte hours, byte minutes) implements Comparable<Time> {
 
     public int getMinsDiff(Time other) {
         return (hours - other.hours) * 60 + (minutes - other.minutes);
+    }
+
+    public short toCompactShort() {
+        return (short) ((hours*60) + minutes);
     }
 
     public String formatRemaining() {
