@@ -49,13 +49,13 @@ public class RouteStopStorage {
         this.routeStops = routeStops;
     }
 
-    public int[] getRouteStops(int stopId) {
+    public int[] getRouteStops(short stopId) {
         return stopIdToRouteStops.get(stopId);
     }
 
     public RouteStop[] getRouteStopsParsed(int stopId) {
         try {
-            return getRouteStopsParsedInternal(stopId);
+            return getRouteStopsParsedInternal((short) stopId);
         } catch (IOException e) {
             e.printStackTrace();
             return new RouteStop[0];
@@ -121,9 +121,9 @@ public class RouteStopStorage {
         return new RouteStop(stopId, tripId, postId, sequence, arrival, departure);
     }
 
-    private RouteStop[] getRouteStopsParsedInternal(int stopId) throws IOException {
+    private RouteStop[] getRouteStopsParsedInternal(short stopId) throws IOException {
         int[] routes = getRouteStops(stopId);
-        if (routes.length == 0) return new RouteStop[0];
+        if (routes == null || routes.length == 0) return new RouteStop[0];
 
         RouteStop[] results = new RouteStop[routes.length];
 
