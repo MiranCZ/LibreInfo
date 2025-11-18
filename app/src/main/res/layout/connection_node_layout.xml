@@ -42,6 +42,7 @@
                 android:textColor="@color/secondaryColor"
                 android:fontFamily="@font/roboto_black"
                 android:textSize="16sp"
+                android:layout_marginStart="4dp"
                 app:layout_constraintStart_toEndOf="@id/vehicle_line_icon"
                 app:layout_constraintTop_toTopOf="@id/vehicle_line_icon"
                 app:layout_constraintBottom_toBottomOf="@id/vehicle_line_icon" />
@@ -52,7 +53,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 app:layout_constraintStart_toStartOf="@id/vehicle_heading"
-                app:layout_constraintTop_toBottomOf="@id/vehicle_line_icon"
+                app:layout_constraintTop_toBottomOf="@id/vehicle_heading"
+                android:layout_marginStart="8dp"
                 android:layout_marginBottom="4dp"
                 >
 
@@ -79,6 +81,7 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
                 app:layout_constraintStart_toStartOf="@id/vehicle_heading"
                 app:layout_constraintTop_toBottomOf="@id/from_info"
                 >

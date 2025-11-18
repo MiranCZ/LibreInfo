@@ -1,12 +1,32 @@
 package me.miran.mhdstuff.parsing.types;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+
 import java.time.LocalTime;
 
-public record Time(byte hours, byte minutes) implements Comparable<Time> {
+public record Time(byte hours, byte minutes) implements Comparable<Time>, Parcelable {
 
     public static final Time INF = new Time(Byte.MAX_VALUE, Byte.MAX_VALUE);
     public static final Time ZERO = new Time(0, 0);
     public static final Time MIN = new Time(Byte.MIN_VALUE, Byte.MIN_VALUE);
+
+    public static final Creator<Time> CREATOR = new Creator<>() {
+        @Override
+        public Time createFromParcel(Parcel in) {
+            byte hours = in.readByte();
+            byte minutes = in.readByte();
+
+            return new Time(hours, minutes);
+        }
+
+        @Override
+        public Time[] newArray(int size) {
+            return new Time[size];
+        }
+    };
 
     public Time(int hours, int minutes) {
         this((byte)hours,(byte) minutes);
@@ -88,5 +108,16 @@ public record Time(byte hours, byte minutes) implements Comparable<Time> {
 
     public boolean isBefore(Time time) {
         return getMinsDiff(time) < 0;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeByte(hours);
+        dest.writeByte(minutes);
     }
 }

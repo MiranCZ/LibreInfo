@@ -1,9 +1,11 @@
 package me.miran.mhdstuff.raptor;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import me.miran.mhdstuff.parsing.storage.CalendarStorage;
 import me.miran.mhdstuff.parsing.storage.IdStorage;
@@ -12,16 +14,16 @@ import me.miran.mhdstuff.parsing.types.RouteStop;
 import me.miran.mhdstuff.parsing.types.RouteStopsContainer;
 import me.miran.mhdstuff.parsing.types.Time;
 import me.miran.mhdstuff.parsing.types.Trip;
-import me.miran.mhdstuff.util.OfflineDepartures;
-import me.miran.mhdstuff.util.Pair;
 
 public class Raptor {
 
+    private static int transferDelay = 0;
+
     public static List<Path> getDepartures(short fromStop, short toStop) {
         System.out.println("Started");
-//        Time now = Time.now();
+        Time now = Time.now();
 
-        Time now = new Time(1,20);
+//        Time now = new Time(1,20);
         IdStorage storage = IdStorage.getInstance();
 
         long ms = System.currentTimeMillis();
@@ -29,7 +31,12 @@ public class Raptor {
             System.out.println("FROM: "+storage.stopStorage().getStop(fromStop));
             System.out.println("TO: "+storage.stopStorage().getStop(toStop));
 
-            return getDepartures(storage, fromStop, toStop, new ExploreHandler(storage.stopStorage()), now);
+            List<Path> res = getDepartures(storage, fromStop, toStop, new ExploreHandler(storage.stopStorage()), now);
+
+            res.addAll(res);
+            res.addAll(res);
+            res.addAll(res);
+            return res;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -49,7 +56,7 @@ public class Raptor {
         List<Node> updated;
         while (!(updated = explore.pollUpdated()).isEmpty()) {
             for (Node n : updated) {
-                maxTime = updateStops(storage, nowDate, n, toStop, explore, n.leaveStop().arrival(), n.leaveStop().postId(), result, maxTime);
+                maxTime = updateStops(storage, nowDate, n, toStop, explore, n.leaveStop().arrival().addMinutes(transferDelay), n.leaveStop().postId(), result, maxTime);
             }
             a++;
             System.out.println("ROUND: "+a);
@@ -70,6 +77,8 @@ public class Raptor {
 
     private static List<Path> printOutput(IdStorage storage, ExploreHandler explore, List<Connection> result) {
         Map<Integer, Connection> connections = new HashMap<>();
+
+        Random r = new Random();
         for (Connection connection : result) {
             int len = connection.nodes.size();
 
@@ -110,6 +119,7 @@ public class Raptor {
             output.add(new Path(pathNodes));
             System.out.println();
         }
+        output.sort(Comparator.comparingInt(Path::getMinuteLength));
 
         return output;
     }

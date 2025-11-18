@@ -5,11 +5,13 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.content.res.AppCompatResources;
 
 import java.util.List;
 
@@ -17,12 +19,13 @@ import me.miran.mhdstuff.R;
 import me.miran.mhdstuff.activity.base.BaseActivity;
 import me.miran.mhdstuff.parsing.storage.IdStorage;
 import me.miran.mhdstuff.parsing.types.LineAlias;
+import me.miran.mhdstuff.parsing.types.Time;
 import me.miran.mhdstuff.raptor.Path;
 import me.miran.mhdstuff.raptor.PathNode;
 import me.miran.mhdstuff.raptor.Raptor;
 
-public class ConnectionsResultScreen extends BaseActivity {
-    public ConnectionsResultScreen() {
+public class ConnectionsResultActivity extends BaseActivity {
+    public ConnectionsResultActivity() {
         super("Spojení", R.layout.activity_connection_result);
     }
 
@@ -35,7 +38,7 @@ public class ConnectionsResultScreen extends BaseActivity {
             IdStorage storage = IdStorage.getInstance();
 
 
-            List<Path> paths = Raptor.getDepartures((short) 847, (short) 2840);
+            List<Path> paths = Raptor.getDepartures((short) 2924, (short) 2876);
 
             runOnUiThread(() -> create(storage, paths));
         }).start();
@@ -43,17 +46,23 @@ public class ConnectionsResultScreen extends BaseActivity {
 
 
     private void create(IdStorage storage, List<Path> paths) {
-//        LinearLayout ll = findViewById(R.id.list);
+        LinearLayout list = findViewById(R.id.list);
 
-        LinearLayout fin = findViewById(R.id.list);
-        LinearLayout ll = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.empty_linear_layout,fin , false);
+        for (int i = 0; i < paths.size(); i++) {
+            View view = createPathView(storage, paths.get(i), list);
+
+            list.addView(view, i);
+        }
+    }
+
+    @NonNull
+    private LinearLayout createPathView(IdStorage storage, Path path, ViewGroup parent) {
+        LinearLayout ll = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.connection_layout, parent, false);
 
         var orig = ll;
         ll = ll.findViewById(R.id.list);
 
-        int ind = 0;
-
-        List<PathNode> nodes = paths.get(0).nodes();
+        List<PathNode> nodes = path.nodes();
         for (int i = 0; i < nodes.size(); i++) {
             PathNode node = nodes.get(i);
             View view = node.createView(storage, ll, this);
@@ -84,9 +93,39 @@ public class ConnectionsResultScreen extends BaseActivity {
             ll.addView(view, i);
         }
 
+        TextView routeLenText = orig.findViewById(R.id.route_length);
+        routeLenText.setText(formatMins(path.getMinuteLength()));
+
+        TextView departTime = orig.findViewById(R.id.leave_time);
+        departTime.setText(formatTime(path.getDeparture()));
+        return orig;
+    }
 
 
-        fin.addView(orig, 0);
+    // TODO add translations
+    private String formatTime(Time departure) {
+        Time now = Time.now();
+
+        int diff = departure.getMinsDiff(now);
+
+        if (diff == 0) return "nyní";
+
+        if (diff > 0) {
+            return "za "+formatMins(diff);
+        }
+
+        return departure.format();
+    }
+
+    private String formatMins(int mins) {
+        int hours = mins / 60;
+        int minutes = mins % 60;
+
+        if (hours > 0) {
+            return hours + " hod " + minutes + " min";
+        }
+
+        return minutes + " min";
     }
 
 }

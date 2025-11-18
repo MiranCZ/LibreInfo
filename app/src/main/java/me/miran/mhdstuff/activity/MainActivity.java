@@ -32,7 +32,7 @@ public class MainActivity extends BaseActivity {
 
         buttonOpenSearch.setOnClickListener(v -> startActivity(SearchActivity.class));
 //        buttonOpenNews.setOnClickListener(v -> startActivity(NewsActivity.class));
-        buttonOpenConnections.setOnClickListener(v -> startActivity(ConnectionsResultScreen.class));
+        buttonOpenConnections.setOnClickListener(v -> startActivity(ConnectionsResultActivity.class));
         buttonOpenVehicleMap.setOnClickListener(v -> startActivity(VehicleMapActivity.class));
         buttonOpenVehiclesList.setOnClickListener(v -> startActivity(VehiclesListActivity.class));
         buttonOpenSettings.setOnClickListener(v -> startActivity(SettingsActivity.class));
