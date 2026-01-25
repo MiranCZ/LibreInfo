@@ -14,12 +14,12 @@ public class RouteStopStorage {
 
     public static RouteStopStorage parse(DataInputStream is, RandomAccessFile routeStops) {
         try(is) {
-            Map<Integer, int[]> stopIdToRoute = new HashMap<>();
+            Map<Short, int[]> stopIdToRoute = new HashMap<>();
 
             int size = is.readInt();
 
             for (int i = 0; i < size; i++) {
-                int stopId = is.readInt();
+                short stopId = is.readShort();
 
                 int arrSize = is.readInt();
                 int[] route = new int[arrSize];
@@ -38,24 +38,24 @@ public class RouteStopStorage {
     }
 
 
-    private static final int ROUTE_STOP_SIZE_BYTES = 2 * Integer.BYTES + 2 * Short.BYTES + 4 * Byte.BYTES;
-    private final Map<Integer, int[]> stopIdToRouteStops;
+    private static final int ROUTE_STOP_SIZE_BYTES = Short.BYTES + Integer.BYTES + 2 * Short.BYTES + 4 * Byte.BYTES;
+    private final Map<Short, int[]> stopIdToRouteStops;
     private final byte[] buffer = new byte[ROUTE_STOP_SIZE_BYTES];
     private final RandomAccessFile routeStops;
 
 
-    private RouteStopStorage(Map<Integer, int[]> stopIdToRoute, RandomAccessFile routeStops) {
+    private RouteStopStorage(Map<Short, int[]> stopIdToRoute, RandomAccessFile routeStops) {
         this.stopIdToRouteStops = stopIdToRoute;
         this.routeStops = routeStops;
     }
 
-    public int[] getRouteStops(int stopId) {
+    public int[] getRouteStops(short stopId) {
         return stopIdToRouteStops.get(stopId);
     }
 
     public RouteStop[] getRouteStopsParsed(int stopId) {
         try {
-            return getRouteStopsParsedInternal(stopId);
+            return getRouteStopsParsedInternal((short) stopId);
         } catch (IOException e) {
             e.printStackTrace();
             return new RouteStop[0];
@@ -103,8 +103,8 @@ public class RouteStopStorage {
         }
 
         int bufferPos = 0;
-        int stopId = readInt(buffer, bufferPos);
-        bufferPos += 4;
+        short stopId = readShort(buffer, bufferPos);
+        bufferPos += 2;
 
         int tripId = readInt(buffer, bufferPos);
         bufferPos += 4;
@@ -121,9 +121,9 @@ public class RouteStopStorage {
         return new RouteStop(stopId, tripId, postId, sequence, arrival, departure);
     }
 
-    private RouteStop[] getRouteStopsParsedInternal(int stopId) throws IOException {
+    private RouteStop[] getRouteStopsParsedInternal(short stopId) throws IOException {
         int[] routes = getRouteStops(stopId);
-        if (routes.length == 0) return new RouteStop[0];
+        if (routes == null || routes.length == 0) return new RouteStop[0];
 
         RouteStop[] results = new RouteStop[routes.length];
 
@@ -139,15 +139,15 @@ public class RouteStopStorage {
             }
 
             int bufferPos = 0;
-            int sid = readInt(buffer, bufferPos);
-            bufferPos += 4;
+            short sid = readShort(buffer, bufferPos);
+            bufferPos += 2;
 
             int tripId = readInt(buffer, bufferPos);
             bufferPos += 4;
-            
+
             short postId = readShort(buffer, bufferPos);
             bufferPos += 2;
-            
+
             short sequence = readShort(buffer, bufferPos);
             bufferPos += 2;
 
@@ -174,5 +174,5 @@ public class RouteStopStorage {
         return ((ch1 << 24) | (ch2 << 16) | (ch3 << 8) | (ch4));
 
     }
-    
+
 }
