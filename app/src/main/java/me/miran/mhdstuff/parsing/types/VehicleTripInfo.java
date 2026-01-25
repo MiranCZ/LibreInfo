@@ -8,7 +8,7 @@ import java.util.Map;
 
 import me.miran.mhdstuff.parsing.storage.StopMapper;
 
-public record VehicleTripInfo(long lastUpdate, int lastStopId, int delay, Map<Integer, Integer> previousStopDelays) {
+public record VehicleTripInfo(long lastUpdate, int lastStopId, int delay, Map<Short, Integer> previousStopDelays) {
 
 
     public static VehicleTripInfo NONE = new VehicleTripInfo(-1, -1, -1, Map.of());
@@ -24,7 +24,7 @@ public record VehicleTripInfo(long lastUpdate, int lastStopId, int delay, Map<In
 
         lastStopId = mapper.getMapped(lastStopId);
 
-        Map<Integer, Integer> prevStops = new HashMap<>();
+        Map<Short, Integer> prevStops = new HashMap<>();
 
         for (JsonElement prevStopEl : obj.getAsJsonArray("previous_stops")) {
             JsonObject prevStop = prevStopEl.getAsJsonObject();
@@ -34,7 +34,7 @@ public record VehicleTripInfo(long lastUpdate, int lastStopId, int delay, Map<In
 
             int delay = prevStop.get("delay").getAsInt();
 
-            prevStops.put(id, delay);
+            prevStops.put((short) id, delay);
         }
 
         return new VehicleTripInfo(lastUpdate, lastStopId, vehDelay, prevStops);

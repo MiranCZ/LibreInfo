@@ -26,7 +26,7 @@ public class VehicleItemAdapter extends AbstractItemAdapter<Vehicle, VehicleItem
     @Override
     protected void bindValues(VehicleItemHolder holder, Vehicle item) {
         holder.vehicleNums.setText(item.getVehicleNumbersString());
-        holder.vehicleService.setText(item.getServiceString());
+        holder.vehicleService.setText(item.serviceId());
 
         if (item.lowFloor()) {
             holder.wheelchairIcon.setVisibility(View.VISIBLE);

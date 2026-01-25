@@ -16,9 +16,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import me.miran.mhdstuff.R;
 import me.miran.mhdstuff.VehicleItemAdapter;
 import me.miran.mhdstuff.activity.listview.AbstractListViewActivity;
+import me.miran.mhdstuff.exception.RequestException;
 import me.miran.mhdstuff.parsing.storage.IdStorage;
 import me.miran.mhdstuff.parsing.storage.LineStorage;
 import me.miran.mhdstuff.parsing.types.Vehicle;
+import me.miran.mhdstuff.util.request.RequestHelper;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -149,9 +151,14 @@ public class VehiclesListActivity extends AbstractListViewActivity {
     @Override
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
         this.storage = storage;
-        // TODO implement vehicles
-//        vehicles = Vehicle.parseVehicles(SoapHelper.getVehicles(), storage);
-        vehicles = new ArrayList<>();
+
+        try {
+            vehicles = Vehicle.parseVehicles(RequestHelper.getVehicles(context), storage);
+        } catch (RequestException e) {
+            vehicles = new ArrayList<>();
+            e.showError(this);
+        }
+
         adapter = new VehicleItemAdapter(vehicles, this);
         updateSort();
 

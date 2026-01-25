@@ -9,23 +9,21 @@ public record MapVehicle(int id, Location location, int bearing, int delay, Line
 
 
     public static MapVehicle parse(JsonObject obj, IdStorage storage) {
-        JsonObject attrs = obj.getAsJsonObject("attributes");
+        if (obj == null) return null;
 
-        int id = attrs.get("id").getAsInt();
-        Location location = Location.parse(attrs);
+        int id = obj.get("ID").getAsInt();
+        Location location = Location.parse(obj);
 
-        int bearing = attrs.get("bearing").getAsInt();
+        int bearing = obj.get("Bearing").getAsInt();
 
-        int lineId = attrs.get("lineid").getAsInt();
-        String lineName = attrs.get("linename").getAsString();
+        int lineId = obj.get("LineID").getAsInt();
 
         LineAlias line = storage.lineStorage().getAlias(lineId);
 
+        Stop prevStop = storage.stopStorage().getStop(obj.get("LastStopID").getAsInt());
+        Stop finalStop = storage.stopStorage().getStop(obj.get("FinalStopID").getAsInt());
 
-        Stop prevStop = storage.stopStorage().getStop(attrs.get("laststopid").getAsInt());
-        Stop finalStop = storage.stopStorage().getStop(attrs.get("finalstopid").getAsInt());
-
-        int delay = attrs.get("delay").getAsInt();
+        int delay = obj.get("Delay").getAsInt();
 
         return new MapVehicle(id, location, bearing, delay, line,prevStop, finalStop);
     }

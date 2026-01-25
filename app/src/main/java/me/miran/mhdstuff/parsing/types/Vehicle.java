@@ -21,7 +21,7 @@ import java.util.Optional;
 
 public record Vehicle(int id, int idB, int idC, int vType, int lType, Location location, int bearing,
                       LineAlias line, int routeId, Integer course, boolean lowFloor, int delay,
-                      Stop lastStop, Stop finalStop, Optional<String> finalStopName, boolean inactive, int serviceId)  {
+                      Stop lastStop, Stop finalStop, Optional<String> finalStopName, boolean inactive, String serviceId)  {
 
     public static List<Vehicle> parseVehicles(JsonArray array, IdStorage storage) {
         List<Vehicle> result = new ArrayList<>();
@@ -51,7 +51,7 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         // *probably* how many people are currently in it? not sure
         int bearing = obj.get("Bearing").getAsInt();
 
-//        TransportLine line = TransportLine.parseFromIdAndName(storage.lineStorage(), obj.get("LineID").getAsInt(), obj.get("LineName").getAsString());
+        LineAlias line = LineAlias.parse(obj.get("LineID").getAsString(), storage.lineStorage());
 
         //TODO figure out what this means
         int routeId = obj.get("RouteID").getAsInt();
@@ -64,8 +64,16 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         boolean lowFloor = obj.get("LF").getAsBoolean();
 
         int delay = obj.get("Delay").getAsInt();
-        Stop lastStop = storage.stopStorage().getStop(obj.get("LastStopID").getAsInt());
-        Stop finalStop = storage.stopStorage().getStop(obj.get("FinalStopID").getAsInt());
+        int lastStopId = obj.get("LastStopID").getAsInt();
+        int finalStopId = obj.get("FinalStopID").getAsInt();
+
+        lastStopId = storage.stopMapper().getMapped(lastStopId);
+        finalStopId = storage.stopMapper().getMapped(finalStopId);
+
+        Stop lastStop = storage.stopStorage().getStop(lastStopId);
+        Stop finalStop = storage.stopStorage().getStop(finalStopId);
+
+        System.out.println("stop "+obj.get("LastStopID").getAsInt() + " has "+lastStop);
 
         Optional<String> finalStopName;
 
@@ -79,8 +87,8 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         boolean inactive = obj.get("IsInactive").getAsBoolean();
 
         return new Vehicle(
-                id, idB, idC, vType, lType, location, bearing, /*line,*/null, routeId, Integer.parseInt(course),
-                lowFloor, delay, lastStop, finalStop, finalStopName, inactive, -1
+                id, idB, idC, vType, lType, location, bearing, line, routeId, Integer.parseInt(course),
+                lowFloor, delay, lastStop, finalStop, finalStopName, inactive, course
         );
     }
 
@@ -101,15 +109,6 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         String res = id+"";
         if (idB != 0) res += " + "+idB;
         if (idC != 0) res += " + "+idC;
-
-        return res;
-    }
-
-    public String getServiceString() {
-        String res = serviceId+"";
-        while (res.length() < 5) {
-            res = "0"+res;
-        }
 
         return res;
     }

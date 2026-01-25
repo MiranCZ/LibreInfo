@@ -234,7 +234,7 @@ public class VehicleMapActivity extends BaseActivity {
                 });
 
                 VehicleWebsocket.subscribe(VehicleMapActivity.class, message -> {
-                    MapVehicle vehicle = MapVehicle.parse(new Gson().fromJson(message, JsonObject.class), storage);
+                    MapVehicle vehicle = MapVehicle.parse(new Gson().fromJson(message, JsonObject.class).getAsJsonObject("attributes"), storage);
 
                     updateGeoJson(source, map, vehicle);
                 });
