@@ -47,7 +47,7 @@
                 android:fontFamily="@font/roboto_regular"
                 android:textColor="@color/secondaryColor"
                 android:textSize="24dp"
-                android:text="0.1-Alpha"
+                android:text="0.2-Alpha"
                 />
 
         </LinearLayout>
