@@ -103,15 +103,12 @@ public class SearchActivity extends BaseActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                // You can perform an action when the user submits the search
-                // For now, we'll just filter
                 filterItems(query);
-                return false; // Return true if you handled the action
+                return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                // Filter as the user types
                 filterItems(newText);
                 return true;
             }
@@ -144,15 +141,10 @@ public class SearchActivity extends BaseActivity {
     private void filterItems(String query) {
         if (filteredItems == null) return;
 
-        System.out.println("quering "+query);
-
         if (query.isEmpty()) {
-            sortAndSubmitAll(true);
+            sortAndSubmitAll();
         } else {
-            long millis = System.currentTimeMillis();
-
             List<Stop> results = search.getResults(query);
-
             List<Stop> favourite = new ArrayList<>();
 
             for (Iterator<Stop> iterator = results.iterator(); iterator.hasNext(); ) {
@@ -165,11 +157,8 @@ public class SearchActivity extends BaseActivity {
             results.addAll(0, favourite);
 
             adapter.submitList(results);
-
-            System.out.println("done in "+(System.currentTimeMillis()-millis) + " ; "+results.size());
         }
 
-//        adapter.notifyDataSetChanged();
         recyclerView.scrollToPosition(0);
     }
 
@@ -182,7 +171,7 @@ public class SearchActivity extends BaseActivity {
             // in case favourite stop was edited
 
             String query = searchView.getQuery().toString();
-            sortAndSubmitAll(false);
+            sortAndSubmitAll();
 
             filterItems(query);
             adapter.notifyDataSetChanged();
@@ -190,10 +179,6 @@ public class SearchActivity extends BaseActivity {
     }
 
     private void sortAndSubmitAll() {
-        sortAndSubmitAll(false);
-    }
-
-    private void sortAndSubmitAll(boolean hardUpdate) {
         List<Stop> favourite = new ArrayList<>();
         List<Stop> rest = new ArrayList<>();
 
@@ -209,11 +194,7 @@ public class SearchActivity extends BaseActivity {
         System.out.println(rest.get(0));
         rest.addAll(0, favourite);
 
-        if (hardUpdate) {
-            adapter.submitListAndReload(rest);
-        } else {
-            adapter.submitList(rest);
-        }
+        adapter.submitList(rest);
     }
 
 }

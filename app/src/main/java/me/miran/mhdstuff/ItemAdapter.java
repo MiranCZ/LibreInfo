@@ -64,19 +64,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ButtonViewHold
     }
 
 
-    public void submitListAndReload(List<Stop> list) {
-        this.items = list;
-        notifyDataSetChanged();
-    }
-
     public void submitList(List<Stop> list) {
         this.items = list;
-
-        for (int i = 0; i < holders.size() && i < list.size(); i++) {
-            if (!holders.containsKey(i)) break;
-
-            onBindViewHolder(holders.get(i), i);
-        }
+        notifyDataSetChanged();
     }
 
     static class ButtonViewHolder extends RecyclerView.ViewHolder {
