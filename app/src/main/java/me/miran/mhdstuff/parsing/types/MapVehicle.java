@@ -20,8 +20,11 @@ public record MapVehicle(int id, Location location, int bearing, int delay, Line
 
         LineAlias line = storage.lineStorage().getAlias(lineId);
 
-        Stop prevStop = storage.stopStorage().getStop(obj.get("LastStopID").getAsInt());
-        Stop finalStop = storage.stopStorage().getStop(obj.get("FinalStopID").getAsInt());
+        int prevStopId = obj.get("LastStopID").getAsInt();
+        int finalStopId = obj.get("FinalStopID").getAsInt();
+
+        Stop prevStop = storage.stopStorage().getStop(storage.stopMapper().getMapped(prevStopId));
+        Stop finalStop = storage.stopStorage().getStop(storage.stopMapper().getMapped(finalStopId));
 
         int delay = obj.get("Delay").getAsInt();
 

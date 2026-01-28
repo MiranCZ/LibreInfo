@@ -103,12 +103,14 @@ public class VehicleMapActivity extends BaseActivity {
         setContentView(R.layout.activity_vehicle_map);
 
         View bottomSheet = findViewById(R.id.bottom_sheet_container);
+
+        mapView = findViewById(R.id.vehicle_map);
+        mapView.onCreate(savedInstanceState);
+
         selectedContext.setBehavior(BottomSheetBehavior.from(bottomSheet), this);
 
         selectedContext.setSelected(getIntent().getIntExtra("following", -1));
 
-        mapView = findViewById(R.id.vehicle_map);
-        mapView.onCreate(savedInstanceState);
 
         new Thread(() -> {
             storage = IdStorage.getInstance();
@@ -452,6 +454,10 @@ public class VehicleMapActivity extends BaseActivity {
 
             if (selected != -1) {
                 MapVehicle vehicle = idToVehMap.get(selected);
+                if (vehicle == null) {
+                    this.selected = -1;
+                    return;
+                }
 
                 VehicleInfoBottomSheet fragment = new VehicleInfoBottomSheet(vehicle, parent);
                 getSupportFragmentManager().beginTransaction()

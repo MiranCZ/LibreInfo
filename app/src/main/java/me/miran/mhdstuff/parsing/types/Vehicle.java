@@ -27,7 +27,11 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         List<Vehicle> result = new ArrayList<>();
 
         for (JsonElement element : array) {
-            result.add(parse(element.getAsJsonObject(), storage));
+            Vehicle v = parse(element.getAsJsonObject(), storage);
+
+            if (!v.inactive) {
+                result.add(v);
+            }
         }
 
         return result;
