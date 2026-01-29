@@ -77,7 +77,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
                 android:fontFamily="@font/roboto_regular"
-                android:textColor="@color/secondary_color_tone"
+                android:textColor="@color/secondaryColor"
                 android:textSize="16sp"
                 />
 
