@@ -87,6 +87,6 @@ abstract class NavigationActivity(nameId: Int) : KBaseActivity(nameId) {
             )
         }
 
-        HorizontalDivider(thickness = 1.dp, color = colorResource(R.color.mid_gray))
+        Divider()
     }
 }
