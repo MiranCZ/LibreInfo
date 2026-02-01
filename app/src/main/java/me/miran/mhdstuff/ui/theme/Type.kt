@@ -1,6 +1,7 @@
 package me.miran.mhdstuff.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -20,21 +21,29 @@ val robotoFamily = FontFamily(
 // Default Material 3 typography values
 val baseline = Typography()
 
+private fun TextStyle.withRoboto() =
+    copy(
+        fontFamily = robotoFamily,
+        platformStyle = PlatformTextStyle(
+            includeFontPadding = false
+        )
+    )
+
 val AppTypography = Typography(
-    displayLarge = baseline.displayLarge.copy(fontFamily = robotoFamily),
-    displayMedium = baseline.displayMedium.copy(fontFamily = robotoFamily),
-    displaySmall = baseline.displaySmall.copy(fontFamily = robotoFamily),
-    headlineLarge = baseline.headlineLarge.copy(fontFamily = robotoFamily),
-    headlineMedium = baseline.headlineMedium.copy(fontFamily = robotoFamily),
-    headlineSmall = baseline.headlineSmall.copy(fontFamily = robotoFamily),
-    titleLarge = baseline.titleLarge.copy(fontFamily = robotoFamily),
-    titleMedium = baseline.titleMedium.copy(fontFamily = robotoFamily),
-    titleSmall = baseline.titleSmall.copy(fontFamily = robotoFamily),
-    bodyLarge = baseline.bodyLarge.copy(fontFamily = robotoFamily),
-    bodyMedium = baseline.bodyMedium.copy(fontFamily = robotoFamily),
-    bodySmall = baseline.bodySmall.copy(fontFamily = robotoFamily),
-    labelLarge = baseline.labelLarge.copy(fontFamily = robotoFamily),
-    labelMedium = baseline.labelMedium.copy(fontFamily = robotoFamily),
-    labelSmall = baseline.labelSmall.copy(fontFamily = robotoFamily),
+    displayLarge = baseline.displayLarge.withRoboto(),
+    displayMedium = baseline.displayMedium.withRoboto(),
+    displaySmall = baseline.displaySmall.withRoboto(),
+    headlineLarge = baseline.headlineLarge.withRoboto(),
+    headlineMedium = baseline.headlineMedium.withRoboto(),
+    headlineSmall = baseline.headlineSmall.withRoboto(),
+    titleLarge = baseline.titleLarge.withRoboto(),
+    titleMedium = baseline.titleMedium.withRoboto().copy(fontSize = 18.sp),
+    titleSmall = baseline.titleSmall.withRoboto(),
+    bodyLarge = baseline.bodyLarge.withRoboto(),
+    bodyMedium = baseline.bodyMedium.withRoboto(),
+    bodySmall = baseline.bodySmall.withRoboto(),
+    labelLarge = baseline.labelLarge.withRoboto(),
+    labelMedium = baseline.labelMedium.withRoboto(),
+    labelSmall = baseline.labelSmall.withRoboto(),
 )
 

@@ -6,12 +6,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -22,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionContext
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
@@ -37,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import me.miran.mhdstuff.R
 import me.miran.mhdstuff.parsing.types.LineAlias
 import me.miran.mhdstuff.ui.theme.AppTheme
+import me.miran.mhdstuff.ui.theme.AppTypography
 import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.reflect.KClass
@@ -115,8 +123,15 @@ abstract class KBaseActivity(var nameId: Int) : ComponentActivity() {
     }
 
     @Composable
+    fun Container(onClick: () -> Unit,modifier: Modifier = Modifier, innerPadding: Dp = 16.dp, content: @Composable BoxScope.() -> Unit) {
+        Card(modifier = modifier.fillMaxWidth(), colors = CardDefaults.cardColors().copy(containerColor =  colorResource(R.color.widget_background)), onClick = onClick) {
+            Box(Modifier.padding(innerPadding), content= content);
+        }
+    }
+
+    @Composable
     fun Container(modifier: Modifier = Modifier, innerPadding: Dp = 16.dp, content: @Composable BoxScope.() -> Unit) {
-        Surface(shape = RoundedCornerShape(size = 16.dp), color = colorResource(R.color.widget_background), modifier = modifier.fillMaxWidth()) {
+        Card(modifier = modifier.fillMaxWidth(), colors = CardDefaults.cardColors().copy(containerColor =  colorResource(R.color.widget_background))) {
             Box(Modifier.padding(innerPadding), content= content);
         }
     }
@@ -127,10 +142,11 @@ abstract class KBaseActivity(var nameId: Int) : ComponentActivity() {
     }
 
     @Composable
-    fun LineList(lines: List<LineAlias>) {
-        FlowRow {
+    fun LineList(lines: List<LineAlias>, modifier: Modifier = Modifier) {
+        FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)) {
             for (line in lines) {
-                LineIcon(line)
+                LineIcon(line, padding = 0.dp)
             }
         }
     }
@@ -168,5 +184,24 @@ abstract class KBaseActivity(var nameId: Int) : ComponentActivity() {
         }
     }
 
+    @Composable
+    fun Loading() {
+        Box(Modifier.fillMaxWidth().fillMaxHeight(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(Modifier.size(80.dp), strokeWidth = 6.dp)
+        }
+    }
+
+    @Composable
+    fun NothingHere() {
+        Container(Modifier.padding(16.dp)) {
+            Box(Modifier.fillMaxWidth(),contentAlignment = Alignment.Center) {
+                Text(
+                    stringResource(R.string.nothing_here),
+                    fontWeight = FontWeight.Medium,
+                    style = AppTypography.titleMedium
+                )
+            }
+        }
+    }
 
 }
