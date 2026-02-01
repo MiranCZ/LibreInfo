@@ -9,6 +9,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +64,8 @@ public class LineStorage {
              idToAlias.put(alias.id(), alias);
              nameToAlias.put(alias.lineDisplayName(), alias);
         }
+
+        this.aliases.sort(Comparator.comparing(l -> l.getSortKey(this)));
     }
 
     public LineAlias getAlias(int id) {
