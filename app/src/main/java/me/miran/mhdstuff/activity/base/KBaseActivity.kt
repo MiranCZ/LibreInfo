@@ -3,13 +3,19 @@ package me.miran.mhdstuff.activity.base
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.text.method.LinkMovementMethod
+import android.util.TypedValue
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -41,10 +47,15 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.viewinterop.NoOpUpdate
 import me.miran.mhdstuff.R
+import me.miran.mhdstuff.parsing.types.DateTime
+import me.miran.mhdstuff.parsing.types.Diversion
 import me.miran.mhdstuff.parsing.types.LineAlias
 import me.miran.mhdstuff.ui.theme.AppTheme
 import me.miran.mhdstuff.ui.theme.AppTypography
+import me.miran.mhdstuff.util.HtmlHelper
 import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.reflect.KClass
@@ -182,6 +193,65 @@ abstract class KBaseActivity(var nameId: Int) : ComponentActivity() {
         )) {
             Text(text, textAlign = TextAlign.Center, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(2.dp), color = textColor);
         }
+    }
+
+    @Composable
+    fun EventHeader(item: Diversion, content: @Composable ColumnScope.() -> Unit = {}) {
+        Column {
+            Text(
+                text = item.title,
+                fontWeight = FontWeight.Black,
+                style = AppTypography.titleMedium
+            )
+
+            if (item.from != DateTime.NONE) {
+                Row {
+                    Text(
+                        "Od: ",
+                        style = AppTypography.bodyMedium,
+                        fontWeight = FontWeight.Normal
+                    )
+                    Text(
+                        item.from.toString(),
+                        style = AppTypography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            if (item.to != DateTime.NONE) {
+                Row {
+                    Text(
+                        "Do: ",
+                        style = AppTypography.bodyMedium,
+                        fontWeight = FontWeight.Normal
+                    )
+                    Text(
+                        item.to.toString(),
+                        style = AppTypography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            LineList(item.lines, Modifier.padding(top = 8.dp))
+
+            content()
+        }
+    }
+
+    @Composable
+    fun HTML(modifier: Modifier = Modifier,htmlString: String, update: (TextView) -> Unit = NoOpUpdate) {
+        AndroidView(
+            modifier = Modifier.padding(top = 16.dp),
+            factory = { context ->
+                TextView(context).apply {
+                    text = HtmlHelper.parseHtml(htmlString)
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
+            },
+            update = update,
+
+        )
     }
 
     @Composable
