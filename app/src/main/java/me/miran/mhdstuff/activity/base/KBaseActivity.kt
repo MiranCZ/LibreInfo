@@ -191,7 +191,7 @@ abstract class KBaseActivity(var nameId: Int) : ComponentActivity() {
                 Modifier
             }
         )) {
-            Text(text, textAlign = TextAlign.Center, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(2.dp), color = textColor);
+            Text(text, textAlign = TextAlign.Center, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(5.dp), color = textColor);
         }
     }
 
@@ -240,9 +240,9 @@ abstract class KBaseActivity(var nameId: Int) : ComponentActivity() {
     }
 
     @Composable
-    fun HTML(modifier: Modifier = Modifier,htmlString: String, update: (TextView) -> Unit = NoOpUpdate) {
+    fun HTML(htmlString: String, modifier: Modifier = Modifier, update: (TextView) -> Unit = NoOpUpdate) {
         AndroidView(
-            modifier = Modifier.padding(top = 16.dp),
+            modifier = modifier,
             factory = { context ->
                 TextView(context).apply {
                     text = HtmlHelper.parseHtml(htmlString)

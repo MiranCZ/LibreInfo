@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import me.miran.mhdstuff.util.Pair;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Locale;
 
 public record DateTime(int day, int month, int year, int hours, int minutes) implements Parcelable {
@@ -66,36 +67,38 @@ public record DateTime(int day, int month, int year, int hours, int minutes) imp
         return new DateTime(day, month, year, hours, minutes);
     }
 
-    public static Pair<Integer, String> toShortenedInformedString(DateTime from, DateTime to) {
+    public static List<String> toShortenedInformedString(DateTime from, DateTime to) {
         DateTime now = now();
 
         if (to == NONE) {
             if (from.year != now.year) {
                 String fromStr = from.toString();
-                return new Pair<>(-1, fromStr);
+                return List.of(fromStr);
             }
 
             if (from.month != now.month || from.day != now.day) {
                 String fromStr = from.toYearlessString();
-                return new Pair<>(-1, fromStr);
+                return List.of(fromStr);
             }
 
             String fromStr = from.toTimeString();
-            return new Pair<>(-1, fromStr);
+            return List.of(fromStr);
         }
 
         if (from.year != to.year || to.year != now.year) {
             String fromStr = from.toString();
-            return new Pair<>(fromStr.length(), fromStr + " - "+to);
+
+            return List.of(fromStr, to.toString());
         }
         if (from.month != to.month || from.day != to.day || to.month != now.month || to.day != now.day) {
             String fromStr = from.toYearlessString();
-            return new Pair<>(fromStr.length(), fromStr + " - " + to.toYearlessString());
+
+            return List.of(fromStr, to.toYearlessString());
         }
 
         String fromStr = from.toTimeString();
 
-        return new Pair<>(fromStr.length(), fromStr + " - " + to.toTimeString());
+        return List.of(fromStr, to.toTimeString());
     }
 
     @NonNull

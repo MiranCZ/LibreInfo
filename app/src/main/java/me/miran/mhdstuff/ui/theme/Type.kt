@@ -6,6 +6,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
 import me.miran.mhdstuff.R
@@ -26,8 +27,16 @@ private fun TextStyle.withRoboto() =
         fontFamily = robotoFamily,
         platformStyle = PlatformTextStyle(
             includeFontPadding = false
-        )
+        ),
+        lineHeight = TextUnit.Unspecified
     )
+
+val fontTest = TextStyle().copy(
+    fontFamily = robotoFamily,
+    platformStyle = PlatformTextStyle(
+        includeFontPadding = false
+    )
+)
 
 val AppTypography = Typography(
     displayLarge = baseline.displayLarge.withRoboto(),
