@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -68,10 +70,11 @@ abstract class KBaseActivity(var nameId: Int) : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setBaseContent {
-            CreateElements()}
+            CreateElements()
+        }
     }
 
-    fun setBaseContent(content: @Composable () -> Unit) {
+    open fun setBaseContent(actions: @Composable RowScope.() -> Unit = {}, content: @Composable () -> Unit) {
         setContent {
             AppTheme {
                 Scaffold(topBar = {
@@ -95,7 +98,8 @@ abstract class KBaseActivity(var nameId: Int) : ComponentActivity() {
                                     )
                                 }
                             }
-                        }
+                        },
+                        actions = actions
                     )
                 }) { innerPadding ->
                     Box(Modifier.padding(innerPadding)) {

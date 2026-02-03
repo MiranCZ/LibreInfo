@@ -16,7 +16,7 @@ import me.miran.mhdstuff.parsing.types.Diversion
 class DiversionInfoActivity : KBaseActivity(R.string.diversions) {
     @Composable
     override fun CreateElements() {
-        val diversion = intent.getParcelableExtra("diversion", Diversion::class.java)
+        val diversion = intent.getParcelableExtra<Diversion>("diversion")
 
         val context = LocalContext.current
         if (diversion != null) {
