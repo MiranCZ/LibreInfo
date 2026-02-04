@@ -50,7 +50,7 @@ import me.miran.mhdstuff.activity.data.DelaysDataHolder
 import me.miran.mhdstuff.exception.RequestException
 import me.miran.mhdstuff.parsing.storage.IdStorage
 import me.miran.mhdstuff.parsing.storage.StopStorage
-import me.miran.mhdstuff.parsing.types.Stop
+import me.miran.mhdstuff.parsing.types.stop.Stop
 import me.miran.mhdstuff.util.FuzzySearch
 import me.miran.mhdstuff.util.request.RequestHelper
 

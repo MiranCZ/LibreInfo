@@ -48,4 +48,11 @@ public class StopMapper {
         return mappedToOriginal[mapped];
     }
 
+    /**
+     * @return Length of the internal stops. Can also be though of as the maximal internal stopID lowered by one
+     */
+    public int internalStopsLength() {
+        return mappedToOriginal.length;
+    }
+
 }

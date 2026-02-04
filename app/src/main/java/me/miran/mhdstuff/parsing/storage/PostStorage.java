@@ -2,22 +2,20 @@ package me.miran.mhdstuff.parsing.storage;
 
 import me.miran.mhdstuff.parsing.types.Location;
 import me.miran.mhdstuff.parsing.types.Post;
-import me.miran.mhdstuff.parsing.types.Stop;
+import me.miran.mhdstuff.parsing.types.stop.Stop;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 public class PostStorage {
 
-    public static PostStorage parse(DataInputStream array, LineStorage lineStorage, StopStorage stopStorage) {
+    public static PostStorage parse(DataInputStream array, StopStorage stopStorage) {
         List<Post> posts = null;
         try(array) {
-            posts = Post.parsePosts(array, lineStorage);
+            posts = Post.parsePosts(array, stopStorage);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -25,7 +23,7 @@ public class PostStorage {
         return new PostStorage(posts, stopStorage);
     }
 
-    private final Map<Integer, List<Post>> postsForStop = new HashMap<>();
+    private final List<Post>[] postsForStop;
     private final List<Post> posts;
     private final StopStorage stopStorage;
 
@@ -33,15 +31,21 @@ public class PostStorage {
         posts = new ArrayList<>(posts);
 
         this.stopStorage = stopStorage;
+        //noinspection unchecked
+        this.postsForStop = new List[stopStorage.mapper.internalStopsLength()];
+        for (int i = 0; i < postsForStop.length; i++) {
+            postsForStop[i] = new ArrayList<>();
+        }
+
         for (Iterator<Post> iterator = posts.iterator(); iterator.hasNext(); ) {
             Post post = iterator.next();
-            Stop stop = stopStorage.getStop(post.stopID());
+            Stop stop = post.stop();
             if (stop == Stop.NONE) {
                 iterator.remove();
                 continue;
             }
 
-            postsForStop.computeIfAbsent(stop.id, k -> new ArrayList<>()).add(post);
+            postsForStop[stop.id.internal()].add(post);
         }
 
         this.posts = posts;
@@ -52,24 +56,24 @@ public class PostStorage {
              if (post.postID() == postID) return post;
         }
 
-        Post dummyPost = new Post(stopID, postID, postID+". nastupiste", Location.NONE);
+        Post dummyPost = new Post(Stop.NONE, postID, postID+". nastupiste", Location.NONE);
         System.out.println("[WARN] Unable to find post with args "+stopID + " ; "+postID + " ; "+getPosts(stopID));
 
-        postsForStop.computeIfAbsent(stopID, k -> new ArrayList<>()).add(dummyPost);
+        postsForStop[stopID].add(dummyPost);
         return dummyPost;
     }
 
     public List<Post> getPosts(Stop stop) {
-        return getPosts(stop.id);
+        return getPosts(stop.id.internal());
     }
 
     public List<Post> getPosts(int stopId) {
-        if (!postsForStop.containsKey(stopId)) {
+        if (stopId < 0 || stopId >= postsForStop.length) {
             System.out.println("[WARN] Tried to get posts for unregistered stop! " + stopId);
             return List.of();
         }
 
-        return postsForStop.getOrDefault(stopId, List.of());
+        return postsForStop[stopId];
     }
 
 

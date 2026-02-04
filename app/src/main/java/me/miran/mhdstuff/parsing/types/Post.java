@@ -7,6 +7,9 @@ import androidx.annotation.NonNull;
 
 import me.miran.mhdstuff.parsing.storage.IdStorage;
 import me.miran.mhdstuff.parsing.storage.LineStorage;
+import me.miran.mhdstuff.parsing.storage.StopStorage;
+import me.miran.mhdstuff.parsing.types.stop.Stop;
+import me.miran.mhdstuff.parsing.types.stop.StopId;
 import me.miran.mhdstuff.util.IOUtil;
 
 import java.io.DataInputStream;
@@ -16,10 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @param stopID ID of the stop this post corresponds to
+ * @param stop The stop this post corresponds to
  * @param postID ID unique to the stop
  */
-public record Post(int stopID, int postID, String name, Location location) implements Parcelable {
+public record Post(Stop stop, int postID, String name, Location location) implements Parcelable {
 
 
     public static final Creator<Post> CREATOR = new Creator<Post>() {
@@ -37,18 +40,18 @@ public record Post(int stopID, int postID, String name, Location location) imple
         }
     };
 
-    public static List<Post> parsePosts(DataInputStream array, LineStorage lineStorage) throws IOException {
+    public static List<Post> parsePosts(DataInputStream array, StopStorage stopStorage) throws IOException {
         List<Post> result = new ArrayList<>();
         int size = array.readInt();
 
         for (int i = 0; i < size; i++) {
-            result.add(parse(array, lineStorage));
+            result.add(parse(array, stopStorage));
         }
 
         return result;
     }
 
-    public static Post parse(DataInputStream is, LineStorage lineStorage) throws IOException {
+    public static Post parse(DataInputStream is, StopStorage stopStorage) throws IOException {
         int stopId = is.readShort();
         int postId = is.readShort();
 
@@ -60,7 +63,9 @@ public record Post(int stopID, int postID, String name, Location location) imple
         double lat = is.readDouble();
         double lng = is.readDouble();
 
-        return new Post(stopId, postId, name, new Location(lat, lng));
+        Stop stop = stopStorage.getStop(StopId.internal(stopId));
+
+        return new Post(stop, postId, name, new Location(lat, lng));
     }
 
     @Override
@@ -70,7 +75,7 @@ public record Post(int stopID, int postID, String name, Location location) imple
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeInt(stopID);
+        dest.writeInt(stop.id.internal());
         dest.writeInt(postID);
     }
 }

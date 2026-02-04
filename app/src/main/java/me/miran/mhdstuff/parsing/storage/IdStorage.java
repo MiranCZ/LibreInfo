@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
@@ -67,16 +66,16 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
 
         var preferences = context.getSharedPreferences("favStops", Context.MODE_PRIVATE);
 
-        StopStorage stopStorage = StopStorage.parse(CacheHelper.getStops(context), new PreferencesHolder(preferences));
+        StopMapper stopMapper = StopMapper.parse(CacheHelper.getStopMapping(context));
+        onLoaded(StopMapper.class, stopMapper);
+
+        StopStorage stopStorage = StopStorage.parse(CacheHelper.getStops(context), new PreferencesHolder(preferences), stopMapper);
         onLoaded(StopStorage.class, stopStorage);
 
         LineStorage lineStorage = LineStorage.parse(CacheHelper.getLineAliases(context));
         onLoaded(LineStorage.class, lineStorage);
 
-        StopMapper stopMapper = StopMapper.parse(CacheHelper.getStopMapping(context));
-        onLoaded(StopMapper.class, stopMapper);
-
-        PostStorage postStorage = PostStorage.parse(CacheHelper.getPosts(context), lineStorage, stopStorage);
+        PostStorage postStorage = PostStorage.parse(CacheHelper.getPosts(context), stopStorage);
         onLoaded(PostStorage.class, postStorage);
 
         ApiStorage apiStorage = ApiStorage.parse(CacheHelper.getApi(context));

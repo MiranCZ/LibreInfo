@@ -11,6 +11,7 @@ import me.miran.mhdstuff.exception.AppException;
 import me.miran.mhdstuff.exception.RequestException;
 import me.miran.mhdstuff.parsing.storage.IdStorage;
 import me.miran.mhdstuff.parsing.storage.StopMapper;
+import me.miran.mhdstuff.parsing.types.stop.StopId;
 import me.miran.mhdstuff.util.IOUtil;
 import com.google.gson.*;
 
@@ -69,11 +70,10 @@ public class RequestHelper {
         return makeOwnRequest(context, "vehicleinfo?lineid="+lineId+"&routeid="+routeId, JsonObject.class);
     }
 
-    public static JsonObject getStopDelays(Context context, int stopId) throws RequestException {
+    public static JsonObject getStopDelays(Context context, StopId stopId) throws RequestException {
         StopMapper mapper = IdStorage.getStopMapper();
-        stopId = mapper.getOriginal(stopId);
 
-        return makeOwnRequest(context, "stopdelays?stopid="+stopId, JsonObject.class);
+        return makeOwnRequest(context, "stopdelays?stopid="+stopId.original(), JsonObject.class);
     }
 
     private static <T extends JsonElement> T makeOwnRequest(Context context, String endpoint, Class<T> type) throws RequestException {

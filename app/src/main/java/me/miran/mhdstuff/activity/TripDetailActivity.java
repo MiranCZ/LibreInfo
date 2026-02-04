@@ -32,6 +32,7 @@ import me.miran.mhdstuff.parsing.types.RouteStop;
 import me.miran.mhdstuff.parsing.types.Time;
 import me.miran.mhdstuff.parsing.types.Trip;
 import me.miran.mhdstuff.parsing.types.VehicleTripInfo;
+import me.miran.mhdstuff.parsing.types.stop.StopId;
 import me.miran.mhdstuff.util.DelayUtil;
 import me.miran.mhdstuff.util.request.RequestHelper;
 
@@ -259,7 +260,7 @@ public class TripDetailActivity extends BaseActivity {
 
             TextView stopName = info.findViewById(R.id.stop_name);
 
-            SpannableString span = new SpannableString(storage.stopStorage().getStop(stop.stopId()).name);
+            SpannableString span = new SpannableString(storage.stopStorage().getStop(StopId.internal(stop.stopId())).name);
 
             if (highlightedStopId == stop.stopId()) {
                 Typeface font = ResourcesCompat.getFont(this, R.font.roboto_black);

@@ -10,6 +10,8 @@ import android.widget.TextView;
 
 import me.miran.mhdstuff.R;
 import me.miran.mhdstuff.parsing.storage.IdStorage;
+import me.miran.mhdstuff.parsing.types.stop.Stop;
+import me.miran.mhdstuff.parsing.types.stop.StopId;
 import me.miran.mhdstuff.util.DelayUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -71,11 +73,8 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         int lastStopId = obj.get("LastStopID").getAsInt();
         int finalStopId = obj.get("FinalStopID").getAsInt();
 
-        lastStopId = storage.stopMapper().getMapped(lastStopId);
-        finalStopId = storage.stopMapper().getMapped(finalStopId);
-
-        Stop lastStop = storage.stopStorage().getStop(lastStopId);
-        Stop finalStop = storage.stopStorage().getStop(finalStopId);
+        Stop lastStop = storage.stopStorage().getStop(StopId.original(lastStopId));
+        Stop finalStop = storage.stopStorage().getStop(StopId.original(finalStopId));
 
         System.out.println("stop "+obj.get("LastStopID").getAsInt() + " has "+lastStop);
 

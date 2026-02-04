@@ -46,12 +46,12 @@ public class DeparturePostDetailActivity extends AbstractListViewActivity {
     protected RecyclerView.Adapter<?> getAdapter(Context context, IdStorage storage) {
         JsonObject stopDelays = new JsonObject();
         try {
-            stopDelays = RequestHelper.getStopDelays(context, post.stopID());
+            stopDelays = RequestHelper.getStopDelays(context, post.stop().id);
         } catch (RequestException e) {
             runOnUiThread(() -> e.showError(this, AppException.NotificationType.SNACK_BAR));
         }
 
-        List<Departure> departureList = OfflineDepartures.getOfflineForPost(storage, post.stopID(),post.postID(), -1, Time.ZERO, delays);
+        List<Departure> departureList = OfflineDepartures.getOfflineForPost(storage, post.stop().id.internal(),post.postID(), -1, Time.ZERO, delays);
 
         Departure departure = departureList.stream().filter(dep -> dep.postID() == post.postID()).findFirst().orElse(null);
 

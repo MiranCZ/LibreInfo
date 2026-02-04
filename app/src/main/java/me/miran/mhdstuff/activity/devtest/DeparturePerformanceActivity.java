@@ -9,7 +9,8 @@ import androidx.annotation.Nullable;
 import me.miran.mhdstuff.R;
 import me.miran.mhdstuff.activity.base.BaseActivity;
 import me.miran.mhdstuff.parsing.storage.IdStorage;
-import me.miran.mhdstuff.parsing.types.Stop;
+import me.miran.mhdstuff.parsing.types.stop.Stop;
+import me.miran.mhdstuff.parsing.types.stop.StopId;
 import me.miran.mhdstuff.util.OfflineDepartures;
 
 import java.util.ArrayList;
@@ -50,11 +51,11 @@ public class DeparturePerformanceActivity extends BaseActivity {
                 for (int i = 0; i < 3; i++) {
                     for (Stop stop : storage.stopStorage().getAllStops()) {
                         long startMs = System.currentTimeMillis();
-                        var result = OfflineDepartures.getOffline(storage, stop.id);
+                        var result = OfflineDepartures.getOffline(storage, stop.id.internal());
                         long tookMs = System.currentTimeMillis()-startMs;
 
                         if (!result.isEmpty()) {
-                            took.put(stop.id, Math.min(took.getOrDefault(stop.id, Long.MAX_VALUE), tookMs));
+                            took.put(stop.id.internal(), Math.min(took.getOrDefault(stop.id, Long.MAX_VALUE), tookMs));
                         }
 
                         processed++;
@@ -97,8 +98,8 @@ public class DeparturePerformanceActivity extends BaseActivity {
 
                 Collections.sort(values);
 
-                String minStopS = storage.stopStorage().getStop(minStop).name;
-                String maxStopS = storage.stopStorage().getStop(maxStop).name;
+                String minStopS = storage.stopStorage().getStop(StopId.internal(minStop)).name;
+                String maxStopS = storage.stopStorage().getStop(StopId.internal(maxStop)).name;
 
                 resultText += "\nAverage: " +Math.round(average*100)/100+"ms";
                 resultText += "\nMedian: " +values.get(values.size()/2)+"ms\n";

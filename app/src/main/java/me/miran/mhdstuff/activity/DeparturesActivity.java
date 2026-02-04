@@ -15,7 +15,7 @@ import me.miran.mhdstuff.activity.base.BaseActivity;
 import me.miran.mhdstuff.activity.data.DelaysDataHolder;
 import me.miran.mhdstuff.parsing.storage.IdStorage;
 import me.miran.mhdstuff.parsing.types.Post;
-import me.miran.mhdstuff.parsing.types.Stop;
+import me.miran.mhdstuff.parsing.types.stop.Stop;
 import me.miran.mhdstuff.parsing.types.departure.Departure;
 import me.miran.mhdstuff.parsing.types.departure.Departures;
 import me.miran.mhdstuff.util.Container;
@@ -71,11 +71,11 @@ public class DeparturesActivity extends BaseActivity {
         new Thread(() -> {
             IdStorage storage = IdStorage.getInstance();
 
-            Departures departures = getOffline(storage, delays, stop.id);
+            Departures departures = getOffline(storage, delays, stop.id.internal());
 
             LinearLayout layout = findViewById(R.id.departure_items);
 
-            createEntries(departures, layout, stop.id, context, storage);
+            createEntries(departures, layout, stop.id.internal(), context, storage);
         }).start();
     }
 

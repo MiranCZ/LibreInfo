@@ -1,6 +1,8 @@
 package me.miran.mhdstuff.parsing.types;
 
 import me.miran.mhdstuff.parsing.storage.IdStorage;
+import me.miran.mhdstuff.parsing.types.stop.Stop;
+import me.miran.mhdstuff.parsing.types.stop.StopId;
 
 import com.google.gson.JsonObject;
 
@@ -23,8 +25,8 @@ public record MapVehicle(int id, Location location, int bearing, int delay, Line
         int prevStopId = obj.get("LastStopID").getAsInt();
         int finalStopId = obj.get("FinalStopID").getAsInt();
 
-        Stop prevStop = storage.stopStorage().getStop(storage.stopMapper().getMapped(prevStopId));
-        Stop finalStop = storage.stopStorage().getStop(storage.stopMapper().getMapped(finalStopId));
+        Stop prevStop = storage.stopStorage().getStop(StopId.original(prevStopId));
+        Stop finalStop = storage.stopStorage().getStop(StopId.original(finalStopId));
 
         int delay = obj.get("Delay").getAsInt();
 

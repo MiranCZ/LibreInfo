@@ -1,4 +1,4 @@
-package me.miran.mhdstuff.parsing.types;
+package me.miran.mhdstuff.parsing.types.stop;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -6,6 +6,8 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import me.miran.mhdstuff.parsing.storage.IdStorage;
+import me.miran.mhdstuff.parsing.storage.StopMapper;
+import me.miran.mhdstuff.parsing.types.Location;
 import me.miran.mhdstuff.util.IOUtil;
 import me.miran.mhdstuff.util.PreferencesHolder;
 
@@ -19,28 +21,28 @@ import java.util.Objects;
 public final class Stop implements Parcelable {
 
 
-    public static Stop NONE = new Stop(-1, "UNKNOWN", Location.NONE, PreferencesHolder.NONE);
+    public static Stop NONE = new Stop(StopId.NONE, "UNKNOWN", Location.NONE, PreferencesHolder.NONE);
 
-    public final int id;
+    public final StopId id;
     public final String name;
     public final Location location;
     private final PreferencesHolder favStops;
 
     private boolean favourite;
 
-    public Stop(int id, String name, Location location, PreferencesHolder favStops) {
+    public Stop(StopId id, String name, Location location, PreferencesHolder favStops) {
         this.id = id;
         this.name = name;
         this.location = location;
         this.favStops = favStops;
-        this.favourite = favStops.getBoolean(id, false);
+        this.favourite = favStops.getBoolean(id.internal(), false);
     }
 
     public static final Creator<Stop> CREATOR = new Creator<Stop>() {
         @Override
         public Stop createFromParcel(Parcel in) {
             int id = in.readInt();
-            return IdStorage.getStopStorageOrBlock().getStop(id);
+            return IdStorage.getStopStorageOrBlock().getStop(StopId.internal(id));
         }
 
         @Override
@@ -49,17 +51,17 @@ public final class Stop implements Parcelable {
         }
     };
 
-    public static List<Stop> parseStops(DataInputStream is, PreferencesHolder favStops) throws IOException {
+    public static List<Stop> parseStops(DataInputStream is, PreferencesHolder favStops, StopMapper mapper) throws IOException {
         List<Stop> result = new ArrayList<>();
 
         while (is.readBoolean()) {
-            result.add(parse(is, favStops));
+            result.add(parse(is, favStops, mapper));
         }
 
         return result;
     }
 
-    public static Stop parse(DataInputStream is, PreferencesHolder favStops) throws IOException {
+    public static Stop parse(DataInputStream is, PreferencesHolder favStops, StopMapper mapper) throws IOException {
         int stopId = is.readInt();
 
         int nameLen = is.readInt();
@@ -71,13 +73,15 @@ public final class Stop implements Parcelable {
         double lat = is.readDouble();
         double lon = is.readDouble();
 
+        StopId id = new StopId(stopId,mapper.getOriginal(stopId));
+
         // TODO set favourite
-        return new Stop(stopId, name, new Location(lat, lon), favStops);
+        return new Stop(id, name, new Location(lat, lon), favStops);
     }
 
     public void setFavourite(boolean favourite) {
         this.favourite = favourite;
-        favStops.putBoolean(id, favourite);
+        favStops.putBoolean(id.internal(), favourite);
     }
 
     public boolean isFavourite() {
@@ -118,6 +122,6 @@ public final class Stop implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeInt(id);
+        dest.writeInt(id.internal());
     }
 }
