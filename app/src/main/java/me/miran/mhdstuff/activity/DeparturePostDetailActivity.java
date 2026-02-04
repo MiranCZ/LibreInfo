@@ -55,9 +55,10 @@ public class DeparturePostDetailActivity extends AbstractListViewActivity {
 
         Departure departure = departureList.stream().filter(dep -> dep.postID() == post.postID()).findFirst().orElse(null);
 
-        TextView title = findViewById(R.id.departure_title);
-        title.setText(departure.name());
-
+        runOnUiThread(() -> {
+            TextView title = findViewById(R.id.departure_title);
+            title.setText(departure.name());
+        });
         var adapter = new DepartureEntryItemAdapter(this, departure.entries(),storage.apiStorage(), stopDelays);
 
         Time now = Time.now();
