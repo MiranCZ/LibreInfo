@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -58,13 +59,16 @@ import me.miran.mhdstuff.parsing.types.LineAlias
 import me.miran.mhdstuff.ui.theme.AppTheme
 import me.miran.mhdstuff.ui.theme.AppTypography
 import me.miran.mhdstuff.util.HtmlHelper
+import me.miran.mhdstuff.util.Text
 import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalMaterial3Api::class)
-abstract class KBaseActivity(var nameId: Int) : ComponentActivity() {
+abstract class KBaseActivity(var name: Text) : ComponentActivity() {
 
+    constructor(nameId: Int) : this(Text.translatable(nameId))
+    constructor(nameStr: String) : this(Text.literal(nameStr))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,11 +81,13 @@ abstract class KBaseActivity(var nameId: Int) : ComponentActivity() {
     open fun setBaseContent(actions: @Composable RowScope.() -> Unit = {}, content: @Composable () -> Unit) {
         setContent {
             AppTheme {
+                val context = LocalContext.current
+
                 Scaffold(topBar = {
                     TopAppBar(
                         title = {
                             Text(
-                                text = stringResource(this.nameId),
+                                text = name.getName(context),
                                 fontWeight = FontWeight.Medium,
                                 color = Color.White,
                                 fontSize = 20.sp,
@@ -152,8 +158,8 @@ abstract class KBaseActivity(var nameId: Int) : ComponentActivity() {
     }
 
     @Composable
-    fun Divider() {
-        HorizontalDivider(thickness = 1.dp, color = colorResource(R.color.mid_gray))
+    fun Divider(modifier: Modifier = Modifier) {
+        HorizontalDivider(thickness = 1.dp, color = colorResource(R.color.mid_gray), modifier = modifier)
     }
 
     @Composable
