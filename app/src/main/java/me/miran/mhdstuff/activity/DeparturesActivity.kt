@@ -1,7 +1,6 @@
 package me.miran.mhdstuff.activity
 
 import android.content.Intent
-import android.os.Bundle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,22 +32,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.gson.JsonObject
 import me.miran.mhdstuff.R
 import me.miran.mhdstuff.activity.base.KBaseActivity
 import me.miran.mhdstuff.activity.data.DelaysDataHolder
+import me.miran.mhdstuff.exception.RequestException
 import me.miran.mhdstuff.parsing.storage.IdStorage
 import me.miran.mhdstuff.parsing.types.departure.DepartureEntry
 import me.miran.mhdstuff.parsing.types.departure.Departures
 import me.miran.mhdstuff.parsing.types.stop.Stop
 import me.miran.mhdstuff.util.OfflineDepartures
 import me.miran.mhdstuff.util.Text
+import me.miran.mhdstuff.util.request.RequestHelper
 
 
 class DeparturesActivity : KBaseActivity("") {
 
     class StopViewModel : ViewModel() {
         private val _liked = mutableStateOf(false)
+        private val _isRefreshing = mutableStateOf(false)
         val liked = _liked
+        val refreshing = _isRefreshing
 
         fun toggleLiked() {
             _liked.value = !_liked.value
@@ -55,6 +60,10 @@ class DeparturesActivity : KBaseActivity("") {
 
         fun setLiked(value: Boolean) {
             _liked.value = value
+        }
+
+        fun setRefreshing(value: Boolean) {
+            _isRefreshing.value = value
         }
 
     }
@@ -70,8 +79,22 @@ class DeparturesActivity : KBaseActivity("") {
             }
         }
 
-        val delays = DelaysDataHolder.getDelays()
+        createDepartures(stop)
+    }
+
+    fun createDepartures(stop: Stop, refreshDelays: Boolean = false ,onFinish: () -> Unit = {}) {
+        var delays = DelaysDataHolder.getDelays()
         Thread {
+            if (refreshDelays) {
+                try {
+                    delays = RequestHelper.getRouteDelays(this)
+                } catch (e: RequestException) {
+                    // TODO show error
+//                e.showError(this, AppException.NotificationType.SNACK_BAR)
+                    delays = JsonObject()
+                }
+            }
+
             val storage = IdStorage.getInstance()
             val departures = Departures(
                 "Work in progress...",
@@ -82,6 +105,7 @@ class DeparturesActivity : KBaseActivity("") {
                 setBaseContent {
                     this.Departures(departures, storage)
                 }
+                onFinish()
             }
         }.start()
     }
@@ -128,34 +152,45 @@ class DeparturesActivity : KBaseActivity("") {
     fun Departures(departures: Departures, storage: IdStorage) {
         val stop = intent.getParcelableExtra<Stop>("stop")!!
 
-        LazyColumn {
-            items(departures.departures) { entry ->
+        val vm: StopViewModel = viewModel()
+        val refreshing by vm.refreshing
 
-                val post = storage.postStorage.getPost(stop.id.internal, entry.postID)
+        PullToRefreshBox(refreshing, {
+            vm.setRefreshing(true)
 
-                Container(
-                    {
-                        startActivity(
-                            DeparturePostDetailActivity::class
-                        ) { intent -> intent.putExtra("post", post) }
-                    },
-                    innerPadding = 0.dp,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Column(Modifier.padding(vertical = 8.dp, horizontal = 6.dp)) {
-                        androidx.compose.material3.Text(
-                            entry.name,
-                            color = colorResource(R.color.secondaryColor),
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .padding(top = 8.dp)
-                        )
+            createDepartures(stop, true) {
+                vm.setRefreshing(false)
+            }
+        }) {
+            LazyColumn {
+                items(departures.departures) { entry ->
 
-                        Divider(Modifier.padding(vertical = 4.dp, horizontal = 10.dp))
+                    val post = storage.postStorage.getPost(stop.id.internal, entry.postID)
 
-                        for (dep in entry.entries) {
-                            DepartureEntry(dep)
+                    Container(
+                        {
+                            startActivity(
+                                DeparturePostDetailActivity::class
+                            ) { intent -> intent.putExtra("post", post) }
+                        },
+                        innerPadding = 0.dp,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Column(Modifier.padding(vertical = 8.dp, horizontal = 6.dp)) {
+                            androidx.compose.material3.Text(
+                                entry.name,
+                                color = colorResource(R.color.secondaryColor),
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .padding(top = 8.dp)
+                            )
+
+                            Divider(Modifier.padding(vertical = 4.dp, horizontal = 10.dp))
+
+                            for (dep in entry.entries) {
+                                DepartureEntry(dep)
+                            }
                         }
                     }
                 }
