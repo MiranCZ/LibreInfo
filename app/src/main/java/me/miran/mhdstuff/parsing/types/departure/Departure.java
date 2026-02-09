@@ -1,40 +1,7 @@
 package me.miran.mhdstuff.parsing.types.departure;
 
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import me.miran.mhdstuff.R;
-import me.miran.mhdstuff.activity.base.BaseActivity;
-
 import java.util.List;
 
 public record Departure(int postID, String name, List<DepartureEntry> entries) {
 
-    public View createScrollableDepartureView(BaseActivity activity, ViewGroup parent, Context context) {
-        return createDepartureView(activity, parent, context, R.layout.departure_scrollable_layout);
-    }
-
-    public View createDepartureView(BaseActivity activity, ViewGroup parent, Context context) {
-        return createDepartureView(activity, parent, context, R.layout.departure_layout);
-    }
-    private View createDepartureView(BaseActivity activity, ViewGroup parent, Context context, int layoutId) {
-        View view = LayoutInflater.from(context).inflate(layoutId, parent , false);
-
-        TextView title = view.findViewById(R.id.departure_title);
-        title.setText(name);
-
-        LinearLayout items = view.findViewById(R.id.departure_items);
-
-        int index = 0;
-        for (DepartureEntry entry : entries) {
-            View v = entry.createDepartureEntryView(activity, items, context);
-            items.addView(v, index++);
-        }
-
-        return view;
-    }
 }
