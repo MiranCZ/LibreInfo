@@ -66,7 +66,7 @@ abstract class NavigationActivity(nameId: Int) : KBaseActivity(nameId) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .clickable(null, ripple(color = Color.White), onClick = onClick)
+                .clickable(null, ripple(), onClick = onClick)
                 .padding(18.dp)
                 .fillMaxWidth()
         ) {
@@ -82,7 +82,6 @@ abstract class NavigationActivity(nameId: Int) : KBaseActivity(nameId) {
                 fontSize = 18.sp,
                 letterSpacing = 0.5.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color.White,
                 modifier = Modifier.padding(start = 20.dp)
             )
         }

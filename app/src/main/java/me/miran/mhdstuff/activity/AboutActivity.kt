@@ -28,7 +28,7 @@ class AboutActivity : KBaseActivity(R.string.about) {
                 Divider()
 
                 Row {
-                    Text("Verze ", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 24.sp)
+                    Text("Verze ", fontWeight = FontWeight.Bold, fontSize = 24.sp)
                     Text("0.2-Alpha", color = Color.White, fontSize = 24.sp)
                 }
             }

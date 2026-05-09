@@ -203,7 +203,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .clickable(null, ripple(color = Color.White), onClick = {
+                                .clickable(null, ripple(), onClick = {
                                     startActivity(
                                         DeparturesActivity::class
                                     ) { intent -> intent.putExtra("stop", item) }
@@ -232,7 +232,6 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                                 text = item.name,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = Color.White,
                                 modifier = Modifier.padding(start = 20.dp)
                             )
                         }

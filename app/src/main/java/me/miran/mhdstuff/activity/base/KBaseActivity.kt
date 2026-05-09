@@ -104,7 +104,6 @@ abstract class KBaseActivity(var name: Text) : ComponentActivity() {
                             Text(
                                 text = name.getName(context),
                                 fontWeight = FontWeight.Medium,
-                                color = Color.White,
                                 fontSize = 20.sp,
                                 modifier = Modifier.padding(start = 8.dp)
                             )
@@ -408,7 +407,7 @@ abstract class KBaseActivity(var name: Text) : ComponentActivity() {
             modifier
                 .padding(horizontal = 8.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .clickable(null, ripple(color = Color.White), onClick = {
+                .clickable(null, ripple(), onClick = {
                     startActivity(
                         TripDetailActivity::class
                     ) { intent: Intent ->
