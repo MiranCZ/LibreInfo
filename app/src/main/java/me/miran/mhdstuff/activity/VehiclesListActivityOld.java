@@ -26,14 +26,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class VehiclesListActivity extends AbstractListViewActivity {
+public class VehiclesListActivityOld extends AbstractListViewActivity {
 
     private VehicleItemAdapter adapter;
     private List<Vehicle> vehicles;
     private IdStorage storage;
     private final SortInfo sortInfo = new SortInfo();
 
-    public VehiclesListActivity() {
+    public VehiclesListActivityOld() {
         super(R.string.vehicles, R.layout.activity_vehicles, R.id.recycler_view);
     }
 

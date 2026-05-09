@@ -62,6 +62,7 @@ import com.google.gson.JsonObject
 import me.miran.mhdstuff.R
 import me.miran.mhdstuff.activity.DeparturePostDetailActivity
 import me.miran.mhdstuff.activity.TripDetailActivity
+import me.miran.mhdstuff.exception.AppException
 import me.miran.mhdstuff.parsing.storage.ApiStorage
 import me.miran.mhdstuff.parsing.types.DateTime
 import me.miran.mhdstuff.parsing.types.Diversion
@@ -168,6 +169,24 @@ abstract class KBaseActivity(var name: Text) : ComponentActivity() {
     fun Container(modifier: Modifier = Modifier, innerPadding: Dp = 16.dp, content: @Composable BoxScope.() -> Unit) {
         Card(modifier = modifier.fillMaxWidth(), colors = CardDefaults.cardColors().copy(containerColor =  colorResource(R.color.widget_background))) {
             Box(Modifier.padding(innerPadding), content= content)
+        }
+    }
+
+    @Composable
+    fun ErrorWidget(error: AppException, modifier: Modifier = Modifier) {
+        val context = LocalContext.current
+
+        Box(modifier.fillMaxWidth()) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                        painter = painterResource(R.drawable.triangle_exclamation_regular),
+                        "error",
+                        tint = colorResource(R.color.ui_warning)
+                )
+
+                Text("An error occurred", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                Text(error.getPrettyText(context), fontSize = 24.sp, fontWeight = FontWeight.Normal)
+            }
         }
     }
 
