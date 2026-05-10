@@ -181,7 +181,7 @@ abstract class KBaseActivity(var name: Text) : ComponentActivity() {
                 Icon(
                         painter = painterResource(R.drawable.triangle_exclamation_regular),
                         "error",
-                        tint = colorResource(R.color.ui_warning)
+                        tint = Color.Red
                 )
 
                 Text("An error occurred", fontSize = 24.sp, fontWeight = FontWeight.Bold)

@@ -7,7 +7,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,12 +21,13 @@ import me.miran.mhdstuff.activity.base.KBaseActivity
 import me.miran.mhdstuff.exception.RequestException
 import me.miran.mhdstuff.parsing.storage.IdStorage
 import me.miran.mhdstuff.parsing.types.Diversion
+import me.miran.mhdstuff.util.Either
 import me.miran.mhdstuff.util.request.RequestHelper
 
 class DiversionsActivity : KBaseActivity(R.string.diversions) {
     @Composable
     override fun CreateElements() {
-        var diversions by remember<MutableState<List<Diversion>?>> { mutableStateOf(null) }
+        var diversionsResult by remember { mutableStateOf(Either.left<List<Diversion>?, RequestException>(null)) }
 
         val context = LocalContext.current
         LaunchedEffect(Unit) {
@@ -36,33 +36,41 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
                 val storage = IdStorage.getInstance();
 
                 try {
-                    Diversion.parseDiversions(
+                    Either.left<List<Diversion>, RequestException>(Diversion.parseDiversions(
                         RequestHelper.getDiversions(context),
                         storage.lineStorage
-                    )
+                    ))
                 } catch (e: RequestException) {
-                    // TODO handle exception
-                    ArrayList()
+                    Either.right(e)
                 }
             }
 
-            diversions = result
+            diversionsResult = result
         }
 
-        if (diversions != null) {
-            val diversions = diversions!!
+        when (val local = diversionsResult) {
+            is Either.Left -> {
+                val diversions = local.left
 
-            if (diversions.isEmpty()) {
-                NothingHere()
-            } else {
-                Column(Modifier.verticalScroll(rememberScrollState())) {
-                    for (diversion in diversions) {
-                        Diversion(diversion)
+                if (diversions != null) {
+                    if (diversions.isEmpty()) {
+                        NothingHere()
+                    } else {
+                        Column(Modifier.verticalScroll(rememberScrollState())) {
+                            for (diversion in diversions) {
+                                Diversion(diversion)
+                            }
+                        }
                     }
+                } else {
+                    Loading()
                 }
             }
-        } else {
-            Loading()
+            is Either.Right -> {
+                val error = local.right;
+
+                ErrorWidget(error)
+            }
         }
     }
 

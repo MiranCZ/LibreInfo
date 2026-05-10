@@ -51,7 +51,6 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
                 try {
                     Either.left<List<Vehicle>, RequestException>(Vehicle.parseVehicles(RequestHelper.getVehicles(context), storage))
                 } catch (e: RequestException) {
-                    // TODO handle exception
                     Either.right(e)
                 }
             }

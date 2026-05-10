@@ -28,13 +28,14 @@ import me.miran.mhdstuff.exception.RequestException
 import me.miran.mhdstuff.parsing.storage.IdStorage
 import me.miran.mhdstuff.parsing.types.DateTime
 import me.miran.mhdstuff.parsing.types.Event
+import me.miran.mhdstuff.util.Either
 import me.miran.mhdstuff.util.request.RequestHelper
 
 class EventsActivity : KBaseActivity(R.string.events) {
 
     @Composable
     override fun CreateElements() {
-        var events by remember<MutableState<List<Event>?>> { mutableStateOf(null) }
+        var eventsResult by remember { mutableStateOf(Either.left<List<Event>?, RequestException>(null)) }
 
         val context = LocalContext.current
         LaunchedEffect(Unit) {
@@ -43,31 +44,41 @@ class EventsActivity : KBaseActivity(R.string.events) {
                 val storage = IdStorage.getInstance();
 
                 try {
-                    Event.parseEvents(RequestHelper.getEvents(context), storage.lineStorage());
+                    Either.left<List<Event>, RequestException>(Event.parseEvents(RequestHelper.getEvents(context), storage.lineStorage()))
                 } catch (e: RequestException) {
-                    // TODO handle exception
-                    ArrayList()
+                    Either.right(e)
                 }
             }
 
-            events = result
+            eventsResult = result
         }
 
-        if (events != null) {
-            val events = events!!
+        when (val local = eventsResult) {
+            is Either.Left -> {
+                val events = local.left
 
-            if (events.isEmpty()) {
-                NothingHere()
-            } else {
-                Column(Modifier.verticalScroll(rememberScrollState())) {
-                    for (event in events) {
-                        Event(event)
+                if (events != null) {
+                    if (events.isEmpty()) {
+                        NothingHere()
+                    } else {
+                        Column(Modifier.verticalScroll(rememberScrollState())) {
+                            for (event in events) {
+                                Event(event)
+                            }
+                        }
                     }
+                } else {
+                    Loading()
                 }
             }
-        } else {
-            Loading()
+            is Either.Right -> {
+                val error = local.right;
+
+                ErrorWidget(error)
+            }
         }
+
+
     }
 
     @Composable
