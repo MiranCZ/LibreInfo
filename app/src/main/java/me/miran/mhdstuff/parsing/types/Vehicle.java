@@ -89,8 +89,15 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         // not sure what inactive signals
         boolean inactive = obj.get("IsInactive").getAsBoolean();
 
+        int courseInt = -1;
+
+        try {
+            courseInt = Integer.parseInt(course);
+        } catch (NumberFormatException ignored) {
+        }
+
         return new Vehicle(
-                id, idB, idC, vType, lType, location, bearing, line, routeId, Integer.parseInt(course),
+                id, idB, idC, vType, lType, location, bearing, line, routeId, courseInt,
                 lowFloor, delay, lastStop, finalStop, finalStopName, inactive, course
         );
     }
