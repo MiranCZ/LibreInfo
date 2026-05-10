@@ -88,7 +88,11 @@ class DeparturesActivity : KBaseActivity("") {
 
             runOnUiThread {
                 setBaseContent {
-                    this.Departures(departures, storage)
+                    if (!departures.departures.isEmpty()) {
+                        this.Departures(departures, storage)
+                    } else {
+                        NothingHere()
+                    }
                 }
                 onFinish()
             }
