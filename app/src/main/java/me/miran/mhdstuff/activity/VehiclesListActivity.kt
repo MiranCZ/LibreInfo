@@ -1,17 +1,20 @@
 package me.miran.mhdstuff.activity
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.valentinilk.shimmer.Shimmer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.miran.mhdstuff.R
@@ -58,7 +62,7 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
             vehiclesResult = result
         }
 
-        when (val local = vehiclesResult) {
+        Crossfade(targetState = vehiclesResult) { local -> when (local) {
             is Either.Left -> {
                 var vehicles = local.left;
 
@@ -75,13 +79,44 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
                         }
                     }
                 } else {
-                    Loading()
+                    VehicleListShimmer()
                 }
             }
             is Either.Right -> {
                 val error = local.right;
 
                 ErrorWidget(error)
+            }
+        } }
+    }
+
+    @Composable
+    fun VehicleListShimmer() {
+        val shimmer = rememberActivityShimmer()
+        LazyColumn {
+            items(6) { VehicleEntryShimmer(shimmer) }
+        }
+    }
+
+    @Composable
+    fun VehicleEntryShimmer(shimmer: Shimmer) {
+        Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Column {
+                Row(Modifier.fillMaxWidth()) {
+                    ShimmerBox(Modifier.weight(1f).height(14.dp), shimmer)
+                    Spacer(Modifier.width(8.dp))
+                    ShimmerBox(Modifier.weight(2f).height(14.dp), shimmer)
+                    Spacer(Modifier.width(8.dp))
+                    ShimmerBox(Modifier.width(40.dp).height(14.dp), shimmer)
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    ShimmerLineIcon(shimmer)
+                    Spacer(Modifier.width(12.dp))
+                    ShimmerBox(Modifier.weight(1f).height(20.dp), shimmer)
+                }
+                Spacer(Modifier.height(8.dp))
+                ShimmerBox(Modifier.fillMaxWidth(0.4f).height(14.dp), shimmer)
             }
         }
     }
