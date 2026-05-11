@@ -18,6 +18,7 @@ import com.google.gson.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
@@ -110,13 +111,18 @@ public class RequestHelper {
             Log.d("RequestHelper", "assuming network is unreachable");
             throw RequestException.reachError(endpoint);
         }
-        
+
+        // TODO make this into a setting
+        final int readTimeoutMs = 10_000;
         try {
             URL url = new URL(endpoint.url);
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setReadTimeout(readTimeoutMs);
 
             return con.getInputStream();
+        } catch (SocketTimeoutException e) {
+            throw RequestException.timedOutError(endpoint, readTimeoutMs);
         } catch (IOException e) {
             e.printStackTrace();
             throw RequestException.reachError(endpoint);
