@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,11 +41,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import com.valentinilk.shimmer.Shimmer
+import com.valentinilk.shimmer.ShimmerBounds
+import com.valentinilk.shimmer.rememberShimmer
+import com.valentinilk.shimmer.shimmer
+import kotlin.random.Random
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -298,6 +306,25 @@ abstract class KBaseActivity(var name: Text) : ComponentActivity() {
             update = update,
 
         )
+    }
+
+    @Composable
+    fun rememberActivityShimmer() = rememberShimmer(ShimmerBounds.Window)
+
+    @Composable
+    fun ShimmerBox(modifier: Modifier, shimmer: Shimmer, shape: Shape = RoundedCornerShape(4.dp)) {
+        Box(modifier.shimmer(shimmer).background(colorResource(R.color.mid_gray), shape))
+    }
+
+    @Composable
+    fun ShimmerText(shimmer: Shimmer, widthFraction: Float = 0.85f, variance: Float = 0.15f, height: Dp = 14.dp) {
+        val width = remember { (widthFraction + Random.nextFloat() * variance - variance / 2f).coerceIn(0.1f, 1f) }
+        ShimmerBox(Modifier.fillMaxWidth(width).height(height), shimmer)
+    }
+
+    @Composable
+    fun ShimmerLineIcon(shimmer: Shimmer) {
+        ShimmerBox(Modifier.size(32.dp), shimmer, shape = RoundedCornerShape(8.dp))
     }
 
     @Composable

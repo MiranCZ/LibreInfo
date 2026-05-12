@@ -18,6 +18,10 @@ public class RequestException extends AppException {
         return new RequestException("Failed to read from",endpoint);
     }
 
+    public static RequestException timedOutError(Endpoint endpoint, int limitMs) {
+        return new RequestException("Timed out after "+limitMs/1000+" seconds from",endpoint);
+    }
+
     private final Endpoint endpoint;
 
     public RequestException(String message, Endpoint endpoint) {
