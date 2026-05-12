@@ -7,6 +7,8 @@ import androidx.appcompat.view.ContextThemeWrapper;
 
 import me.miran.mhdstuff.R;
 import me.miran.mhdstuff.activity.base.BaseActivity;
+import me.miran.mhdstuff.activity.base.KBaseActivity;
+import me.miran.mhdstuff.activity.base.snackbar.SnackBarType;
 import me.miran.mhdstuff.util.Text;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;

@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -67,15 +68,14 @@ class DeparturesActivity : KBaseActivity("") {
         createDepartures(stop)
     }
 
-    fun createDepartures(stop: Stop, refreshDelays: Boolean = false ,onFinish: () -> Unit = {}) {
+    fun createDepartures(stop: Stop, refreshDelays: Boolean = false, onFinish: () -> Unit = {}) {
         var delays = DelaysDataHolder.getDelays()
         Thread {
             if (refreshDelays) {
                 try {
                     delays = RequestHelper.getRouteDelays(this)
                 } catch (e: RequestException) {
-                    // TODO show error
-//                e.showError(this, AppException.NotificationType.SNACK_BAR)
+                    showErrorSnackBar(e)
                     delays = JsonObject()
                 }
             }
@@ -140,6 +140,7 @@ class DeparturesActivity : KBaseActivity("") {
     @Composable
     fun Departures(departures: Departures, storage: IdStorage) {
         val stop = intent.getParcelableExtra<Stop>("stop")!!
+        val context = LocalContext.current
 
         val vm: StopViewModel = viewModel()
         val refreshing by vm.refreshing

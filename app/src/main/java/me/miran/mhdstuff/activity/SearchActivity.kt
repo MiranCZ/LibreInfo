@@ -74,8 +74,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
             try {
                 delays = RequestHelper.getRouteDelays(this)
             } catch (e: RequestException) {
-                // TODO show error
-//                e.showError(this, AppException.NotificationType.SNACK_BAR)
+                showErrorSnackBar(e)
                 return@Runnable
             }
             runOnUiThread { DelaysDataHolder.setDelays(delays) }

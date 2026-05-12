@@ -346,6 +346,8 @@ public class TripDetailActivity extends BaseActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        timer.cancel();
+        if (timer != null) {
+            timer.cancel();
+        }
     }
 }
