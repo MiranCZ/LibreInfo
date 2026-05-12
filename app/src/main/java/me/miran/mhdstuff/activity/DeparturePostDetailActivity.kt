@@ -32,17 +32,11 @@ class DeparturePostDetailActivity : KBaseActivity("") {
         Thread {
             val storage = IdStorage.getInstance();
 
-            var stopDelays: JsonObject = JsonObject()
+            var stopDelays = JsonObject()
             try {
                 stopDelays = RequestHelper.getStopDelays(this, post.stop.id)
             } catch (e: RequestException) {
-                // TODO aaaa
-//                runOnUiThread(Runnable {
-//                    e.showError(
-//                        this,
-//                        AppException.NotificationType.SNACK_BAR
-//                    )
-//                })
+                showErrorSnackBar(e);
             }
 
             val departureList = OfflineDepartures.getOfflineForPost(

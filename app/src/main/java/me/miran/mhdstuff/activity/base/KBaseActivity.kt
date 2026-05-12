@@ -36,6 +36,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -66,10 +69,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.viewinterop.NoOpUpdate
+import androidx.lifecycle.lifecycleScope
 import com.google.gson.JsonObject
+import kotlinx.coroutines.launch
 import me.miran.mhdstuff.R
 import me.miran.mhdstuff.activity.DeparturePostDetailActivity
 import me.miran.mhdstuff.activity.TripDetailActivity
+import me.miran.mhdstuff.activity.base.snackbar.CustomSnackBarVisuals
+import me.miran.mhdstuff.activity.base.snackbar.SnackBarType
 import me.miran.mhdstuff.exception.AppException
 import me.miran.mhdstuff.parsing.storage.ApiStorage
 import me.miran.mhdstuff.parsing.types.DateTime
@@ -94,6 +101,8 @@ abstract class KBaseActivity(var name: Text) : ComponentActivity() {
     constructor(nameId: Int) : this(Text.translatable(nameId))
     constructor(nameStr: String) : this(Text.literal(nameStr))
 
+    private val snackBarHostState = SnackbarHostState()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -107,30 +116,50 @@ abstract class KBaseActivity(var name: Text) : ComponentActivity() {
             AppTheme {
                 val context = LocalContext.current
 
-                Scaffold(topBar = {
-                    TopAppBar(
-                        title = {
-                            Text(
-                                text = name.getName(context),
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 20.sp,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        },
-                        navigationIcon = {
-                            if (parentActivityIntent != null) {
-                                IconButton(onClick = { onBackPressed() }) {
-                                    Icon(
-                                        painterResource(R.drawable.chevron_left),
-                                        "Go back",
-                                        tint = colorResource(R.color.light_blue)
-                                    )
+                Scaffold(
+                    snackbarHost = { SnackbarHost(hostState = snackBarHostState) { data ->
+                        val customVisuals = data.visuals as? CustomSnackBarVisuals
+
+                        val type = customVisuals?.type ?: SnackBarType.INFO
+
+                        // TODO make theme colors
+                        val backgroundColor = when (type) {
+                            SnackBarType.SUCCESS -> Color(0xFF4CAF50)
+                            SnackBarType.ERROR -> colorResource(R.color.ui_warning)
+                            SnackBarType.INFO -> Color(0xFF323232)
+                        }
+
+                        Snackbar(
+                            snackbarData = data,
+                            containerColor = backgroundColor,
+                            contentColor = colorResource(R.color.secondaryColor)
+                        )
+                    } },
+                    topBar = {
+                        TopAppBar(
+                            title = {
+                                Text(
+                                    text = name.getName(context),
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 20.sp,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+                            },
+                            navigationIcon = {
+                                if (parentActivityIntent != null) {
+                                    IconButton(onClick = { onBackPressed() }) {
+                                        Icon(
+                                            painterResource(R.drawable.chevron_left),
+                                            "Go back",
+                                            tint = colorResource(R.color.light_blue)
+                                        )
+                                    }
                                 }
-                            }
-                        },
-                        actions = actions
-                    )
-                }) { innerPadding ->
+                            },
+                            actions = actions
+                        )
+                    }
+                ) { innerPadding ->
                     Box(Modifier.padding(innerPadding)) {
                         content()
                     }
@@ -152,6 +181,21 @@ abstract class KBaseActivity(var name: Text) : ComponentActivity() {
         intentSetup.accept(intent)
         startActivity(intent)
         overridePendingTransition(R.anim.fast_scale_up, R.anim.fast_fade_out)
+    }
+
+    fun showSnackBar(message: String, type: SnackBarType) {
+        lifecycleScope.launch {
+            snackBarHostState.showSnackbar(
+                CustomSnackBarVisuals(
+                    message = message,
+                    type = type
+                )
+            )
+        }
+    }
+
+    fun showErrorSnackBar(e: AppException) {
+        showSnackBar(e.getPrettyText(this), type = SnackBarType.ERROR)
     }
 
     override fun finish() {

@@ -63,7 +63,6 @@ public class VehicleInfoBottomSheet extends Fragment {
 
         int delay = vehicle.delay();
 
-        // FIXME hardcoded ughhh
         SpannableString span = new SpannableString(DelayUtil.getDelayText(parent, delay));
         span.setSpan(new ForegroundColorSpan(DelayUtil.getDelayColor(delay)), 0, span.length(), 0);
 
