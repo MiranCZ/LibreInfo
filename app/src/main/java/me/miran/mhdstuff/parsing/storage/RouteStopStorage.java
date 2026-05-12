@@ -6,15 +6,13 @@ import me.miran.mhdstuff.parsing.types.Time;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.HashMap;
-import java.util.Map;
 
 public class RouteStopStorage {
 
 
-    public static RouteStopStorage parse(DataInputStream is, RandomAccessFile routeStops) {
+    public static RouteStopStorage parse(DataInputStream is, RandomAccessFile routeStops, StopMapper mapper) {
         try(is) {
-            Map<Short, int[]> stopIdToRoute = new HashMap<>();
+            int[][] stopIdToRoute = new int[mapper.internalStopsLength()][];
 
             int size = is.readInt();
 
@@ -27,30 +25,30 @@ public class RouteStopStorage {
                 for (int j = 0; j < arrSize; j++) {
                     route[j] = is.readInt();
                 }
-                stopIdToRoute.put(stopId, route);
+                stopIdToRoute[stopId] = route;
             }
 
             return new RouteStopStorage(stopIdToRoute, routeStops);
         } catch (IOException e) {
             e.printStackTrace();
-            return new RouteStopStorage(Map.of(), routeStops);
+            return new RouteStopStorage(new int[0][], routeStops);
         }
     }
 
 
     private static final int ROUTE_STOP_SIZE_BYTES = Short.BYTES + Integer.BYTES + 2 * Short.BYTES + 4 * Byte.BYTES;
-    private final Map<Short, int[]> stopIdToRouteStops;
+    private final int[][] stopIdToRouteStops;
     private final byte[] buffer = new byte[ROUTE_STOP_SIZE_BYTES];
     private final RandomAccessFile routeStops;
 
 
-    private RouteStopStorage(Map<Short, int[]> stopIdToRoute, RandomAccessFile routeStops) {
+    private RouteStopStorage(int[][] stopIdToRoute, RandomAccessFile routeStops) {
         this.stopIdToRouteStops = stopIdToRoute;
         this.routeStops = routeStops;
     }
 
     public int[] getRouteStops(short stopId) {
-        return stopIdToRouteStops.get(stopId);
+        return stopIdToRouteStops[stopId];
     }
 
     public RouteStop[] getRouteStopsParsed(int stopId) {

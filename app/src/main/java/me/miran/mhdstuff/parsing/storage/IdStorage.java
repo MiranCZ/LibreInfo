@@ -83,7 +83,7 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
 
         TripStorage tripStorage = TripStorage.parse(CacheHelper.getTrips(context));
         RouteStopStorage routeStopStorage = RouteStopStorage.parse(
-                CacheHelper.getStopTimes(context), CacheHelper.getRouteStopsRAF(context)
+                CacheHelper.getStopTimes(context), CacheHelper.getRouteStopsRAF(context), stopMapper
         );
 
         CalendarStorage calendarStorage = CalendarStorage.parse(
