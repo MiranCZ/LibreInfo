@@ -41,6 +41,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -49,6 +51,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import com.valentinilk.shimmer.Shimmer
@@ -391,6 +395,38 @@ abstract class KBaseActivity(var name: Text) : ComponentActivity() {
                 )
             }
         }
+    }
+
+    @Composable
+    fun AppTextField(
+        value: String,
+        modifier: Modifier = Modifier,
+        onValueChange: (String) -> Unit = {},
+        placeHolder: String = "",
+        focusRequester: FocusRequester = remember { FocusRequester() },
+        leadingIcon: @Composable (() -> Unit)? = null,
+        trailingIcon: @Composable (() -> Unit)? = null,
+        color: Color = colorResource(R.color.widget_background)
+    ) {
+        TextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester),
+            placeholder = { Text(placeHolder) },
+            shape = RoundedCornerShape(8.dp),
+            leadingIcon = leadingIcon,
+            singleLine = true,
+            trailingIcon = trailingIcon,
+            colors = TextFieldDefaults.colors()
+                .copy(
+                    unfocusedContainerColor = color,
+                    focusedContainerColor = color,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
+        )
     }
 
 

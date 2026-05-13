@@ -10,15 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -157,14 +153,11 @@ class SearchActivity : KBaseActivity(R.string.departures) {
         val focusRequester = remember { FocusRequester() }
 
         Column(Modifier.padding(horizontal = 8.dp)) {
-            TextField(
+            AppTextField(
                 value = query,
+                placeHolder = "Zadejte zastávku",
                 onValueChange = { query = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(focusRequester),
-                placeholder = { Text("Zadejte zastávku") },
-                shape = RoundedCornerShape(8.dp),
+                focusRequester = focusRequester,
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -175,7 +168,6 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                         tint = colorResource(R.color.light_blue),
                     )
                 },
-                singleLine = true,
                 trailingIcon = {
                     if (query.isNotEmpty()) {
                         IconButton(onClick = { query = "" }) {
@@ -185,14 +177,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                             )
                         }
                     }
-                },
-                colors = TextFieldDefaults.colors()
-                    .copy(
-                        unfocusedContainerColor = color,
-                        focusedContainerColor = color,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
+                }
             )
 
             key(forceRecompose, liked) {
