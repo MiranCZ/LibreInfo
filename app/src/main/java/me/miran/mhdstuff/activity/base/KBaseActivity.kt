@@ -28,6 +28,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -44,9 +46,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.LocalRippleConfiguration
+import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.ripple
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -427,6 +440,39 @@ abstract class KBaseActivity(var name: Text) : ComponentActivity() {
                     unfocusedIndicatorColor = Color.Transparent
                 )
         )
+    }
+
+    @Composable
+    fun AppButton(
+        modifier: Modifier = Modifier,
+        onClick: () -> Unit = {},
+        color: Color = colorResource(R.color.widget_background),
+        minHeight: Dp? = null,
+        content: @Composable RowScope.() -> Unit,
+    ) {
+        val interactionSource = remember { MutableInteractionSource() }
+        val isPressed by interactionSource.collectIsPressedAsState()
+        val scale by animateFloatAsState(if (isPressed) 0.98f else 1f, label = "button_scale")
+
+        var modifier = modifier
+        if (minHeight != null) {
+            modifier = modifier.heightIn(min = minHeight)
+        }
+
+        CompositionLocalProvider(
+            LocalRippleConfiguration provides RippleConfiguration(color = colorResource(R.color.light_gray))
+        ) {
+            Button(
+                onClick = onClick,
+                content = content,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors().copy(
+                    containerColor = color
+                ),
+                interactionSource = interactionSource,
+                modifier = modifier.fillMaxWidth().scale(scale)
+            )
+        }
     }
 
 

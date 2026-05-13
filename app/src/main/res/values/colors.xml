@@ -18,6 +18,7 @@
 
     <color name="primaryColor">@color/white</color>
     <color name="widget_background">@color/white</color>
+    <color name="on_widget_background">#454545</color>
     <color name="secondary_color_dark_tone">@color/mid_dark_gray</color>
     <color name="secondary_color_light_tone">@color/dark_gray</color>
     <color name="secondary_color_tone">@color/darker_gray</color>
