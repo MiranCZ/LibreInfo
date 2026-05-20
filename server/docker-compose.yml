@@ -12,18 +12,38 @@ services:
       - caddy_config:/config
     depends_on:
       - api
+    networks:
+      - public
+      - internal
 
   api:
     build: ./api
     restart: unless-stopped
     depends_on:
       - scraper
+    networks:
+      - internal
 
   scraper:
     build: ./scraper
     restart: unless-stopped
+    networks:
+      - internal
+
+  gtfs-static:
+    build: ./gtfs-static
+    restart: unless-stopped
+    volumes:
+      - gtfs-data:/data
+    networks:
+      - internal
 
   
 volumes:
+  gtfs-data:
   caddy_data:
   caddy_config:
+
+networks:
+  public:
+  internal:
