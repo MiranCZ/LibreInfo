@@ -1,0 +1,12 @@
+services:
+  api:
+    build: ./api
+    volumes:
+      - ./api:/app
+    command: flask --app app run --host=0.0.0.0 --port=8080 --reload
+
+  scraper:
+    build: ./scraper
+    volumes:
+      - ./scraper:/app
+    command: flask --app app run --host=0.0.0.0 --port=8080 --reload
