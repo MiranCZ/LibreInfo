@@ -24,11 +24,41 @@ services:
     networks:
       - internal
 
+  ofelia:
+    image: mcuadros/ofelia:0.3.22
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./ofelia.ini:/etc/ofelia/config.ini
+
   scraper:
     build: ./scraper
     restart: unless-stopped
     networks:
       - internal
+
+  gtfs-updater:
+    build: ./gtfs-updater
+    container_name: gtfs-updater
+    restart: no
+    volumes:
+      - gtfs-data:/data/processed
+      - gtfs-raw:/data/raw
+      - osm-data:/data/osm
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - internal
+
+  pfaedle:
+    image: ghcr.io/ad-freiburg/pfaedle:2026-03-27t14-51
+    container_name: pfaedle
+    restart: no
+    profiles: [tools]
+    volumes:
+      - gtfs-raw:/gtfs
+      - osm-data:/osm
+      - gtfs-data:/gtfs-out
+    command: -D -x /osm/region.osm.pbf -i /gtfs/gtfs.zip
 
   gtfs-static:
     build: ./gtfs-static
@@ -40,7 +70,9 @@ services:
 
   
 volumes:
+  gtfs-raw:
   gtfs-data:
+  osm-data:
   caddy_data:
   caddy_config:
 
