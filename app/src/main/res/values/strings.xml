@@ -10,6 +10,7 @@
     <string name="settings">Nastavení</string>
     <string name="dev_settings">Dev settings</string>
     <string name="about">O aplikaci</string>
+    <string name="data_sources">Zdroje dat a poděkování</string>
     <string name="sorting">Řazení</string>
     <string name="ascending">Vzestupně</string>
     <string name="descending">Sestupně</string>
