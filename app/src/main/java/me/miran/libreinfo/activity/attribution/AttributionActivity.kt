@@ -5,11 +5,15 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -22,11 +26,19 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
     @Composable
     override fun CreateElements() {
         // TODO click into a dedicated screen with more detailed description or something
-        AttributionItem(
-            "KORDIS JMK a.s.",
-            "Koordinace dopravní obslužnosti na území Jihomoravského kraje",
-            R.drawable.kordis_icon
-        )
+        Column {
+            AttributionItem(
+                "KORDIS JMK a.s.",
+                "Koordinace dopravní obslužnosti na území Jihomoravského kraje",
+                R.drawable.kordis_icon
+            )
+
+            AttributionItem(
+                "Data Brno",
+                "Otevřená platforma sloužící ke sdílení dat o městě Brně",
+                R.drawable.data_brno_icon
+            )
+        }
     }
 
     @Composable
@@ -38,7 +50,9 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
 
                     Image(
                         painter = painterResource(id = iconId),
-                        contentDescription = "$name icon"
+                        contentDescription = "$name icon",
+                        modifier = Modifier.height(48.dp).width(96.dp),
+                        contentScale = ContentScale.Fit
                     )
                 }
 
