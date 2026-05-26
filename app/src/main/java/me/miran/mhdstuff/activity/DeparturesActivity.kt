@@ -1,25 +1,41 @@
 package me.miran.mhdstuff.activity
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.valentinilk.shimmer.Shimmer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.gson.JsonObject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.miran.mhdstuff.R
 import me.miran.mhdstuff.activity.base.KBaseActivity
 import me.miran.mhdstuff.activity.data.DelaysDataHolder
@@ -59,13 +75,37 @@ class DeparturesActivity : KBaseActivity("") {
         val stop = intent.getParcelableExtra<Stop>("stop")!!
         val vm: StopViewModel = viewModel()
 
+        var storage: IdStorage? by remember { mutableStateOf(null) }
+        var departuresResult: Departures? by remember { mutableStateOf(null) }
+
         LaunchedEffect(Unit) {
             if (stop.isFavourite) {
                 vm.setLiked(true)
             }
+
+            val s = withContext(Dispatchers.IO) {
+                IdStorage.getInstance()
+            }
+            storage = s
+
+            val delays = DelaysDataHolder.getDelays()
+            val deps = withContext(Dispatchers.IO) {
+                Departures("Work in progress...", OfflineDepartures.getOffline(s, stop.id.internal, delays))
+            }
+            departuresResult = deps
         }
 
-        createDepartures(stop)
+        Crossfade(targetState = departuresResult) { deps ->
+            if (deps != null) {
+                if (!deps.departures.isEmpty()) {
+                    this.Departures(deps, storage!!)
+                } else {
+                    NothingHere()
+                }
+            } else {
+                DeparturesShimmer(storage)
+            }
+        }
     }
 
     fun createDepartures(stop: Stop, refreshDelays: Boolean = false, onFinish: () -> Unit = {}) {
@@ -161,5 +201,70 @@ class DeparturesActivity : KBaseActivity("") {
             }
         }
     }
+
+    @Composable
+    fun DeparturesShimmer(storage: IdStorage?) {
+        val stop = intent.getParcelableExtra<Stop>("stop")!!
+        val shimmer = rememberActivityShimmer()
+
+        val entries: List<String?> = storage?.postStorage?.getPosts(stop)?.map { it.name } ?: listOf(null, null)
+
+        LazyColumn {
+            items(entries) { postName ->
+                DepartureEntryShimmer(shimmer, postName = postName)
+            }
+        }
+    }
+
+    @Composable
+    fun DepartureEntryShimmer(shimmer: Shimmer, postName: String?) {
+        Container(
+            innerPadding = 0.dp,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Column(Modifier.padding(vertical = 8.dp, horizontal = 6.dp)) {
+                Column(Modifier.padding(bottom = 4.dp)) {
+                    Crossfade(targetState = postName) { name ->
+                        if (name != null) {
+                            Text(
+                                name,
+                                color = colorResource(R.color.secondaryColor),
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .padding(top = 8.dp)
+                            )
+                        } else {
+                            Box(Modifier.padding(horizontal = 16.dp).padding(top = 8.dp)) {
+                                ShimmerText(shimmer, height=18.dp, widthFraction = 0.4f, variance = 0.15f)
+                            }
+                        }
+                    }
+                    Divider(Modifier.padding(horizontal = 10.dp).padding(top = 4.dp))
+                }
+
+                repeat(5) {
+                    Row(
+                        Modifier
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(Modifier.weight(3f), verticalAlignment = Alignment.CenterVertically) {
+                            ShimmerLineIcon(shimmer)
+                            Spacer(Modifier.width(4.dp))
+                            ShimmerText(shimmer, widthFraction = 0.55f, variance = 0.2f)
+                        }
+                        Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                            Spacer(Modifier.weight(1f))
+                            ShimmerText(shimmer, widthFraction = 0.85f, variance = 0.1f)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 
 }
