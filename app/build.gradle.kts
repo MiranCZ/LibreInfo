@@ -1,5 +1,3 @@
-import java.net.URI
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "me.miran.mhdstuff"
+    namespace = "me.miran.libreinfo"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "me.miran.mhdstuff"
+        applicationId = "me.miran.libreinfo"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

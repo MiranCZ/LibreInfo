@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MhdStuff</string>
+    <string name="app_name">LibreInfo</string>
     <string name="departures">Aktuální odjezdy</string>
     <string name="vehicle_map">Poloha vozidel</string>
     <string name="vehicles">Seznam vozidel</string>
