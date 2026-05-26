@@ -62,6 +62,7 @@ services:
 
   gtfs-static:
     build: ./gtfs-static
+    container_name: gtfs-static
     restart: unless-stopped
     volumes:
       - gtfs-data:/data

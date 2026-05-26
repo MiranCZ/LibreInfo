@@ -22,7 +22,8 @@ def get_events():
 
 @api.route('/shapes', methods=['GET'])
 def get_shapes():
-    resp = gtfs_static.get(f"{GTFS_STATIC_URL}/shapes")
+    trip_id = request.args.get("tripId")
+    resp = gtfs_static.get(f"{GTFS_STATIC_URL}/shapes",params={"tripId": trip_id})
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 @api.route("/vehicles", methods=["GET"])
