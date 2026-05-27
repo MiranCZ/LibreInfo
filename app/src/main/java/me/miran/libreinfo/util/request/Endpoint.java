@@ -10,7 +10,7 @@ public class Endpoint {
     );
 
     public static final Endpoint APP_SERVER = new Endpoint(
-            "http://138.3.254.103:5000",
+            "https://api.libre-info.com",
             Text.literal("app server")
     );
 
