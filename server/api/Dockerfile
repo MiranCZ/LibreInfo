@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["waitress-serve", "--host=0.0.0.0", "--port=8080", "app:app"]
+CMD ["waitress-serve", "--host=0.0.0.0", "--port=8080", "app:api"]
