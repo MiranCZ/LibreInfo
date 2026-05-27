@@ -102,6 +102,17 @@ def run_pfaedle(docker_client: docker.DockerClient) -> None:
     log.info("pfaedle finished successfully")
 
 
+def ensure_running(docker_client: docker.DockerClient, name: str) -> bool:
+    """Start container if not already running. Returns True if it was started."""
+    container = docker_client.containers.get(name)
+    if container.status != "running":
+        log.info(f"{name}: not running (status={container.status}), starting...")
+        container.start()
+        log.info(f"{name}: started")
+        return True
+    return False
+
+
 def restart_motis(docker_client: docker.DockerClient) -> None:
     log.info("Restarting Motis...")
     docker_client.containers.get("motis").restart()
@@ -126,19 +137,24 @@ def main() -> None:
         log.error(f"Download failed: {e}")
         sys.exit(1)
 
-    if not gtfs_changed and not osm_changed:
-        log.info("Nothing changed. Exiting")
-        return
-
-    reasons = []
-    if gtfs_changed:
-        reasons.append("GTFS feed updated")
-    if osm_changed:
-        reasons.append("OSM extract updated")
-    log.info(f"Changes detected: {', '.join(reasons)}")
-
     try:
         docker_client = docker.from_env()
+
+        if not gtfs_changed and not osm_changed:
+            log.info("Nothing changed. Ensuring containers are running...")
+            ensure_running(docker_client, "gtfs-static")
+            # TODO add motis lol
+            # ensure_running(docker_client, "motis")
+            log.info("Done")
+            return
+
+        reasons = []
+        if gtfs_changed:
+            reasons.append("GTFS feed updated")
+        if osm_changed:
+            reasons.append("OSM extract updated")
+        log.info(f"Changes detected: {', '.join(reasons)}")
+
         run_pfaedle(docker_client)
         # TODO add motis lol
         # restart_motis(docker_client)
