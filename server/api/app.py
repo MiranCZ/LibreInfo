@@ -1,12 +1,14 @@
-from flask import Flask, jsonify, request
+from flask import Flask, request
 import requests
 
 SCRAPER_URL = "http://scraper:8080"
-GTFS_STATIC_URL = "http://gtfs-static:8090"
+GTFS_STATIC_URL = "http://gtfs-static:8080"
+GTFS_RT_URL = "http://gtfs-rt:8080"
 
 api = Flask(__name__)
 scraper = requests.Session()
 gtfs_static = requests.Session()
+gtfs_rt = requests.Session()
 
 
 @api.route('/diversions', methods=['GET'])
@@ -22,25 +24,28 @@ def get_events():
 
 @api.route('/shapes', methods=['GET'])
 def get_shapes():
-    trip_id = request.args.get("tripId")
-    resp = gtfs_static.get(f"{GTFS_STATIC_URL}/shapes",params={"tripId": trip_id})
+    resp = gtfs_static.get(f"{GTFS_STATIC_URL}/shapes", params=request.args)
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 @api.route("/vehicles", methods=["GET"])
 def get_vehicles():
-    return jsonify([])
+    resp = gtfs_rt.get(f"{GTFS_RT_URL}/vehicles")
+    return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 
 @api.route("/vehicleinfo", methods=["GET"])
 def get_vehicle_info():
-    return jsonify({})
+    resp = gtfs_rt.get(f"{GTFS_RT_URL}/vehicleinfo", params=request.args)
+    return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 
 @api.route("/stopdelays", methods=["GET"])
 def get_stop_delays():
-    return jsonify({})
+    resp = gtfs_rt.get(f"{GTFS_RT_URL}/stopdelays", params=request.args)
+    return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 
 @api.route("/routedelays", methods=["GET"])
 def get_route_delays():
-    return jsonify({})
+    resp = gtfs_rt.get(f"{GTFS_RT_URL}/routedelays")
+    return resp.content, resp.status_code, {"Content-Type": "application/json"}
