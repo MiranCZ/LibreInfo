@@ -1,4 +1,6 @@
 from flask import Flask, request
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import requests
 
 SCRAPER_URL = "http://scraper:8080"
@@ -6,6 +8,14 @@ GTFS_STATIC_URL = "http://gtfs-static:8080"
 GTFS_RT_URL = "http://gtfs-rt:8080"
 
 api = Flask(__name__)
+# TODO figure out what limits make sense here
+limiter = Limiter(
+    get_remote_address,
+    app=api,
+    default_limits=["500 per hour", "40 per minute"],
+    storage_uri="memory://",
+)
+
 scraper = requests.Session()
 gtfs_static = requests.Session()
 gtfs_rt = requests.Session()
