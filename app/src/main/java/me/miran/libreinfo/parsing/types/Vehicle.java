@@ -102,19 +102,6 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         );
     }
 
-    public View createVehicleInfo(ViewGroup parent, Context context) {
-        View view = LayoutInflater.from(context).inflate(R.layout.vehicle_entry_layout, parent , false);
-
-
-        FrameLayout icon = view.findViewById(R.id.vehicle_line_icon);
-        icon.addView(line.createLineIconView(icon, context),0);
-
-        TextView heading = view.findViewById(R.id.vehicle_heading);
-        heading.setText(finalStop.name);
-
-        return view;
-    }
-
     public String getVehicleNumbersString() {
         String res = id+"";
         if (idB != 0) res += " + "+idB;
