@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import csv
 import logging
+import os.path
 
 server = Flask(__name__)
 
@@ -51,6 +52,10 @@ def parse_shapes() -> dict[str, list]:
     return result
 
 def parse_trips():
+    if not os.path.isfile('/data/trips.txt') or not os.path.isfile('/data/shapes.txt'):
+        log.warning("GTFS files not present, exiting!")
+        return
+
     global trip_shapes
 
     log.info("Parsing static trip shape data...")

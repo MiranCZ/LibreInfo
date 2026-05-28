@@ -67,7 +67,6 @@ services:
     build: ./gtfs-static
     container_name: gtfs-static
     restart: unless-stopped
-    profiles: [tools]
     volumes:
       - gtfs-data:/data
     networks:
