@@ -63,7 +63,7 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
 
     @Composable
     fun AttributionItem(name: String, description: String, @DrawableRes iconId: Int) {
-        Container(Modifier.padding(16.dp)) {
+        Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Column() {
                 Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(name, fontSize = 24.sp, fontWeight = FontWeight.Black, modifier = Modifier.weight(1f))
