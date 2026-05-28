@@ -51,8 +51,9 @@ services:
       - internal
 
   pfaedle:
-    image: ghcr.io/ad-freiburg/pfaedle:2026-03-27t14-51
-    platform: linux/amd64
+    build:
+      context: https://github.com/ad-freiburg/pfaedle.git#ad7b061fdef72fc084378d2f82bf1913faa1600a
+      dockerfile: Dockerfile
     container_name: pfaedle
     restart: no
     profiles: [tools]
