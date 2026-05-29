@@ -1,5 +1,6 @@
 package me.miran;
 
+import com.google.gson.JsonObject;
 import me.miran.model.StopDelay;
 import me.miran.model.Vehicle;
 import me.miran.model.VehicleInfo;
@@ -30,8 +31,8 @@ public class VehicleStore implements VehicleQuery {
     private static final long GC_INTERVAL_SECONDS = TimeUnit.HOURS.toSeconds(1);
     private static final long MAX_AGE_MILLIS = TimeUnit.HOURS.toMillis(1);
 
-    /** Latest snapshot per vehicle, keyed by {@code id}. */
-    private final Map<String, Vehicle> vehicles = new ConcurrentHashMap<>();
+    /** Latest raw {@code attributes} payload per vehicle, keyed by {@code id}, for {@code /vehicles}. */
+    private final Map<String, JsonObject> vehicles = new ConcurrentHashMap<>();
 
     /** {@code LineID -> RouteID -> VehicleInfo}. */
     private final Map<Integer, Map<Integer, VehicleInfo>> vehicleInfos = new ConcurrentHashMap<>();
@@ -74,7 +75,7 @@ public class VehicleStore implements VehicleQuery {
         // The latest delay is always recorded, even when the vehicle hasn't moved stops.
         info.setDelay(v.delay());
 
-        vehicles.put(v.id(), v);
+        vehicles.put(v.id(), v.raw());
     }
 
     /** Drops trips whose last update is older than {@link #MAX_AGE_MILLIS}. */
@@ -109,7 +110,7 @@ public class VehicleStore implements VehicleQuery {
     // --- VehicleQuery ---
 
     @Override
-    public Collection<Vehicle> getVehicles() {
+    public Collection<JsonObject> getVehicles() {
         return Collections.unmodifiableCollection(vehicles.values());
     }
 

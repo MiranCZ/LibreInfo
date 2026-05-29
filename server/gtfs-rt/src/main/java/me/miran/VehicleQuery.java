@@ -1,6 +1,6 @@
 package me.miran;
 
-import me.miran.model.Vehicle;
+import com.google.gson.JsonObject;
 import me.miran.model.VehicleInfo;
 
 import java.util.Collection;
@@ -12,8 +12,8 @@ import java.util.Map;
  */
 public interface VehicleQuery {
 
-    /** Latest snapshot of every known vehicle. */
-    Collection<Vehicle> getVehicles();
+    /** Latest raw {@code attributes} payload of every known vehicle (verbatim WebSocket data). */
+    Collection<JsonObject> getVehicles();
 
     /** All trips as {@code LineID -> RouteID -> VehicleInfo}. */
     Map<Integer, Map<Integer, VehicleInfo>> getVehicleInfos();

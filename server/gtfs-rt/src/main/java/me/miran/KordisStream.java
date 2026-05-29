@@ -73,7 +73,8 @@ public class KordisStream {
                 data.get("LineID").getAsInt(),
                 data.get("RouteID").getAsInt(),
                 data.get("LastStopID").getAsInt(),
-                data.get("Delay").getAsInt());
+                data.get("Delay").getAsInt(),
+                data);
     }
 
     private void connect() {
