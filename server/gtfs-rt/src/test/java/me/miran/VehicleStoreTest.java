@@ -1,6 +1,8 @@
 package me.miran;
 
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import me.miran.model.Vehicle;
 import me.miran.model.VehicleInfo;
 import org.junit.jupiter.api.Test;
@@ -37,16 +39,19 @@ class VehicleStoreTest {
     }
 
     @Test
-    void serializesWithCamelCaseFields() {
+    void serializesWithSnakeCaseFields() {
         VehicleStore store = new VehicleStore();
         store.record(new Vehicle("car42", 7, 200, 55, 12));
 
-        String json = new Gson().toJson(store.getTrip(7, 200));
-        assertTrue(json.contains("\"carId\":\"car42\""), json);
-        assertTrue(json.contains("\"lastStop\":55"), json);
+        Gson gson = new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .create();
+        String json = gson.toJson(store.getTrip(7, 200));
+        assertTrue(json.contains("\"car_id\":\"car42\""), json);
+        assertTrue(json.contains("\"last_stop\":55"), json);
         assertTrue(json.contains("\"delay\":12"), json);
-        assertTrue(json.contains("\"previousStops\""), json);
-        assertTrue(json.contains("\"changedAt\""), json);
+        assertTrue(json.contains("\"previous_stops\""), json);
+        assertTrue(json.contains("\"changed_at\""), json);
     }
 
     @Test
