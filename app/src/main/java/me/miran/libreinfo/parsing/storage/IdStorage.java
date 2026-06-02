@@ -155,6 +155,13 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         return getInstanceOf(IdStorage.class);
     }
 
+    @Nullable
+    public static IdStorage getInstanceOrNull() {
+        synchronized (mutex) {
+            return storage;
+        }
+    }
+
     public static LineStorage getLineStorage() {
         return getInstanceOf(LineStorage.class);
     }

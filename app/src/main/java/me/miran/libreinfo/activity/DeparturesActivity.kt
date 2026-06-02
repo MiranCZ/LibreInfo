@@ -75,7 +75,7 @@ class DeparturesActivity : KBaseActivity("") {
         val stop = intent.getParcelableExtra<Stop>("stop")!!
         val vm: StopViewModel = viewModel()
 
-        var storage: IdStorage? by remember { mutableStateOf(null) }
+        var storage: IdStorage? by remember { mutableStateOf(IdStorage.getInstanceOrNull()) }
         var departuresResult: Departures? by remember { mutableStateOf(null) }
 
         LaunchedEffect(Unit) {
