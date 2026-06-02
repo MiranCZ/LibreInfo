@@ -38,14 +38,14 @@ import me.miran.libreinfo.exception.RequestException
 import me.miran.libreinfo.parsing.storage.IdStorage
 import me.miran.libreinfo.parsing.types.Vehicle
 import me.miran.libreinfo.util.DelayUtil
-import me.miran.libreinfo.util.Either
+import me.miran.libreinfo.util.Result
 import me.miran.libreinfo.util.request.RequestHelper
 
 class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
 
     @Composable
     override fun CreateElements() {
-        var vehiclesResult by remember { mutableStateOf(Either.left<List<Vehicle>?, RequestException>(null)) }
+        var vehiclesResult by remember { mutableStateOf(Result.ok<List<Vehicle>?, RequestException>(null)) }
 
         val context = LocalContext.current
         LaunchedEffect(Unit) {
@@ -53,9 +53,9 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
                 val storage = IdStorage.getInstance();
 
                 try {
-                    Either.left<List<Vehicle>, RequestException>(Vehicle.parseVehicles(RequestHelper.getVehicles(context), storage))
+                    Result.ok<List<Vehicle>, RequestException>(Vehicle.parseVehicles(RequestHelper.getVehicles(context), storage))
                 } catch (e: RequestException) {
-                    Either.right(e)
+                    Result.err(e)
                 }
             }
 
@@ -63,8 +63,8 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
         }
 
         Crossfade(targetState = vehiclesResult) { local -> when (local) {
-            is Either.Left -> {
-                var vehicles = local.left;
+            is Result.Ok -> {
+                var vehicles = local.value
 
                 if (vehicles != null) {
                     vehicles = vehicles.sortedBy { vehicle -> vehicle.line.id }
@@ -82,8 +82,8 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
                     VehicleListShimmer()
                 }
             }
-            is Either.Right -> {
-                val error = local.right;
+            is Result.Err -> {
+                val error = local.err
 
                 ErrorWidget(error)
             }

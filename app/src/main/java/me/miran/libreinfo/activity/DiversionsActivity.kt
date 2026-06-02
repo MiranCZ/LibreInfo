@@ -27,14 +27,14 @@ import me.miran.libreinfo.activity.base.KBaseActivity
 import me.miran.libreinfo.exception.RequestException
 import me.miran.libreinfo.parsing.storage.IdStorage
 import me.miran.libreinfo.parsing.types.Diversion
-import me.miran.libreinfo.util.Either
+import me.miran.libreinfo.util.Result
 import me.miran.libreinfo.util.request.RequestHelper
 import kotlin.random.Random
 
 class DiversionsActivity : KBaseActivity(R.string.diversions) {
     @Composable
     override fun CreateElements() {
-        var diversionsResult by remember { mutableStateOf(Either.left<List<Diversion>?, RequestException>(null)) }
+        var diversionsResult by remember { mutableStateOf(Result.ok<List<Diversion>?, RequestException>(null)) }
 
         val context = LocalContext.current
         LaunchedEffect(Unit) {
@@ -43,12 +43,12 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
                 val storage = IdStorage.getInstance();
 
                 try {
-                    Either.left<List<Diversion>, RequestException>(Diversion.parseDiversions(
+                    Result.ok<List<Diversion>, RequestException>(Diversion.parseDiversions(
                         RequestHelper.getDiversions(context),
                         storage.lineStorage
                     ))
                 } catch (e: RequestException) {
-                    Either.right(e)
+                    Result.err(e)
                 }
             }
 
@@ -56,8 +56,8 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
         }
 
         Crossfade(targetState = diversionsResult) { local -> when (local) {
-            is Either.Left -> {
-                val diversions = local.left
+            is Result.Ok -> {
+                val diversions = local.value
 
                 if (diversions != null) {
                     if (diversions.isEmpty()) {
@@ -73,8 +73,8 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
                     DiversionListShimmer()
                 }
             }
-            is Either.Right -> {
-                val error = local.right;
+            is Result.Err -> {
+                val error = local.err;
 
                 ErrorWidget(error)
             }

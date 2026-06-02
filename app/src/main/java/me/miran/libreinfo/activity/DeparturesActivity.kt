@@ -244,22 +244,7 @@ class DeparturesActivity : KBaseActivity("") {
                 }
 
                 repeat(5) {
-                    Row(
-                        Modifier
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(Modifier.weight(3f), verticalAlignment = Alignment.CenterVertically) {
-                            ShimmerLineIcon(shimmer)
-                            Spacer(Modifier.width(4.dp))
-                            ShimmerText(shimmer, widthFraction = 0.55f, variance = 0.2f)
-                        }
-                        Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                            Spacer(Modifier.weight(1f))
-                            ShimmerText(shimmer, widthFraction = 0.85f, variance = 0.1f)
-                        }
-                    }
+                    DepartureEntryRowShimmer(shimmer)
                 }
             }
         }

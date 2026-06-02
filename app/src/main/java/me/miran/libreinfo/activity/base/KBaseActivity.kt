@@ -7,6 +7,7 @@ import android.text.method.LinkMovementMethod
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -53,10 +54,14 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -94,6 +99,7 @@ import me.miran.libreinfo.activity.base.snackbar.CustomSnackBarVisuals
 import me.miran.libreinfo.activity.base.snackbar.SnackBarType
 import me.miran.libreinfo.exception.AppException
 import me.miran.libreinfo.parsing.storage.ApiStorage
+import me.miran.libreinfo.parsing.storage.IdStorage
 import me.miran.libreinfo.parsing.types.DateTime
 import me.miran.libreinfo.parsing.types.Diversion
 import me.miran.libreinfo.parsing.types.LineAlias
@@ -101,6 +107,7 @@ import me.miran.libreinfo.parsing.types.Post
 import me.miran.libreinfo.parsing.types.Time
 import me.miran.libreinfo.parsing.types.departure.Departure
 import me.miran.libreinfo.parsing.types.departure.DepartureEntry
+import me.miran.libreinfo.parsing.types.stop.Stop
 import me.miran.libreinfo.ui.theme.AppTheme
 import me.miran.libreinfo.ui.theme.AppTypography
 import me.miran.libreinfo.util.HtmlHelper
@@ -111,10 +118,11 @@ import kotlin.math.max
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalMaterial3Api::class)
-abstract class KBaseActivity(var name: Text) : ComponentActivity() {
+abstract class KBaseActivity(name: Text) : ComponentActivity() {
 
     constructor(nameId: Int) : this(Text.translatable(nameId))
     constructor(nameStr: String) : this(Text.literal(nameStr))
+    var name by mutableStateOf(name)
 
     private val snackBarHostState = SnackbarHostState()
 
@@ -651,5 +659,33 @@ abstract class KBaseActivity(var name: Text) : ComponentActivity() {
             }
         }
     }
+
+    @Composable
+    fun DepartureEntryRowShimmer(shimmer: Shimmer) {
+        Row(
+            Modifier
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                Modifier.weight(3f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ShimmerLineIcon(shimmer)
+                Spacer(Modifier.width(4.dp))
+                ShimmerText(shimmer, widthFraction = 0.55f, variance = 0.2f)
+            }
+            Row(
+                Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Spacer(Modifier.weight(1f))
+                ShimmerText(shimmer, widthFraction = 0.85f, variance = 0.1f)
+            }
+        }
+    }
+
+
 
 }

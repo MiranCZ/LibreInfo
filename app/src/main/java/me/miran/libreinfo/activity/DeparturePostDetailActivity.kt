@@ -1,7 +1,24 @@
 package me.miran.libreinfo.activity
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
 import me.miran.libreinfo.activity.data.DelaysDataHolder
 import me.miran.libreinfo.exception.RequestException
@@ -18,46 +35,80 @@ class DeparturePostDetailActivity : KBaseActivity("") {
     override fun CreateElements() {
         val post = intent.getParcelableExtra<Post>("post")!!
 
-        name = Text.literal(post.name)
-        setBaseContent {
-            // TODO lazy loading?
-        }
 
-        createDepartures(post)
-    }
+        LaunchedEffect(post) { name = Text.literal(post.name) }
 
-    fun createDepartures(post: Post) {
+        val context = LocalContext.current
+
+        var storage: IdStorage? by remember { mutableStateOf(null) }
+        var departureResult: Departure? by remember { mutableStateOf(null) }
+        var stopDelays by remember { mutableStateOf(JsonObject()) }
+
         val delays = DelaysDataHolder.getDelays()
-
-        Thread {
-            val storage = IdStorage.getInstance();
-
-            var stopDelays = JsonObject()
-            try {
-                stopDelays = RequestHelper.getStopDelays(this, post.stop.id)
-            } catch (e: RequestException) {
-                showErrorSnackBar(e);
-            }
-
-            val departureList = OfflineDepartures.getOfflineForPost(
-                storage,
-                post.stop.id.internal,
-                post.postID,
-                -1,
-                Time.ZERO,
-                delays
-            )
-            val departure =
-                departureList.stream().filter { dep: Departure? -> dep!!.postID == post.postID }
-                    .findFirst().orElse(null)
-
-
-            runOnUiThread {
-                setBaseContent {
-                    DepartureDetail(departure, storage.apiStorage, stopDelays)
+        LaunchedEffect(Unit) {
+            stopDelays = withContext(Dispatchers.IO) {
+                try {
+                    RequestHelper.getStopDelays(context, post.stop.id)
+                } catch (e: RequestException) {
+                    showErrorSnackBar(e)
+                    JsonObject()
                 }
             }
 
-        }.start()
+            val (depsRes, storageRes) = withContext(Dispatchers.IO) {
+                val storage = IdStorage.getInstance()
+
+                val departureList = OfflineDepartures.getOfflineForPost(
+                    storage,
+                    post.stop.id.internal,
+                    post.postID,
+                    -1,
+                    Time.ZERO,
+                    delays
+                )
+
+                val res = departureList.stream().filter { dep: Departure? -> dep!!.postID == post.postID }
+                        .findFirst().orElse(null)
+
+                Pair(res, storage)
+            }
+
+            departureResult = depsRes
+            storage = storageRes
+        }
+
+        Crossfade(targetState = departureResult) { departure ->
+            if (departure != null && storage != null) {
+                DepartureDetail(departure, storage!!.apiStorage, stopDelays)
+            } else {
+                DepartureDetailShimmer(post)
+            }
+        }
     }
+
+
+    @Composable
+    fun DepartureDetailShimmer(post: Post) {
+        val shimmer = rememberActivityShimmer()
+        val color = colorResource(R.color.widget_background)
+        Container(
+            innerPadding = 0.dp,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            LazyColumn(Modifier.padding(vertical = 8.dp, horizontal = 6.dp)) {
+                stickyHeader {
+                    DeparturePostHeader(
+                        post.name, Modifier
+                            .background(color)
+                            .clickable(interactionSource = null, indication = null) {})
+
+                }
+
+                items(30) { _ ->
+                    DepartureEntryRowShimmer(shimmer)
+                }
+            }
+        }
+    }
+
 }

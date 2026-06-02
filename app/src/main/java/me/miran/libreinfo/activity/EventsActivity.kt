@@ -32,7 +32,7 @@ import me.miran.libreinfo.exception.RequestException
 import me.miran.libreinfo.parsing.storage.IdStorage
 import me.miran.libreinfo.parsing.types.DateTime
 import me.miran.libreinfo.parsing.types.Event
-import me.miran.libreinfo.util.Either
+import me.miran.libreinfo.util.Result
 import me.miran.libreinfo.util.request.RequestHelper
 import kotlin.random.Random
 
@@ -40,7 +40,7 @@ class EventsActivity : KBaseActivity(R.string.events) {
 
     @Composable
     override fun CreateElements() {
-        var eventsResult by remember { mutableStateOf(Either.left<List<Event>?, RequestException>(null)) }
+        var eventsResult by remember { mutableStateOf(Result.ok<List<Event>?, RequestException>(null)) }
 
         val context = LocalContext.current
         LaunchedEffect(Unit) {
@@ -49,9 +49,9 @@ class EventsActivity : KBaseActivity(R.string.events) {
                 val storage = IdStorage.getInstance();
 
                 try {
-                    Either.left<List<Event>, RequestException>(Event.parseEvents(RequestHelper.getEvents(context), storage.lineStorage()))
+                    Result.ok<List<Event>, RequestException>(Event.parseEvents(RequestHelper.getEvents(context), storage.lineStorage()))
                 } catch (e: RequestException) {
-                    Either.right(e)
+                    Result.err(e)
                 }
             }
 
@@ -59,8 +59,8 @@ class EventsActivity : KBaseActivity(R.string.events) {
         }
 
         Crossfade(targetState = eventsResult) { local -> when (local) {
-            is Either.Left -> {
-                val events = local.left
+            is Result.Ok -> {
+                val events = local.value
 
                 if (events != null) {
                     if (events.isEmpty()) {
@@ -76,8 +76,8 @@ class EventsActivity : KBaseActivity(R.string.events) {
                     EventListShimmer()
                 }
             }
-            is Either.Right -> {
-                val error = local.right;
+            is Result.Err -> {
+                val error = local.err
 
                 ErrorWidget(error)
             }
