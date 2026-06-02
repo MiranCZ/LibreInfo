@@ -6,6 +6,7 @@ import requests
 SCRAPER_URL = "http://scraper:8080"
 GTFS_STATIC_URL = "http://gtfs-static:8080"
 GTFS_RT_URL = "http://gtfs-rt:8080"
+NEWS_URL = "http://news:8080"
 
 api = Flask(__name__)
 # TODO figure out what limits make sense here
@@ -35,6 +36,11 @@ def get_events():
 @api.route('/shapes', methods=['GET'])
 def get_shapes():
     resp = gtfs_static.get(f"{GTFS_STATIC_URL}/shapes", params=request.args)
+    return resp.content, resp.status_code, {"Content-Type": "application/json"}
+
+@api.route('/news', methods=['GET'])
+def get_news():
+    resp = gtfs_static.get(f"{NEWS_URL}/news", params=request.args)
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 @api.route("/vehicles", methods=["GET"])

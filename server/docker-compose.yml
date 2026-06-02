@@ -78,11 +78,20 @@ services:
     networks:
       - internal
 
+  news:
+    build: ./news
+    restart: unless-stopped
+    volumes:
+      - news-data:/data
+    networks:
+      - internal
+
   
 volumes:
   gtfs-raw:
   gtfs-data:
   osm-data:
+  news-data:
   caddy_data:
   caddy_config:
 
