@@ -7,6 +7,7 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import java.time.LocalDateTime;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -61,6 +62,22 @@ public record DateTime(int day, int month, int year, int hours, int minutes) imp
         int day = Integer.parseInt(partsDate[0].strip());
         int month = Integer.parseInt(partsDate[1].strip());
         int year = Integer.parseInt(partsDate[2].strip());
+
+        return new DateTime(day, month, year, hours, minutes);
+    }
+
+    public static DateTime parseEpoch(String str) {
+        long epoch = Long.parseLong(str)*1_000;
+
+        var calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(epoch);
+
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int month = calendar.get(Calendar.MONTH);
+        int year = calendar.get(Calendar.YEAR);
+
+        int hours = calendar.get(Calendar.HOUR_OF_DAY);
+        int minutes = calendar.get(Calendar.MINUTE);
 
         return new DateTime(day, month, year, hours, minutes);
     }

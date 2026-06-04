@@ -45,9 +45,8 @@ public class RequestHelper {
     }
 
 
-    // we are just fucked
-    public static JsonArray getNews() {
-        return new JsonArray(); // TODO
+    public static JsonObject getNews(Context context) throws RequestException{
+        return makeOwnRequest(context, "news", JsonObject.class);
     }
 
     public static JsonArray getEvents(Context context) throws RequestException {

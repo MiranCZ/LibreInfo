@@ -1,11 +1,13 @@
 package me.miran.libreinfo.parsing.types;
 
+import androidx.core.text.HtmlCompat;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.util.List;
 
-public record News(int id, DateTime publicFrom, DateTime publicTo, String title, String text, String link) {
+public record News(DateTime date, String title, String htmlContent, String link) {
 
     public static List<News> parseNewsList(JsonArray array) {
         return TypeHelper.parseList(array, News::parse);
@@ -14,18 +16,16 @@ public record News(int id, DateTime publicFrom, DateTime publicTo, String title,
     public static News parse(JsonObject obj) {
         if (obj == null) return null;
 
-        int id = obj.get("Number").getAsInt();
-        DateTime publicFrom = DateTime.parse(obj.get("PublicFrom").getAsString());
-        DateTime publicTo = DateTime.parse(obj.get("PublicTo").getAsString());
-        String title = obj.get("Title").getAsString();
-        String text = obj.get("Text").getAsString();
-        String link = obj.get("Link").getAsString();
+        DateTime date = DateTime.parseEpoch(obj.get("date").getAsString());
+        String title = obj.get("title").getAsString();
+        String text = obj.get("content_html").getAsString();
+        String link = obj.get("url").getAsString();
 
-        // fuck their formatting bro
-        if (text.endsWith(" ...")) {
-            text = text.substring(0, text.length()-4)+"...";
-        }
-
-        return new News(id, publicFrom, publicTo, title, text, link);
+        return new News(date, title, text, link);
     }
+    
+    public String getPlaintext() {
+        return HtmlCompat.fromHtml(htmlContent, HtmlCompat.FROM_HTML_MODE_LEGACY).toString();
+    }
+    
 }
