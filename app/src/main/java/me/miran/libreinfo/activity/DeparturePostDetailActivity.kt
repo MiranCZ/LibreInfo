@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,11 +27,21 @@ import me.miran.libreinfo.parsing.storage.IdStorage
 import me.miran.libreinfo.parsing.types.Post
 import me.miran.libreinfo.parsing.types.Time
 import me.miran.libreinfo.parsing.types.departure.Departure
+import me.miran.libreinfo.util.DeparturesSettings
+import me.miran.libreinfo.util.LocalDeparturesSettings
 import me.miran.libreinfo.util.OfflineDepartures
 import me.miran.libreinfo.util.Text
 import me.miran.libreinfo.util.request.RequestHelper
 
 class DeparturePostDetailActivity : KBaseActivity("") {
+
+    private var departuresSettings by mutableStateOf(DeparturesSettings())
+
+    override fun onResume() {
+        super.onResume()
+        departuresSettings = DeparturesSettings.fromPrefs()
+    }
+
     @Composable
     override fun CreateElements() {
         val post = intent.getParcelableExtra<Post>("post")!!
@@ -79,7 +90,9 @@ class DeparturePostDetailActivity : KBaseActivity("") {
 
         Crossfade(targetState = departureResult) { departure ->
             if (departure != null && storage != null) {
-                DepartureDetail(departure, storage!!.apiStorage, stopDelays)
+                CompositionLocalProvider(LocalDeparturesSettings provides departuresSettings) {
+                    DepartureDetail(departure, storage!!.apiStorage, stopDelays)
+                }
             } else {
                 DepartureDetailShimmer(post)
             }

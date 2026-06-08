@@ -15,6 +15,9 @@ public class Settings {
         holder = new PreferencesHolder(preferences);
     }
 
-
+    public static PreferencesHolder get() {
+        if (holder == null) throw new IllegalStateException("Settings not initialized!");
+        return holder;
+    }
 
 }

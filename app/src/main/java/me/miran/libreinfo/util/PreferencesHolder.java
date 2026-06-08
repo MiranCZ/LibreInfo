@@ -68,6 +68,27 @@ public class PreferencesHolder {
         return preferences.getString(key, defaultValue);
     }
 
+    public <T extends Enum<T>> Optional<T> getEnum(String key, Class<T> clazz) {
+        if (preferences.contains(key)) {
+            int index = preferences.getInt(key, -1);
+
+            //noinspection DataFlowIssue
+            return Optional.of(clazz.getEnumConstants()[index]);
+        }
+        return Optional.empty();
+    }
+
+    public <T extends Enum<?>> T getEnum(String key, Class<T> clazz, T defaultValue) {
+        if (preferences.contains(key)) {
+            int index = preferences.getInt(key, -1);
+
+            //noinspection DataFlowIssue
+            return clazz.getEnumConstants()[index];
+        }
+
+        return defaultValue;
+    }
+
     public PreferencesHolder putBoolean(int key, boolean value) {
         return putBoolean(key+"", value);
     }
@@ -94,6 +115,11 @@ public class PreferencesHolder {
 
     public PreferencesHolder putString(String key, String value) {
         editor.putString(key, value);
+        return this;
+    }
+
+    public <T extends Enum<T>> PreferencesHolder putEnum(String key, T value) {
+        editor.putInt(key, value.ordinal());
         return this;
     }
 

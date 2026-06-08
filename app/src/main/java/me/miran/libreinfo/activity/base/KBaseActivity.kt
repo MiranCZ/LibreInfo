@@ -7,10 +7,12 @@ import android.text.method.LinkMovementMethod
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -23,59 +25,60 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalRippleConfiguration
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.LocalRippleConfiguration
-import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.ripple
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import com.valentinilk.shimmer.Shimmer
-import com.valentinilk.shimmer.ShimmerBounds
-import com.valentinilk.shimmer.rememberShimmer
-import com.valentinilk.shimmer.shimmer
-import kotlin.random.Random
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -91,15 +94,19 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.viewinterop.NoOpUpdate
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.JsonObject
+import com.valentinilk.shimmer.Shimmer
+import com.valentinilk.shimmer.ShimmerBounds
+import com.valentinilk.shimmer.rememberShimmer
+import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.launch
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.DeparturePostDetailActivity
 import me.miran.libreinfo.activity.TripDetailActivity
 import me.miran.libreinfo.activity.base.snackbar.CustomSnackBarVisuals
 import me.miran.libreinfo.activity.base.snackbar.SnackBarType
+import me.miran.libreinfo.activity.settings.DelayRenderType
 import me.miran.libreinfo.exception.AppException
 import me.miran.libreinfo.parsing.storage.ApiStorage
-import me.miran.libreinfo.parsing.storage.IdStorage
 import me.miran.libreinfo.parsing.types.DateTime
 import me.miran.libreinfo.parsing.types.Diversion
 import me.miran.libreinfo.parsing.types.LineAlias
@@ -107,14 +114,15 @@ import me.miran.libreinfo.parsing.types.Post
 import me.miran.libreinfo.parsing.types.Time
 import me.miran.libreinfo.parsing.types.departure.Departure
 import me.miran.libreinfo.parsing.types.departure.DepartureEntry
-import me.miran.libreinfo.parsing.types.stop.Stop
 import me.miran.libreinfo.ui.theme.AppTheme
 import me.miran.libreinfo.ui.theme.AppTypography
 import me.miran.libreinfo.util.HtmlHelper
+import me.miran.libreinfo.util.LocalDeparturesSettings
 import me.miran.libreinfo.util.Pair
 import me.miran.libreinfo.util.Text
 import java.util.function.Consumer
 import kotlin.math.max
+import kotlin.random.Random
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -425,7 +433,8 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         focusRequester: FocusRequester = remember { FocusRequester() },
         leadingIcon: @Composable (() -> Unit)? = null,
         trailingIcon: @Composable (() -> Unit)? = null,
-        color: Color = colorResource(R.color.widget_background)
+        color: Color = colorResource(R.color.widget_background),
+        readOnly: Boolean = false,
     ) {
         TextField(
             value = value,
@@ -438,6 +447,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
             leadingIcon = leadingIcon,
             singleLine = true,
             trailingIcon = trailingIcon,
+            readOnly = readOnly,
             colors = TextFieldDefaults.colors()
                 .copy(
                     unfocusedContainerColor = color,
@@ -483,23 +493,110 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
 
 
     @Composable
-    fun Departure(departure: Departure, post: Post) {
-        Container(
-            {
-                startActivity(
-                    DeparturePostDetailActivity::class
-                ) { intent -> intent.putExtra("post", post) }
-            },
-            innerPadding = 0.dp,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    fun AppSwitch(
+        checked: Boolean,
+        onCheckedChange: (Boolean) -> Unit,
+        modifier: Modifier = Modifier,
+        enabled: Boolean = true,
+    ) {
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            modifier = modifier,
+            enabled = enabled,
+            colors = SwitchDefaults.colors(
+                checkedTrackColor = colorResource(R.color.light_blue),
+                checkedThumbColor = Color.White,
+            )
+        )
+    }
+
+    @Composable
+    fun <T> AppDropdown(
+        selected: T,
+        options: List<T>,
+        onSelect: (T) -> Unit,
+        modifier: Modifier = Modifier,
+        color: Color = colorResource(R.color.widget_background),
+        displayString: (T) -> String = { it.toString() },
+    ) {
+        var expanded by remember { mutableStateOf(false) }
+        val accentColor = colorResource(R.color.light_blue)
+        val textColor = colorResource(R.color.secondaryColor)
+
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+            modifier = modifier,
         ) {
+            AppTextField(
+                value = displayString(selected),
+                modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                onValueChange = {},
+                placeHolder = "",
+                trailingIcon = {
+                    CompositionLocalProvider(LocalContentColor provides accentColor) {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+                    }
+                },
+                color = color,
+                readOnly = true,
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                containerColor = color,
+                shape = RoundedCornerShape(12.dp),
+                shadowElevation = 4.dp,
+            ) {
+                options.forEach { option ->
+                    val isSelected = option == selected
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                displayString(option),
+                                fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                            )
+                        },
+                        trailingIcon = if (isSelected) ({
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                                tint = accentColor,
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }) else null,
+                        onClick = {
+                            onSelect(option)
+                            expanded = false
+                        },
+                        colors = MenuDefaults.itemColors(textColor = textColor),
+                    )
+                }
+            }
+        }
+    }
+
+
+    @Composable
+    fun Departure(departure: Departure, post: Post?) {
+        val content: @Composable BoxScope.() -> Unit = {
             Column(Modifier.padding(vertical = 8.dp, horizontal = 6.dp)) {
                 DeparturePostHeader(departure.name, Modifier.padding(bottom = 4.dp))
-
-                for (dep in departure.entries) {
+                val depSettings = LocalDeparturesSettings.current
+                for (dep in departure.entries.take(depSettings.maxEntries)) {
                     DepartureEntry(dep)
                 }
             }
+        }
+        val mod = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        if (post != null) {
+            Container({ startActivity(DeparturePostDetailActivity::class) {
+                it.putExtra("post", post)
+            } }, innerPadding = 0.dp, modifier = mod, content = content)
+        } else {
+            Container(innerPadding = 0.dp, modifier = mod, content = content)
         }
     }
 
@@ -580,6 +677,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
     @Composable
     fun DepartureEntry(departure: DepartureEntry, modifier: Modifier = Modifier, showDelay: Boolean = true) {
         val vehicleInfo = departure.vehicleInfo
+        val depSettings = LocalDeparturesSettings.current
 
         Box(
             modifier
@@ -615,7 +713,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                     )
                 }
 
-                if (departure.lowFloor) {
+                if (departure.lowFloor && depSettings.showLowFloor) {
                     Icon(
                         painter = painterResource(R.drawable.wheelchair_regular),
                         "lowfloor",
@@ -638,12 +736,29 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                         departure.timeMark.stopTime.delay = delay
                         val arrivalText: String = departure.timeMark.getFormattedString(30, true)
 
-                        var delayStr = ""
-                        if (delay > 0) {
-                            delayStr = " ($delay) "
-                        }
 
                         Spacer(Modifier.weight(1f))
+
+                        var delayStr = ""
+
+                        if (delay > 0) {
+                            when (depSettings.delayRender) {
+                                DelayRenderType.PARENTHESES -> {
+                                    delayStr = " ($delay) "
+                                }
+                                DelayRenderType.BOX -> {
+                                    Surface(
+                                        color = Color(color).copy(alpha = 0.2f),
+                                        shape = RoundedCornerShape(4.dp),
+                                        modifier = Modifier.padding(end = 4.dp)
+                                    ) {
+                                        Text(" +$delay ", color = Color(color), fontSize = 14.sp)
+                                    }
+                                }
+                                else -> {}
+                            }
+                        }
+
                         Text(
                             delayStr + arrivalText,
                             color = Color(color),

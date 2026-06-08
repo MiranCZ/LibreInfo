@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">LibreInfo</string>
     <string name="departures">Aktuální odjezdy</string>
+    <string name="departures_theming">Vzhled odjezdů</string>
+    <string name="delay_render">Vzhled zpoždění</string>
+    <string name="show_lowfloor">Zobrazit nízkopodlažnost</string>
+    <string name="departure_count_max">Počet zobrazovaných odjezdů</string>
+    <string name="do_not_show">Nezobrazovat</string>
+    <string name="parentheses">Závorky</string>
+    <string name="rectangle">Obdelník</string>
     <string name="vehicle_map">Poloha vozidel</string>
     <string name="vehicles">Seznam vozidel</string>
     <string name="events">Mimořádné události</string>

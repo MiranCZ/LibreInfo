@@ -25,8 +25,8 @@ public class OfflineDepartures {
         return getOffline(storage, stopId, 5, Time.now());
     }
 
-    public static List<Departure> getOffline(IdStorage storage, int stopId, JsonObject delays) {
-        return getOffline(storage, stopId, 5, Time.now(), delays);
+    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, JsonObject delays) {
+        return getOffline(storage, stopId, maxSize, Time.now(), delays);
     }
 
     public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize) {

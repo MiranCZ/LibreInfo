@@ -2,14 +2,11 @@ package me.miran.libreinfo.activity
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
@@ -22,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -43,12 +39,21 @@ import me.miran.libreinfo.exception.RequestException
 import me.miran.libreinfo.parsing.storage.IdStorage
 import me.miran.libreinfo.parsing.types.departure.Departures
 import me.miran.libreinfo.parsing.types.stop.Stop
+import me.miran.libreinfo.util.DeparturesSettings
+import me.miran.libreinfo.util.LocalDeparturesSettings
 import me.miran.libreinfo.util.OfflineDepartures
 import me.miran.libreinfo.util.Text
 import me.miran.libreinfo.util.request.RequestHelper
 
 
 class DeparturesActivity : KBaseActivity("") {
+
+    private var departuresSettings by mutableStateOf(DeparturesSettings())
+
+    override fun onResume() {
+        super.onResume()
+        departuresSettings = DeparturesSettings.fromPrefs()
+    }
 
     class StopViewModel : ViewModel() {
         private val _liked = mutableStateOf(false)
@@ -90,7 +95,12 @@ class DeparturesActivity : KBaseActivity("") {
 
             val delays = DelaysDataHolder.getDelays()
             val deps = withContext(Dispatchers.IO) {
-                Departures("Work in progress...", OfflineDepartures.getOffline(s, stop.id.internal, delays))
+                Departures("Work in progress...", OfflineDepartures.getOffline(
+                    s,
+                    stop.id.internal,
+                    departuresSettings.maxEntries,
+                    delays
+                ))
             }
             departuresResult = deps
         }
@@ -123,7 +133,12 @@ class DeparturesActivity : KBaseActivity("") {
             val storage = IdStorage.getInstance()
             val departures = Departures(
                 "Work in progress...",
-                OfflineDepartures.getOffline(storage, stop.id.internal, delays)
+                OfflineDepartures.getOffline(
+                    storage,
+                    stop.id.internal,
+                    departuresSettings.maxEntries,
+                    delays
+                )
             )
 
             runOnUiThread {
@@ -185,18 +200,20 @@ class DeparturesActivity : KBaseActivity("") {
         val vm: StopViewModel = viewModel()
         val refreshing by vm.refreshing
 
-        PullToRefreshBox(refreshing, {
-            vm.setRefreshing(true)
+        CompositionLocalProvider(LocalDeparturesSettings provides departuresSettings) {
+            PullToRefreshBox(refreshing, {
+                vm.setRefreshing(true)
 
-            createDepartures(stop, true) {
-                vm.setRefreshing(false)
-            }
-        }) {
-            LazyColumn {
-                items(departures.departures) { entry ->
-                    val post = storage.postStorage.getPost(stop.id.internal, entry.postID);
+                createDepartures(stop, true) {
+                    vm.setRefreshing(false)
+                }
+            }) {
+                LazyColumn {
+                    items(departures.departures) { entry ->
+                        val post = storage.postStorage.getPost(stop.id.internal, entry.postID);
 
-                    Departure(entry, post)
+                        Departure(entry, post)
+                    }
                 }
             }
         }
@@ -243,7 +260,7 @@ class DeparturesActivity : KBaseActivity("") {
                     Divider(Modifier.padding(horizontal = 10.dp).padding(top = 4.dp))
                 }
 
-                repeat(5) {
+                repeat(departuresSettings.maxEntries) {
                     DepartureEntryRowShimmer(shimmer)
                 }
             }
