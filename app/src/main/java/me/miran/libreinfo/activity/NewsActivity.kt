@@ -2,9 +2,13 @@ package me.miran.libreinfo.activity
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.valentinilk.shimmer.Shimmer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.miran.libreinfo.R
@@ -29,7 +34,6 @@ import me.miran.libreinfo.ui.theme.AppTypography
 import me.miran.libreinfo.util.Result
 import me.miran.libreinfo.util.request.RequestHelper
 
-// TODO shimmer loading
 // TODO pagination
 class NewsActivity : KBaseActivity(R.string.news) {
 
@@ -73,7 +77,7 @@ class NewsActivity : KBaseActivity(R.string.news) {
                             }
                         }
                     } else {
-                        Loading()
+                        NewsListShimmer()
                     }
                 }
 
@@ -114,5 +118,33 @@ class NewsActivity : KBaseActivity(R.string.news) {
             }
         }
     }
+
+    @Composable
+    fun NewsListShimmer() {
+        val shimmer = rememberActivityShimmer()
+        Column(Modifier.verticalScroll(rememberScrollState())) {
+            repeat(10) { NewsEntryShimmer(shimmer) }
+        }
+    }
+
+    @Composable
+    fun NewsEntryShimmer(shimmer: Shimmer) {
+        Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Column {
+                ShimmerText(shimmer, height = 20.dp)
+                Spacer(Modifier.height(8.dp))
+                ShimmerText(shimmer, height = 8.dp, widthFraction = 0.4f)
+                Spacer(Modifier.height(8.dp))
+
+                ShimmerText(shimmer, height = 10.dp)
+                Spacer(Modifier.height(4.dp))
+                ShimmerText(shimmer, height = 10.dp)
+                Spacer(Modifier.height(4.dp))
+                ShimmerText(shimmer, height = 10.dp)
+
+            }
+        }
+    }
+
 
 }
