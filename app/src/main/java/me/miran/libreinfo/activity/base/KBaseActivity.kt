@@ -118,7 +118,6 @@ import me.miran.libreinfo.ui.theme.AppTheme
 import me.miran.libreinfo.ui.theme.AppTypography
 import me.miran.libreinfo.util.HtmlHelper
 import me.miran.libreinfo.util.LocalDeparturesSettings
-import me.miran.libreinfo.util.Pair
 import me.miran.libreinfo.util.Text
 import java.util.function.Consumer
 import kotlin.math.max
@@ -629,7 +628,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                     if (alreadyLeft) {
                         modifier = modifier.alpha(0.35f)
                     }
-                    val lineRoute: Pair<Int?, Int?> = apiStorage.getLineIdAndRoute(entry.tripId)
+                    val lineRoute = apiStorage.getLineIdAndRoute(entry.tripId)
 
                     val lineId = lineRoute.left.toString()
                     val routeId = lineRoute.right.toString()

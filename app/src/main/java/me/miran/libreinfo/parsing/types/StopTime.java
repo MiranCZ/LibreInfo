@@ -22,7 +22,7 @@ public class StopTime {
     }
 
     public SpannableString formatColoredDelay(boolean canIncludeBoth) {
-        if (arrival.equals(departure) || !canIncludeBoth) {
+        if (immediateDeparture() || !canIncludeBoth) {
             String str = arrival.addMinutes(delay).format();
 
             if (delay != 0) {
@@ -51,7 +51,7 @@ public class StopTime {
     }
 
     public String formatWithoutDelay(boolean canIncludeBoth) {
-        if (arrival.equals(departure) || !canIncludeBoth) return arrival.format();
+        if (immediateDeparture() || !canIncludeBoth) return arrival.format();
 
         return arrival.format() + " - " + departure.format();
     }
@@ -67,7 +67,7 @@ public class StopTime {
     }
 
     public int getLoweredDelay() {
-        int diff =  departure.getMinsDiff(arrival);
+        int diff = departure.getMinsDiff(arrival);
 
         return Math.max(0, delay - diff);
     }
@@ -84,6 +84,16 @@ public class StopTime {
 
     public Time getArrival() {
         return arrival.addMinutes(delay);
+    }
+
+    public Time getArrival(boolean includeDelay) {
+        if (!includeDelay) return arrival;
+
+        return getArrival();
+    }
+
+    public boolean immediateDeparture() {
+        return arrival.equals(departure);
     }
 
 }
