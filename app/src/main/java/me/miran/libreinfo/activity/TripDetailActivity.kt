@@ -11,8 +11,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -55,6 +58,8 @@ import me.miran.libreinfo.parsing.types.stop.StopId
 import me.miran.libreinfo.util.DelayUtil
 import me.miran.libreinfo.util.DelayUtil.getDelayColor
 import me.miran.libreinfo.util.request.RequestHelper
+import com.valentinilk.shimmer.Shimmer
+import kotlinx.coroutines.delay
 import java.util.function.Function
 
 // TODO periodic updates
@@ -163,11 +168,53 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
             if (data != null) {
                 TripInfo(storage!!, data)
             } else {
-                Loading()
+                TripDetailShimmer()
             }
         }
     }
 
+
+    @Composable
+    private fun TripDetailShimmer() {
+        val shimmer = rememberActivityShimmer()
+
+        Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    ShimmerLineIcon(shimmer)
+                    Box(Modifier.weight(1f).padding(start = 8.dp)) {
+                        ShimmerText(shimmer, widthFraction = 0.6f, variance = 0.15f, height = 20.dp)
+                    }
+                }
+
+                Spacer(Modifier.height(2.dp))
+                ShimmerText(shimmer, widthFraction = 0.2f, variance = 0.1f, height = 12.dp)
+                Spacer(Modifier.height(2.dp))
+                ShimmerText(shimmer, widthFraction = 0.35f, variance = 0.1f, height = 12.dp)
+                Spacer(Modifier.height(4.dp))
+
+                repeat(20) {
+                    StopRowShimmer(shimmer)
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun StopRowShimmer(shimmer: Shimmer) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ShimmerBox(Modifier.size(20.dp), shimmer, shape = CircleShape)
+            Box(Modifier.weight(1f).padding(start = 8.dp, end = 4.dp)) {
+                ShimmerText(shimmer, widthFraction = 0.7f, variance = 0.2f)
+            }
+            ShimmerBox(Modifier.width(50.dp).height(14.dp), shimmer)
+        }
+    }
 
     @Composable
     private fun TripInfo(storage: IdStorage, data: TripInfoData) {
