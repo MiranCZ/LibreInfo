@@ -1,0 +1,13 @@
+server:
+  host: 0.0.0.0
+  port: 8080
+
+osm: /input/osm/region.osm.pbf
+
+timetable:
+  with_shapes: true
+  datasets:
+    jmk:
+      path: /input/gtfs
+
+geocoding: false

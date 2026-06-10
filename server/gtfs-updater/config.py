@@ -15,3 +15,5 @@ OSM_PATH = OSM_DIR / "region.osm.pbf"
 GTFS_ETAG_FILE = RAW_DIR / ".gtfs-etag"
 GTFS_HASH_FILE = RAW_DIR / ".gtfs-hash"
 OSM_HASH_FILE = OSM_DIR / ".osm-hash"
+
+MOTIS_IMPORTED_FILE = RAW_DIR / ".motis-imported"
