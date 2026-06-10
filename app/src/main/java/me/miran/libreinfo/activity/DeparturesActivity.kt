@@ -228,44 +228,12 @@ class DeparturesActivity : KBaseActivity("") {
 
         LazyColumn {
             items(entries) { postName ->
-                DepartureEntryShimmer(shimmer, postName = postName)
+                DepartureEntryShimmer(shimmer, postName = postName, repeat = departuresSettings.maxEntries)
             }
         }
     }
 
-    @Composable
-    fun DepartureEntryShimmer(shimmer: Shimmer, postName: String?) {
-        Container(
-            innerPadding = 0.dp,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Column(Modifier.padding(vertical = 8.dp, horizontal = 6.dp)) {
-                Column(Modifier.padding(bottom = 4.dp)) {
-                    Crossfade(targetState = postName) { name ->
-                        if (name != null) {
-                            Text(
-                                name,
-                                color = colorResource(R.color.secondaryColor),
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp)
-                                    .padding(top = 8.dp)
-                            )
-                        } else {
-                            Box(Modifier.padding(horizontal = 16.dp).padding(top = 8.dp)) {
-                                ShimmerText(shimmer, height=18.dp, widthFraction = 0.4f, variance = 0.15f)
-                            }
-                        }
-                    }
-                    Divider(Modifier.padding(horizontal = 10.dp).padding(top = 4.dp))
-                }
 
-                repeat(departuresSettings.maxEntries) {
-                    DepartureEntryRowShimmer(shimmer)
-                }
-            }
-        }
-    }
 
 
 

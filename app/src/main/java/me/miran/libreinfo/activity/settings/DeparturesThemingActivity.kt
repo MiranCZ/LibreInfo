@@ -1,5 +1,6 @@
 package me.miran.libreinfo.activity.settings
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +15,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
 import me.miran.libreinfo.parsing.storage.IdStorage
@@ -54,7 +58,19 @@ class DeparturesThemingActivity : KBaseActivity(R.string.departures_theming) {
     @Composable
     override fun CreateElements() {
         val vm: DeparturesSettingsViewModel = viewModel()
-        LaunchedEffect(Unit) { vm.load() }
+
+        var storage: IdStorage? by remember { mutableStateOf(IdStorage.getInstanceOrNull()) }
+
+        LaunchedEffect(Unit) {
+            vm.load()
+
+            val storageRes = withContext(Dispatchers.IO) {
+                IdStorage.getInstance()
+            }
+
+            storage = storageRes
+
+        }
         val settings = vm.settings
 
         val translationMap = mapOf(
@@ -66,7 +82,14 @@ class DeparturesThemingActivity : KBaseActivity(R.string.departures_theming) {
         CompositionLocalProvider(LocalDeparturesSettings provides settings) {
             LazyColumn {
                 item {
-                    PreviewCard()
+                    Crossfade(targetState = storage) { local ->
+                        if (local != null) {
+                            PreviewCard("Náhled",local)
+                        } else {
+                            DepartureEntryShimmer(rememberActivityShimmer(), "Náhled")
+                        }
+                    }
+
                 }
                 item {
                     SettingDropdown(stringResource(R.string.delay_render), settings.delayRender, DelayRenderType.entries, displayString = {
@@ -93,9 +116,10 @@ class DeparturesThemingActivity : KBaseActivity(R.string.departures_theming) {
     }
 
     @Composable
-    private fun PreviewCard() {
+    private fun PreviewCard(name: String,storage: IdStorage) {
         DeparturePreview(
-            "Hlavní nádraží",
+            name,
+            storage,
             PreviewEntry(
                 lineId = 1,
                 destination = "Rakovecká",
@@ -149,10 +173,8 @@ class DeparturesThemingActivity : KBaseActivity(R.string.departures_theming) {
     }
 
     @Composable
-    private fun DeparturePreview(name: String, vararg entries: PreviewEntry) {
+    private fun DeparturePreview(name: String, storage: IdStorage, vararg entries: PreviewEntry) {
         val inputEntries = ArrayList<DepartureEntry>()
-
-        val storage = IdStorage.getInstanceOrNull()!!
 
         for (entry in entries) {
             val stopTime = StopTime(Time.now().addMinutes(entry.minutesFromNow-entry.delayMinutes))
