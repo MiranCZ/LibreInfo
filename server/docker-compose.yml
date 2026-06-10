@@ -110,7 +110,7 @@ services:
     restart: unless-stopped
     volumes:
       - news-data:/data
-      - ./secrets:/secrets:ro
+      - ./secrets:/secrets
     environment:
       - NEWSLETTER_SENDER=info@dpmb.cz
       - NEWSLETTER_SUBJECT=Newsletter
