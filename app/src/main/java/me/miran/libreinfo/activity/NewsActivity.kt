@@ -3,6 +3,7 @@ package me.miran.libreinfo.activity
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -132,16 +133,11 @@ class NewsActivity : KBaseActivity(R.string.news) {
         Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Column {
                 ShimmerText(shimmer, height = 20.dp)
-                Spacer(Modifier.height(8.dp))
-                ShimmerText(shimmer, height = 8.dp, widthFraction = 0.4f)
-                Spacer(Modifier.height(8.dp))
-
-                ShimmerText(shimmer, height = 10.dp)
+                Spacer(Modifier.height(12.dp))
+                ShimmerText(shimmer, height = 12.dp, widthFraction = 0.4f)
                 Spacer(Modifier.height(4.dp))
-                ShimmerText(shimmer, height = 10.dp)
-                Spacer(Modifier.height(4.dp))
-                ShimmerText(shimmer, height = 10.dp)
 
+                ShimmerBox(Modifier.fillMaxWidth().height(42.dp), shimmer)
             }
         }
     }
