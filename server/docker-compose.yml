@@ -22,6 +22,7 @@ services:
     depends_on:
       - scraper
       - gtfs-rt
+      - motis
     networks:
       - internal
 
@@ -78,11 +79,38 @@ services:
     networks:
       - internal
 
+  motis:
+    image: ghcr.io/motis-project/motis:pr-1469
+    container_name: motis
+    restart: unless-stopped
+    volumes:
+      - motis-data:/data
+      - ./motis/config.yml:/data/config.yml:ro
+      - gtfs-data:/input/gtfs:ro
+      - osm-data:/input/osm:ro
+    networks:
+      - internal
+
+  motis-import:
+    image: ghcr.io/motis-project/motis:pr-1469
+    container_name: motis-import
+    profiles: [tools]
+    restart: "no"
+    command: ["/motis", "import"]
+    volumes:
+      - motis-data:/data
+      - ./motis/config.yml:/config.yml:ro
+      - gtfs-data:/input/gtfs:ro
+      - osm-data:/input/osm:ro
+    networks:
+      - internal
+
   
 volumes:
   gtfs-raw:
   gtfs-data:
   osm-data:
+  motis-data:
   caddy_data:
   caddy_config:
 

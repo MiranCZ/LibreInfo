@@ -102,6 +102,22 @@ def run_pfaedle(docker_client: docker.DockerClient) -> None:
     log.info("pfaedle finished successfully")
 
 
+def run_motis_import(docker_client: docker.DockerClient) -> None:
+    log.info("Running MOTIS import...")
+
+    container = docker_client.containers.get("motis-import")
+    container.start()
+
+    for line in container.logs(stream=True, follow=True):
+        log.info(f"[motis-import] {line.decode().rstrip()}")
+
+    exit_code = container.wait()["StatusCode"]
+    if exit_code != 0:
+        raise RuntimeError(f"motis-import exited with code {exit_code}")
+
+    log.info("MOTIS import finished successfully")
+
+
 def ensure_running(docker_client: docker.DockerClient, name: str) -> bool:
     """Start container if not already running. Returns True if it was started."""
     container = docker_client.containers.get(name)
@@ -143,8 +159,13 @@ def main() -> None:
         if not gtfs_changed and not osm_changed:
             log.info("Nothing changed. Ensuring containers are running...")
             ensure_running(docker_client, "gtfs-static")
-            # TODO add motis lol
-            # ensure_running(docker_client, "motis")
+            if not MOTIS_IMPORTED_FILE.exists():
+                log.info("MOTIS not imported yet, bootstrapping import...")
+                run_motis_import(docker_client)
+                MOTIS_IMPORTED_FILE.write_text("ok")
+                restart_motis(docker_client)
+            else:
+                ensure_running(docker_client, "motis")
             log.info("Done")
             return
 
@@ -156,8 +177,9 @@ def main() -> None:
         log.info(f"Changes detected: {', '.join(reasons)}")
 
         run_pfaedle(docker_client)
-        # TODO add motis lol
-        # restart_motis(docker_client)
+        run_motis_import(docker_client)
+        MOTIS_IMPORTED_FILE.write_text("ok")
+        restart_motis(docker_client)
         restart_static_api(docker_client)
     except Exception as e:
         log.error(f"Update failed during processing: {e}")
