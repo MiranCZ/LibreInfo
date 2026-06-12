@@ -12,6 +12,7 @@ class MainActivity : NavigationActivity(R.string.app_name) {
     override fun CreateNavigation() {
         NavigationItem(R.drawable.bus_light_full, R.string.departures, SearchActivity::class)
         NavigationItem(R.drawable.location_arrow, R.string.vehicle_map, VehicleMapActivity::class, true)
+        NavigationItem(R.drawable.map_regular_full, R.string.connection_search, ConnectionSearchActivity::class, true)
         NavigationItem(R.drawable.list_ul_regular, R.string.vehicles, VehiclesListActivity::class, true)
         NavigationItem(R.drawable.bolt_regular, R.string.events, EventsActivity::class, true)
         NavigationItem(R.drawable.triangle_exclamation_regular, R.string.diversions, DiversionsActivity::class, true)

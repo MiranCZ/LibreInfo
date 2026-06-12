@@ -1,5 +1,6 @@
 package me.miran.libreinfo.activity
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -51,6 +52,11 @@ import me.miran.libreinfo.util.FuzzySearch
 import me.miran.libreinfo.util.request.RequestHelper
 
 class SearchActivity : KBaseActivity(R.string.departures) {
+
+    companion object {
+        const val EXTRA_PICKER_MODE = "picker_mode"
+        const val EXTRA_RESULT_STOP = "stop"
+    }
 
     class SearchViewModel : ViewModel() {
         private val _liked = mutableStateOf(true)
@@ -188,9 +194,12 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .clickable(null, ripple(), onClick = {
-                                    startActivity(
-                                        DeparturesActivity::class
-                                    ) { intent -> intent.putExtra("stop", item) }
+                                    if (intent.getBooleanExtra(EXTRA_PICKER_MODE, false)) {
+                                        setResult(RESULT_OK, Intent().apply { putExtra(EXTRA_RESULT_STOP, item) })
+                                        finish()
+                                    } else {
+                                        startActivity(DeparturesActivity::class) { i -> i.putExtra("stop", item) }
+                                    }
                                 })
                                 .padding(17.dp)
                                 .fillMaxWidth()

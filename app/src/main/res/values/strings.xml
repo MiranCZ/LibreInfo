@@ -14,6 +14,7 @@
     <string name="diversions">Změny v dopravě</string>
     <string name="news">Novinky</string>
     <string name="schemes">Schémata linek</string>
+    <string name="connection_search">Hledání spojení</string>
     <string name="settings">Nastavení</string>
     <string name="dev_settings">Dev settings</string>
     <string name="about">O aplikaci</string>
@@ -28,6 +29,10 @@
     <string name="vehicle_delay">Zdržení:</string>
     <string name="from">Od</string>
     <string name="to">Do</string>
+    <string name="departure_date">Datum odjezdu</string>
+    <string name="departure_time">Čas odjezdu</string>
+    <string name="search">Hledat</string>
+    <string name="connection_results">Výsledky hledání</string>
     <string name="on_time">Včas</string>
     <string name="vehicle_number">Vůz %d</string>
     <string name="trip">Trasa</string>

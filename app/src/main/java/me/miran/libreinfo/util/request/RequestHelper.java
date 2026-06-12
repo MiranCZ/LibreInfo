@@ -75,6 +75,12 @@ public class RequestHelper {
         return makeOwnRequest(context, "stopdelays?stopid="+stopId.original(), JsonObject.class);
     }
 
+    public static JsonObject findConnections(Context context, int fromStopId, int toStopId, String time) throws RequestException {
+        return makeOwnRequest(context,
+                "findConnections?fromStop=U" + fromStopId + "&toStop=U" + toStopId,
+                JsonObject.class);
+    }
+
     private static <T extends JsonElement> T makeOwnRequest(Context context, String endpoint, Class<T> type) throws RequestException {
         try {
             InputStream stream = readUrl(context, Endpoint.APP_SERVER.resolve(endpoint));

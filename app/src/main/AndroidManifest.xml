@@ -112,6 +112,16 @@
             android:parentActivityName=".activity.MainActivity">
         </activity>
 
+        <activity
+            android:name=".activity.ConnectionSearchActivity"
+            android:parentActivityName=".activity.MainActivity">
+        </activity>
+
+        <activity
+            android:name=".activity.ConnectionResultsActivity"
+            android:parentActivityName=".activity.ConnectionSearchActivity">
+        </activity>
+
 
     </application>
 
