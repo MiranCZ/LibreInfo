@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import me.miran.libreinfo.parsing.storage.IdStorage;
 import me.miran.libreinfo.parsing.storage.StopMapper;
 import me.miran.libreinfo.parsing.types.Location;
+import me.miran.libreinfo.util.AppInputStream;
 import me.miran.libreinfo.util.IOUtil;
 import me.miran.libreinfo.util.PreferencesHolder;
 
@@ -51,7 +52,7 @@ public final class Stop implements Parcelable {
         }
     };
 
-    public static List<Stop> parseStops(DataInputStream is, PreferencesHolder favStops, StopMapper mapper) throws IOException {
+    public static List<Stop> parseStops(AppInputStream is, PreferencesHolder favStops, StopMapper mapper) throws IOException {
         List<Stop> result = new ArrayList<>();
 
         while (is.readBoolean()) {
@@ -61,14 +62,10 @@ public final class Stop implements Parcelable {
         return result;
     }
 
-    public static Stop parse(DataInputStream is, PreferencesHolder favStops, StopMapper mapper) throws IOException {
+    public static Stop parse(AppInputStream is, PreferencesHolder favStops, StopMapper mapper) throws IOException {
         int stopId = is.readInt();
 
-        int nameLen = is.readInt();
-
-        byte[] result = IOUtil.readNBytes(is, nameLen);
-
-        String name = new String(result, StandardCharsets.UTF_8);
+        String name = is.readString();
 
         double lat = is.readDouble();
         double lon = is.readDouble();

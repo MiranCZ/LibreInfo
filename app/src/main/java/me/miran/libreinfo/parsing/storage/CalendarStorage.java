@@ -2,7 +2,6 @@ package me.miran.libreinfo.parsing.storage;
 
 import android.util.Log;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -12,12 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.miran.libreinfo.util.AppInputStream;
+
 public class CalendarStorage {
 
     private final Map<Integer, CalendarEntry> serviceToCalendar;
     private final Map<Integer, Map<Date, ExceptionType>> exceptions;
 
-    public static CalendarStorage parse(DataInputStream calendar, DataInputStream calendarDates) {
+    public static CalendarStorage parse(AppInputStream calendar, AppInputStream calendarDates) {
         try(calendar) {
             return parseInternal(calendar, calendarDates);
         } catch (IOException e) {
@@ -26,7 +27,7 @@ public class CalendarStorage {
         }
     }
 
-    public static CalendarStorage parseInternal(DataInputStream calendarIs, DataInputStream calendarDatesIs) throws IOException {
+    public static CalendarStorage parseInternal(AppInputStream calendarIs, AppInputStream calendarDatesIs) throws IOException {
         long ms = System.currentTimeMillis();
 
         List<CalendarEntry> entries = new ArrayList<>();

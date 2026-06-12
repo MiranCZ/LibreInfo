@@ -9,11 +9,9 @@ import me.miran.libreinfo.parsing.storage.IdStorage;
 import me.miran.libreinfo.parsing.storage.StopStorage;
 import me.miran.libreinfo.parsing.types.stop.Stop;
 import me.miran.libreinfo.parsing.types.stop.StopId;
-import me.miran.libreinfo.util.IOUtil;
+import me.miran.libreinfo.util.AppInputStream;
 
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +37,7 @@ public record Post(Stop stop, int postID, String name, Location location) implem
         }
     };
 
-    public static List<Post> parsePosts(DataInputStream array, StopStorage stopStorage) throws IOException {
+    public static List<Post> parsePosts(AppInputStream array, StopStorage stopStorage) throws IOException {
         List<Post> result = new ArrayList<>();
         int size = array.readInt();
 
@@ -50,14 +48,11 @@ public record Post(Stop stop, int postID, String name, Location location) implem
         return result;
     }
 
-    public static Post parse(DataInputStream is, StopStorage stopStorage) throws IOException {
+    public static Post parse(AppInputStream is, StopStorage stopStorage) throws IOException {
         int stopId = is.readShort();
         int postId = is.readShort();
 
-        int nameLen = is.readInt();
-        byte[] bytes = IOUtil.readNBytes(is, nameLen);
-
-        String name = new String(bytes, StandardCharsets.UTF_8);
+        String name = is.readString();
 
         double lat = is.readDouble();
         double lng = is.readDouble();

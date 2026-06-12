@@ -2,17 +2,17 @@ package me.miran.libreinfo.parsing.storage;
 
 import me.miran.libreinfo.parsing.types.stop.Stop;
 import me.miran.libreinfo.parsing.types.stop.StopId;
+import me.miran.libreinfo.util.AppInputStream;
 import me.miran.libreinfo.util.FuzzySearch;
 import me.miran.libreinfo.util.PreferencesHolder;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
 public class StopStorage {
 
-    public static StopStorage parse(DataInputStream is, PreferencesHolder favStops, StopMapper mapper) {
+    public static StopStorage parse(AppInputStream is, PreferencesHolder favStops, StopMapper mapper) {
         List<Stop> stops;
         try(is) {
             stops = Stop.parseStops(is, favStops, mapper);

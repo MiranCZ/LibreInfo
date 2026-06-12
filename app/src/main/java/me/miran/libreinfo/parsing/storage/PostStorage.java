@@ -3,8 +3,8 @@ package me.miran.libreinfo.parsing.storage;
 import me.miran.libreinfo.parsing.types.Location;
 import me.miran.libreinfo.parsing.types.Post;
 import me.miran.libreinfo.parsing.types.stop.Stop;
+import me.miran.libreinfo.util.AppInputStream;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,7 +12,7 @@ import java.util.List;
 
 public class PostStorage {
 
-    public static PostStorage parse(DataInputStream array, StopStorage stopStorage) {
+    public static PostStorage parse(AppInputStream array, StopStorage stopStorage) {
         List<Post> posts = null;
         try(array) {
             posts = Post.parsePosts(array, stopStorage);

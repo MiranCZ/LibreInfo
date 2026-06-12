@@ -3,11 +3,9 @@ package me.miran.libreinfo.parsing.storage;
 import android.graphics.Color;
 
 import me.miran.libreinfo.parsing.types.LineAlias;
-import me.miran.libreinfo.util.IOUtil;
+import me.miran.libreinfo.util.AppInputStream;
 
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -18,17 +16,14 @@ import java.util.Optional;
 
 public class LineStorage {
 
-    public static LineStorage parse(DataInputStream is) {
+    public static LineStorage parse(AppInputStream is) {
         List<LineAlias> aliases = new ArrayList<>();
 
         try(is) {
             while (is.readBoolean()) {
                 int routeId = is.readInt();
 
-                int nameLen = is.readInt();
-                byte[] result = IOUtil.readNBytes(is, nameLen);
-
-                String name = new String(result, StandardCharsets.UTF_8);
+                String name = is.readString();
 
                 String background = readColor(is);
                 String text = readColor(is);
@@ -44,7 +39,7 @@ public class LineStorage {
     }
 
 
-    private static String readColor(DataInputStream is) throws IOException {
+    private static String readColor(AppInputStream is) throws IOException {
         int r = is.read();
         int g = is.read();
         int b = is.read();

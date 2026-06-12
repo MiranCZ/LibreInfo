@@ -3,18 +3,16 @@ package me.miran.libreinfo.parsing.storage;
 import android.util.SparseArray;
 
 import me.miran.libreinfo.parsing.types.Trip;
-import me.miran.libreinfo.util.IOUtil;
+import me.miran.libreinfo.util.AppInputStream;
 
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 public class TripStorage {
 
-    public static TripStorage parse(DataInputStream is){
+    public static TripStorage parse(AppInputStream is){
         try(is) {
             int size = is.readInt();
 
@@ -22,11 +20,8 @@ public class TripStorage {
 
             for (int i = 0; i < size; i++) {
                 int key = is.readInt();
-                int byteSize = is.readInt();
 
-                byte[] bytes = IOUtil.readNBytes(is, byteSize);
-
-                String name = new String(bytes, StandardCharsets.UTF_8);
+                String name = is.readString();
 
                 headsignPool[key] = name;
             }

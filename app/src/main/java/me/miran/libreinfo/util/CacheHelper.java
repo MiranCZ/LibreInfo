@@ -11,7 +11,6 @@ import com.google.gson.JsonElement;
 import org.tukaani.xz.XZInputStream;
 
 import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -59,12 +58,10 @@ public class CacheHelper {
 
             XZInputStream inputStream = new XZInputStream(buff);
 
-            DataInputStream is = new DataInputStream(inputStream);
+            AppInputStream is = new AppInputStream(inputStream);
 
             while (is.readBoolean()) {
-                int nameLen = is.readInt();
-                byte[] nameBytes = IOUtil.readNBytes(is, nameLen);
-                String name = new String(nameBytes, StandardCharsets.UTF_8);
+                String name = is.readString();
 
                 Log.d("DataCache", "extracting "+name);
                 int dataLen = is.readInt();
@@ -90,45 +87,45 @@ public class CacheHelper {
         }
     }
 
-    public static DataInputStream getApi(Context context) throws AppException {
+    public static AppInputStream getApi(Context context) throws AppException {
         return readCache(context, "api");
     }
 
-    public static DataInputStream getStopMapping(Context context) throws AppException {
+    public static AppInputStream getStopMapping(Context context) throws AppException {
         return readCache(context, "stop_mapping");
     }
 
-    public static DataInputStream getCalendar(Context context) throws AppException {
+    public static AppInputStream getCalendar(Context context) throws AppException {
         return readCache(context, "calendar");
     }
 
-    public static DataInputStream getCalendarDates(Context context) throws AppException {
+    public static AppInputStream getCalendarDates(Context context) throws AppException {
         return readCache(context, "calendar_dates");
     }
 
-    public static DataInputStream getStopTimes(Context context) throws AppException {
+    public static AppInputStream getStopTimes(Context context) throws AppException {
         return readCache(context, "stop_times");
     }
 
-    public static DataInputStream getTrips(Context context) throws AppException {
+    public static AppInputStream getTrips(Context context) throws AppException {
         return readCache(context, "trips");
     }
 
-    public static DataInputStream getStops(Context context) throws AppException {
+    public static AppInputStream getStops(Context context) throws AppException {
         return readCache(context, "stops");
     }
 
-    public static DataInputStream getLineAliases(Context context) throws AppException {
+    public static AppInputStream getLineAliases(Context context) throws AppException {
         return readCache(context, "lines");
     }
 
-    public static DataInputStream getPosts(Context context) throws AppException {
+    public static AppInputStream getPosts(Context context) throws AppException {
         return readCache(context, "posts");
     }
 
-    private static DataInputStream readCache(Context context, String... name) throws AppException {
+    private static AppInputStream readCache(Context context, String... name) throws AppException {
         try {
-            return new DataInputStream(new BufferedInputStream(new FileInputStream(getCachedPath(context, name).toFile())));
+            return new AppInputStream(new BufferedInputStream(new FileInputStream(getCachedPath(context, name).toFile())));
         } catch (Exception e) {
             throw new AppException("Failed to read cache file "+ Arrays.toString(name));
         }

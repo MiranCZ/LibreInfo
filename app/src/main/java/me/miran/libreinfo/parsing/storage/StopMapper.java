@@ -1,14 +1,15 @@
 package me.miran.libreinfo.parsing.storage;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import me.miran.libreinfo.util.AppInputStream;
+
 public class StopMapper {
 
 
-    public static StopMapper parse(DataInputStream is) {
+    public static StopMapper parse(AppInputStream is) {
         try (is) {
             int size = is.readInt();
 

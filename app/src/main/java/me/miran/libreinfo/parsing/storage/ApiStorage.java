@@ -1,14 +1,14 @@
 package me.miran.libreinfo.parsing.storage;
 
+import me.miran.libreinfo.util.AppInputStream;
 import me.miran.libreinfo.util.Pair;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
 public class ApiStorage {
 
-    public static ApiStorage parse(DataInputStream is){
+    public static ApiStorage parse(AppInputStream is){
         try (is) {
             int size = is.readInt();
 
