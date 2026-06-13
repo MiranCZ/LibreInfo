@@ -10,6 +10,7 @@ import me.miran.libreinfo.exception.AppException;
 import me.miran.libreinfo.exception.RequestException;
 import me.miran.libreinfo.parsing.storage.IdStorage;
 import me.miran.libreinfo.parsing.storage.StopMapper;
+import me.miran.libreinfo.parsing.types.stop.Stop;
 import me.miran.libreinfo.parsing.types.stop.StopId;
 import me.miran.libreinfo.util.IOUtil;
 import com.google.gson.*;
@@ -75,9 +76,9 @@ public class RequestHelper {
         return makeOwnRequest(context, "stopdelays?stopid="+stopId.original(), JsonObject.class);
     }
 
-    public static JsonObject findConnections(Context context, int fromStopId, int toStopId, String time) throws RequestException {
+    public static JsonObject findConnections(Context context, Stop fromStop, Stop toStop, String time) throws RequestException {
         return makeOwnRequest(context,
-                "findConnections?fromStop=U" + fromStopId + "&toStop=U" + toStopId,
+                "findConnections?fromStop=" + fromStop.parentStation + "&toStop=" + toStop.parentStation,
                 JsonObject.class);
     }
 

@@ -33,7 +33,7 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
         LaunchedEffect(Unit) {
             val r = withContext(Dispatchers.IO) {
                 try {
-                    val res = RequestHelper.findConnections(context, fromStop.id.original(), toStop.id.original(), departureTime)
+                    val res = RequestHelper.findConnections(context, fromStop, toStop, departureTime)
                     Result.ok<JsonObject?, RequestException>(res)
                 } catch (e: RequestException) {
                     Result.err(e)

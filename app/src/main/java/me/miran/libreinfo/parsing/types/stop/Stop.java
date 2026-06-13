@@ -9,12 +9,9 @@ import me.miran.libreinfo.parsing.storage.IdStorage;
 import me.miran.libreinfo.parsing.storage.StopMapper;
 import me.miran.libreinfo.parsing.types.Location;
 import me.miran.libreinfo.util.AppInputStream;
-import me.miran.libreinfo.util.IOUtil;
 import me.miran.libreinfo.util.PreferencesHolder;
 
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -22,18 +19,20 @@ import java.util.Objects;
 public final class Stop implements Parcelable {
 
 
-    public static Stop NONE = new Stop(StopId.NONE, "UNKNOWN", Location.NONE, PreferencesHolder.NONE);
+    public static Stop NONE = new Stop(StopId.NONE, "UNKNOWN", "UNKNOWN", Location.NONE, PreferencesHolder.NONE);
 
     public final StopId id;
     public final String name;
+    public final String parentStation;
     public final Location location;
     private final PreferencesHolder favStops;
 
     private boolean favourite;
 
-    public Stop(StopId id, String name, Location location, PreferencesHolder favStops) {
+    public Stop(StopId id, String name, String parentStation, Location location, PreferencesHolder favStops) {
         this.id = id;
         this.name = name;
+        this.parentStation = parentStation;
         this.location = location;
         this.favStops = favStops;
         this.favourite = favStops.getBoolean(id.internal(), false);
@@ -66,6 +65,7 @@ public final class Stop implements Parcelable {
         int stopId = is.readInt();
 
         String name = is.readString();
+        String parentStation = is.readString();
 
         double lat = is.readDouble();
         double lon = is.readDouble();
@@ -73,7 +73,7 @@ public final class Stop implements Parcelable {
         StopId id = new StopId(stopId,mapper.getOriginal(stopId));
 
         // TODO set favourite
-        return new Stop(id, name, new Location(lat, lon), favStops);
+        return new Stop(id, name, parentStation, new Location(lat, lon), favStops);
     }
 
     public void setFavourite(boolean favourite) {
