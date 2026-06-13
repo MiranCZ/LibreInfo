@@ -3,6 +3,8 @@ server:
   port: 8080
 
 osm: /input/osm/region.osm.pbf
+street_routing: true
+osr_footpath: true
 
 timetable:
   with_shapes: true

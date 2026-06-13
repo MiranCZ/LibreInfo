@@ -10,7 +10,7 @@ GTFS_STATIC_URL = "http://gtfs-static:8080"
 GTFS_RT_URL = "http://gtfs-rt:8080"
 NEWS_URL = "http://news:8080"
 MOTIS_URL = "http://motis:8080"
-MOTIS_PLAN_PATH = "/api/v1/plan"
+MOTIS_PLAN_PATH = "/api/v6/plan"
 
 api = Flask(__name__)
 # TODO figure out what limits make sense here

@@ -34,6 +34,8 @@ def _trim_leg(leg: dict) -> dict:
         out["distance"] = leg["distance"]
     if leg.get("tripId"):
         out["tripId"] = _trim_prefix(leg["tripId"])
+    if leg.get("distance"):
+        out["distance"] = leg["distance"]
     return out
 
 
