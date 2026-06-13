@@ -85,7 +85,7 @@ services:
     restart: unless-stopped
     volumes:
       - motis-data:/data
-      - ./motis/config.yml:/data/config.yml:ro
+      - ./motis/config.yml:/config.yml:ro
       - gtfs-data:/input/gtfs:ro
       - osm-data:/input/osm:ro
     networks:
