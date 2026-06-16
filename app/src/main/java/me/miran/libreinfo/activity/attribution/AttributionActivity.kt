@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -57,6 +56,12 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
                 "Pfaedle",
                 "Nástroj pro přesné mapování tras veřejné dopravy",
                 R.drawable.pfaedle_icon
+            )
+
+            AttributionItem(
+                "Motis",
+                "Nástroj pro vyhledávání spojení a plánování cest ve veřejné dopravě",
+                R.drawable.motis_icon
             )
         }
     }
