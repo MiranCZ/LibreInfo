@@ -17,5 +17,6 @@
     <color name="secondaryColor">@color/white</color>
     <color name="ui_warning">#360F0F</color>
     <color name="app_background">#0B0B0B</color>
+    <color name="shimmer_color">#555555</color>
 
 </resources>

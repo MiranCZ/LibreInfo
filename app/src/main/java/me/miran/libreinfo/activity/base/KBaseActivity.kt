@@ -388,7 +388,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
 
     @Composable
     fun ShimmerBox(modifier: Modifier, shimmer: Shimmer, shape: Shape = RoundedCornerShape(4.dp)) {
-        Box(modifier.shimmer(shimmer).background(colorResource(R.color.mid_gray), shape))
+        Box(modifier.shimmer(shimmer).background(colorResource(R.color.shimmer_color), shape))
     }
 
     @Composable
