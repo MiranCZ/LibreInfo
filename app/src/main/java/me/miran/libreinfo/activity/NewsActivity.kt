@@ -93,7 +93,14 @@ class NewsActivity : KBaseActivity(R.string.news) {
 
     @Composable
     fun NewsEntry(news: News) {
-        Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Container(
+            onClick = {
+                startActivity(NewsDetailActivity::class) {
+                    it.putExtra("news", news)
+                }
+            },
+            Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
             Column {
                 Text(
                     text = news.title,
