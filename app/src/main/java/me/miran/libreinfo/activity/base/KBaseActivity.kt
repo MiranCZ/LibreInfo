@@ -242,15 +242,15 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
     }
 
     @Composable
-    fun Container(onClick: () -> Unit,modifier: Modifier = Modifier, innerPadding: Dp = 16.dp, content: @Composable BoxScope.() -> Unit) {
-        Card(modifier = modifier.fillMaxWidth(), colors = CardDefaults.cardColors().copy(containerColor =  colorResource(R.color.widget_background)), onClick = onClick) {
+    fun Container(onClick: () -> Unit,modifier: Modifier = Modifier, innerPadding: Dp = 16.dp, color: Color = colorResource(R.color.widget_background), content: @Composable BoxScope.() -> Unit) {
+        Card(modifier = modifier.fillMaxWidth(), colors = CardDefaults.cardColors().copy(containerColor = color), onClick = onClick) {
             Box(Modifier.padding(innerPadding), content= content)
         }
     }
 
     @Composable
-    fun Container(modifier: Modifier = Modifier, innerPadding: Dp = 16.dp, content: @Composable BoxScope.() -> Unit) {
-        Card(modifier = modifier.fillMaxWidth(), colors = CardDefaults.cardColors().copy(containerColor =  colorResource(R.color.widget_background))) {
+    fun Container(modifier: Modifier = Modifier, innerPadding: Dp = 16.dp, color: Color = colorResource(R.color.widget_background), content: @Composable BoxScope.() -> Unit) {
+        Card(modifier = modifier.fillMaxWidth(), colors = CardDefaults.cardColors().copy(containerColor = color)) {
             Box(Modifier.padding(innerPadding), content= content)
         }
     }

@@ -6,7 +6,10 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -66,6 +69,21 @@ public record DateTime(int day, int month, int year, int hours, int minutes) imp
         return new DateTime(day, month, year, hours, minutes);
     }
 
+    public static DateTime parseISO8601(String str) {
+        var timestamp = Instant.parse(str);
+
+        ZonedDateTime zdt = timestamp.atZone(ZoneId.of("Europe/Prague"));
+
+        int day = zdt.getDayOfMonth();
+        int month = zdt.getMonthValue();
+        int year = zdt.getYear();
+
+        int hours = zdt.getHour();
+        int minutes = zdt.getMinute();
+
+        return new DateTime(day, month, year, hours, minutes);
+    }
+
     public static DateTime parseEpoch(String str) {
         long epoch = Long.parseLong(str)*1_000;
 
@@ -114,6 +132,10 @@ public record DateTime(int day, int month, int year, int hours, int minutes) imp
         String fromStr = from.toTimeString();
 
         return List.of(fromStr, to.toTimeString());
+    }
+
+    public LocalDateTime toLocalDateTime() {
+        return LocalDateTime.of(year, month, day, hours, minutes);
     }
 
     @NonNull
