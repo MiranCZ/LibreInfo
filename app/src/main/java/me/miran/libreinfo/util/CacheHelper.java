@@ -1,5 +1,7 @@
 package me.miran.libreinfo.util;
 
+import static me.miran.libreinfo.util.StorageFile.*;
+
 import android.content.Context;
 import android.util.Log;
 
@@ -15,10 +17,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 
@@ -27,34 +31,52 @@ import kotlin.text.Charsets;
 public class CacheHelper {
 
     private static long serverUpdateTime = -1;
+    private static boolean initCalled = false;
 
-    public static void init(Context context) throws AppException {
-        serverUpdateTime = RequestHelper.getLastStaticUpdate(context);
-    }
+    public static void init(Context context) {
+        if (initCalled) {
+            throw new IllegalStateException("'init' called multiple times!");
+        }
+        initCalled = true;
 
-    public static RandomAccessFile getRouteStopsRAF(Context context) throws AppException {
         try {
-            return new RandomAccessFile(getCachedPath(context, "route_stops").toFile(), "r");
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            serverUpdateTime = RequestHelper.getLastStaticUpdate(context);
+        } catch (AppException e) {
+            Log.e("DataCache", "failed to get static update timestamp "+e.getMessage());
+            e.printStackTrace();
         }
     }
 
     public static void initializeData(Context context) throws AppException {
-        if (!isCached(context, "data")) {
+        boolean freshFetch = false;
 
-            // FIXME do buffered or something
-            try {
-                writeToCache(IOUtil.readAllBytes(RequestHelper.getData(context)), context, "data");
+        if (!isCached(context, "data")) {
+            freshFetch = true;
+
+            try(var data = RequestHelper.getData(context)) {
+                writeToCache(data, context, "data");
             } catch (Exception e) {
                 throw new AppException("Failed to write to cache");
             }
         } else {
-            return; // FIXME figure out if it is needed to extract the file, although tbf if someone deletes them its just a skill issue
+            boolean allExtraced = true;
+
+            for (var file : StorageFile.values()) {
+                if (!Files.exists(getCachedPath(context, file))) {
+                    Log.d("DataCache", file.fileName + " was not previously extracted, falling back");
+                    allExtraced = false;
+                    break;
+                }
+            }
+
+            if (allExtraced) {
+                Log.d("DataCache", "Everything was already extracted, exiting!");
+                return;
+            }
         }
 
-        try {
-            BufferedInputStream buff = new BufferedInputStream(new FileInputStream(getCachedPath(context, "data").toFile()));
+        try(var dataIs = new FileInputStream(getCachedPath(context, "data").toFile())) {
+            BufferedInputStream buff = new BufferedInputStream(dataIs);
 
             XZInputStream inputStream = new XZInputStream(buff);
 
@@ -62,65 +84,116 @@ public class CacheHelper {
 
             while (is.readBoolean()) {
                 String name = is.readString();
+                String tmpName = name + ".tmp";
+
+                Path tmpPath = getCachedPath(context, tmpName);
+                Path finalPath = getCachedPath(context, name);
+
 
                 Log.d("DataCache", "extracting "+name);
                 int dataLen = is.readInt();
+
+                if (Files.exists(tmpPath)) {
+                    Files.delete(tmpPath);
+                    Log.d("DataCache", "deleting stale temp entry for "+name);
+                } else if (Files.exists(finalPath) && !freshFetch) {
+                    Log.d("DataCache", name + " already exists, skipping");
+
+                    long skipped = 0;
+
+                    while (skipped != dataLen) {
+                        if (skipped > dataLen) {
+                            throw new IOException("Skiped more than "+dataLen+" bytes ("+skipped+")");
+                        }
+
+                        long newSkipped = is.skip(dataLen-skipped);
+                        if (newSkipped == 0) {
+                            throw new IOException("Failed to skip "+dataLen+" bytes ("+skipped+")");
+                        }
+
+                        skipped += newSkipped;
+                    }
+                    continue;
+                }
+
 
                 byte[] buffer = new byte[1024];
 
                 int len;
 
-                FileOutputStream fos = new FileOutputStream(getCachedPath(context, name).toFile());
-                while ((len = is.read(buffer, 0, Math.min(dataLen, buffer.length))) != -1) {
-                    dataLen -= buffer.length;
+                try (FileOutputStream fos = new FileOutputStream(tmpPath.toFile())) {
+                    while ((len = is.read(buffer, 0, Math.min(dataLen, buffer.length))) != -1) {
+                        dataLen -= len;
 
-                    fos.write(buffer, 0, len);
-                    if (dataLen <= 0) break;
+                        fos.write(buffer, 0, len);
+                        if (dataLen <= 0) break;
+                    }
+
+                    if (dataLen > 0) {
+                        throw new IOException("Unexpected EOF extracting " + name + ", " + dataLen + " bytes short");
+                    }
                 }
 
-                fos.close();
+                // rename to normal name only after fully written
+                // (to mitigate half-written files when app is closed etc.)
+                Files.move(
+                        tmpPath,
+                        finalPath,
+                        StandardCopyOption.REPLACE_EXISTING
+                );
             }
-
-            // write results
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    public static RandomAccessFile getRouteStopsRAF(Context context) throws AppException {
+        try {
+            return new RandomAccessFile(getCachedPath(context, ROUTE_STOPS).toFile(), "r");
+        } catch (FileNotFoundException e) {
+            throw new AppException("File `route_stops` was not found");
+        }
+    }
+
     public static AppInputStream getApi(Context context) throws AppException {
-        return readCache(context, "api");
+        return readCache(context, API);
     }
 
     public static AppInputStream getStopMapping(Context context) throws AppException {
-        return readCache(context, "stop_mapping");
+        return readCache(context, STOP_MAPPING);
     }
 
     public static AppInputStream getCalendar(Context context) throws AppException {
-        return readCache(context, "calendar");
+        return readCache(context, CALENDAR);
     }
 
     public static AppInputStream getCalendarDates(Context context) throws AppException {
-        return readCache(context, "calendar_dates");
+        return readCache(context, CALENDAR_DATES);
     }
 
     public static AppInputStream getStopTimes(Context context) throws AppException {
-        return readCache(context, "stop_times");
+        return readCache(context, STOP_TIMES);
     }
 
     public static AppInputStream getTrips(Context context) throws AppException {
-        return readCache(context, "trips");
+        return readCache(context, TRIPS);
     }
 
     public static AppInputStream getStops(Context context) throws AppException {
-        return readCache(context, "stops");
+        return readCache(context, STOPS);
     }
 
     public static AppInputStream getLineAliases(Context context) throws AppException {
-        return readCache(context, "lines");
+        return readCache(context, LINE_ALIASES);
     }
 
     public static AppInputStream getPosts(Context context) throws AppException {
-        return readCache(context, "posts");
+        return readCache(context, POSTS);
+    }
+
+
+    private static AppInputStream readCache(Context context, StorageFile file) throws AppException {
+        return readCache(context, file.fileName);
     }
 
     private static AppInputStream readCache(Context context, String... name) throws AppException {
@@ -154,20 +227,36 @@ public class CacheHelper {
         return true;
     }
 
-    public static void writeToCache(byte[] bytes, Context context, String... name) {
+    public static void writeToCache(InputStream is, Context context, String... name) {
         Path path = getCachedPath(context, name);
         Path metaPath = getCachedMetaPath(context, name);
 
+        var buffer = new byte[8192];
+        try (OutputStream out = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+            int n;
+            while ((n = is.read(buffer)) != -1) {
+                out.write(buffer, 0, n);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         try {
-            Files.write(path, bytes, StandardOpenOption.CREATE);
-            Files.write(metaPath, currentTimeBytes(), StandardOpenOption.CREATE);
+            Files.write(metaPath, getCacheTime(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static byte[] currentTimeBytes() {
-        long current = System.currentTimeMillis();
+    private static byte[] getCacheTime() {
+        long current;
+
+        if (serverUpdateTime != -1) {
+            current = serverUpdateTime;
+        } else {
+            // safety fallback
+            current = System.currentTimeMillis();
+        }
 
         byte[] bytes = new byte[8];
         for (int i = 7; i >= 0; i--) {
@@ -177,7 +266,7 @@ public class CacheHelper {
         return bytes;
     }
 
-    public static long bytesToLong(byte[] bytes) {
+    private static long bytesToLong(byte[] bytes) {
         if (bytes.length != 8)
             throw new IllegalArgumentException("Byte array must be 8 bytes long.");
 
@@ -198,6 +287,11 @@ public class CacheHelper {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+    private static Path getCachedPath(Context context, StorageFile file) {
+        return getCachedPath(context, file.fileName);
     }
 
     private static Path getCachedPath(Context context, String... name) {
