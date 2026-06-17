@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.miran.libreinfo.util.AppLog;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -22,7 +23,7 @@ public class VehicleWebsocket {
     private static WebSocket socket;
 
     public static void subscribe(Class<?> clazz,WebsocketListener listener) {
-        System.out.println("NEW SUB");
+        AppLog.d("new subscription for " + clazz.getSimpleName());
         if (socket == null) {
             createWebsocket();
         }
@@ -32,14 +33,14 @@ public class VehicleWebsocket {
 
     public static void unsubscribe(Class<?> clazz) {
         for (WebsocketListener listener : listenerMap.getOrDefault(clazz, List.of())) {
-            System.out.println("Removign "+listener);
+            AppLog.d("removing listener " + listener);
             listeners.remove(listener);
         }
         listenerMap.remove(clazz);
 
         if (listeners.isEmpty()) {
             if (socket != null) {
-                System.out.println("Closed...");
+                AppLog.d("no listeners left, closing socket");
                 socket.close(1000, "Client closing");
                 socket = null;
             }
@@ -56,7 +57,7 @@ public class VehicleWebsocket {
 
             @Override
             public void onOpen(WebSocket webSocket, Response response) {
-                System.out.println("Connected to WebSocket endpoint");
+                AppLog.d("Connected to WebSocket endpoint");
                 // Example: send a filter message
                 // webSocket.send("{\"where\": \"delay > 60\"}");
             }
@@ -75,23 +76,23 @@ public class VehicleWebsocket {
 
             @Override
             public void onMessage(WebSocket webSocket, ByteString bytes) {
-                System.out.println("Received binary message: " + bytes.hex());
+                AppLog.d("Received binary message: " + bytes.hex());
             }
 
             @Override
             public void onClosing(WebSocket webSocket, int code, String reason) {
-                System.out.println("Connection closing: " + reason);
+                AppLog.d("Connection closing: " + reason);
                 webSocket.close(1000, null);
             }
 
             @Override
             public void onClosed(WebSocket webSocket, int code, String reason) {
-                System.out.println("Connection closed: " + reason);
+                AppLog.d("Connection closed: " + reason);
             }
 
             @Override
             public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-                System.err.println("Error: " + t.getMessage());
+                AppLog.e("WebSocket failure", t);
             }
         });
     }

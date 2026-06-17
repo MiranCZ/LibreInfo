@@ -1,36 +1,51 @@
 package me.miran.libreinfo.exception;
 
-import android.content.Context;
-
+import me.miran.libreinfo.R;
+import me.miran.libreinfo.util.Text;
 import me.miran.libreinfo.util.request.Endpoint;
 
 public class RequestException extends AppException {
 
+    public static RequestException offlineError(Endpoint endpoint) {
+        return new RequestException(Text.translatable(R.string.error_reach, endpoint.name), ErrorType.OFFLINE);
+    }
+
     public static RequestException reachError(Endpoint endpoint) {
-        return new RequestException("Failed to reach the", endpoint);
+        return new RequestException(Text.translatable(R.string.error_reach, endpoint.name), ErrorType.SERVER);
     }
 
     public static RequestException parseError(Endpoint endpoint) {
-        return new RequestException("Failed to parse", endpoint);
+        return new RequestException(Text.translatable(R.string.error_parse, endpoint.name), ErrorType.PARSE);
     }
 
     public static RequestException readError(Endpoint endpoint) {
-        return new RequestException("Failed to read from",endpoint);
+        return new RequestException(Text.translatable(R.string.error_read, endpoint.name), ErrorType.PARSE);
     }
 
     public static RequestException timedOutError(Endpoint endpoint, int limitMs) {
-        return new RequestException("Timed out after "+limitMs/1000+" seconds from",endpoint);
+        return new RequestException(Text.translatable(R.string.error_timeout, limitMs / 1000, endpoint.name), ErrorType.SERVER);
     }
 
-    private final Endpoint endpoint;
-
-    public RequestException(String message, Endpoint endpoint) {
-        super(message);
-        this.endpoint = endpoint;
+    public static RequestException serverError(Endpoint endpoint, int code) {
+        return new RequestException(Text.translatable(R.string.error_server, code, endpoint.name), ErrorType.SERVER);
     }
 
-    @Override
-    public String getPrettyText(Context context) {
-        return super.getPrettyText(context) + " " + endpoint.name.getName(context);
+    public static RequestException unknownError(Endpoint endpoint, Throwable cause) {
+        RequestException e = new RequestException(Text.translatable(R.string.error_unknown, endpoint.name), cause);
+        e.type = ErrorType.GENERIC;
+        return e;
+    }
+
+    public RequestException(Text text) {
+        super(text);
+    }
+
+    public RequestException(Text text, ErrorType type) {
+        super(text);
+        this.type = type;
+    }
+
+    public RequestException(Text text, Throwable cause) {
+        super(text, cause);
     }
 }

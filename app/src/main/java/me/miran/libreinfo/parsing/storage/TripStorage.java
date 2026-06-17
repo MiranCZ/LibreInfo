@@ -2,6 +2,9 @@ package me.miran.libreinfo.parsing.storage;
 
 import android.util.SparseArray;
 
+import me.miran.libreinfo.R;
+import me.miran.libreinfo.exception.AppException;
+import me.miran.libreinfo.exception.ErrorType;
 import me.miran.libreinfo.parsing.types.Trip;
 import me.miran.libreinfo.util.AppInputStream;
 
@@ -12,7 +15,7 @@ import java.util.List;
 
 public class TripStorage {
 
-    public static TripStorage parse(AppInputStream is){
+    public static TripStorage parse(AppInputStream is) throws AppException {
         try(is) {
             int size = is.readInt();
 
@@ -42,9 +45,7 @@ public class TripStorage {
             }
             return new TripStorage(headsignPool, trips);
         } catch (IOException e) {
-            e.printStackTrace();
-
-            return new TripStorage(new String[0], new Trip[0]);
+            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
     }
 

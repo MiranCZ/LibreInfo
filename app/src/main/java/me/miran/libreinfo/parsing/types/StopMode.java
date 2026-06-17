@@ -1,5 +1,7 @@
 package me.miran.libreinfo.parsing.types;
 
+import me.miran.libreinfo.util.AppLog;
+
 public enum StopMode {
     // FIXME there is also a "t" mode??
 
@@ -21,7 +23,7 @@ public enum StopMode {
         if (stopMode.equals("o")) return StopMode.O;
         if (stopMode.equals("*")) return StopMode.MIXED;
 
-        System.out.println("[WARN] Unknown stop mode " + stopMode);
+        AppLog.w("Unknown stop mode " + stopMode);
         return StopMode.MIXED;
     }
 }

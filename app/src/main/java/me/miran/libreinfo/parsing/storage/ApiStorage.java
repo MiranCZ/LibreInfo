@@ -1,5 +1,8 @@
 package me.miran.libreinfo.parsing.storage;
 
+import me.miran.libreinfo.R;
+import me.miran.libreinfo.exception.AppException;
+import me.miran.libreinfo.exception.ErrorType;
 import me.miran.libreinfo.util.AppInputStream;
 import me.miran.libreinfo.util.Pair;
 
@@ -8,7 +11,7 @@ import java.util.Arrays;
 
 public class ApiStorage {
 
-    public static ApiStorage parse(AppInputStream is){
+    public static ApiStorage parse(AppInputStream is) throws AppException {
         try (is) {
             int size = is.readInt();
 
@@ -25,8 +28,7 @@ public class ApiStorage {
 
             return new ApiStorage(map);
         } catch (IOException e) {
-            e.printStackTrace();
-            return new ApiStorage(new int[0]);
+            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
 
     }

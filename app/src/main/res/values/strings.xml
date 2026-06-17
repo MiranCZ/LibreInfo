@@ -41,7 +41,6 @@
     <string name="connection_select_stops">Vyberte počáteční i cílovou zastávku</string>
     <string name="connection_dev_warning">Hledání spojení je stále v brzkém vývoji, takže chybí některé nastavení, ovládání a nemusí být úplně doladěné UI. Všechny tyto věci se postupně vyřeší.</string>
     <string name="connection_results">Výsledky hledání</string>
-    <string name="connection_load_error">Nepodařilo se načíst spojení</string>
     <string name="connection_in">za %s</string>
     <string name="connection_now">nyní</string>
     <string name="connection_stops">%d zastávek</string>
@@ -52,4 +51,19 @@
     <string name="vehicle_number">Vůz %d</string>
     <string name="trip">Trasa</string>
     <string name="trip_number">Trasa %1d/%2d</string>
+    <string name="retry">Zkusit znovu</string>
+    <string name="generic_error">Nastala chyba</string>
+    <string name="error_offline_title">Jste offline</string>
+    <string name="error_server_title">Problém se serverem</string>
+    <string name="error_parse_title">Neplatná odpověď</string>
+    <string name="error_data_title">Poškozená data</string>
+    <string name="data_load_error">Nepodařilo se načíst data</string>
+    <string name="error_reach">Nepodařilo se připojit (%1$s)</string>
+    <string name="error_parse">Nepodařilo se zpracovat odpověď (%1$s)</string>
+    <string name="error_read">Nepodařilo se načíst odpověď (%1$s)</string>
+    <string name="error_timeout">Vypršel časový limit %1$d s (%2$s)</string>
+    <string name="error_server">Chyba serveru %1$d (%2$s)</string>
+    <string name="error_unknown">Neočekávaná chyba (%1$s)</string>
+    <string name="endpoint_static_gtfs">statická data</string>
+    <string name="endpoint_app_server">server aplikace</string>
 </resources>

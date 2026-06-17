@@ -1,7 +1,6 @@
 package me.miran.libreinfo.activity
 
 import android.content.Intent
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,74 +10,40 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import com.valentinilk.shimmer.Shimmer
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
-import me.miran.libreinfo.exception.RequestException
 import me.miran.libreinfo.parsing.storage.IdStorage
 import me.miran.libreinfo.parsing.types.Diversion
-import me.miran.libreinfo.util.Result
+import me.miran.libreinfo.util.load.rememberLoad
 import me.miran.libreinfo.util.request.RequestHelper
 import kotlin.random.Random
 
 class DiversionsActivity : KBaseActivity(R.string.diversions) {
     @Composable
     override fun CreateElements() {
-        var diversionsResult by remember { mutableStateOf(Result.ok<List<Diversion>?, RequestException>(null)) }
-
         val context = LocalContext.current
-        LaunchedEffect(Unit) {
-            val result = withContext(Dispatchers.IO) {
 
-                val storage = IdStorage.getInstance();
-
-                try {
-                    Result.ok<List<Diversion>, RequestException>(Diversion.parseDiversions(
-                        RequestHelper.getDiversions(context),
-                        storage.lineStorage
-                    ))
-                } catch (e: RequestException) {
-                    Result.err(e)
-                }
-            }
-
-            diversionsResult = result
+        val diversions = rememberLoad {
+            val storage = IdStorage.getInstance()
+            Diversion.parseDiversions(RequestHelper.getDiversions(context), storage.lineStorage)
         }
 
-        Crossfade(targetState = diversionsResult) { local -> when (local) {
-            is Result.Ok -> {
-                val diversions = local.value
-
-                if (diversions != null) {
-                    if (diversions.isEmpty()) {
-                        NothingHere()
-                    } else {
-                        Column(Modifier.verticalScroll(rememberScrollState())) {
-                            for (diversion in diversions) {
-                                Diversion(diversion)
-                            }
-                        }
+        AsyncContent(diversions, loading = { DiversionListShimmer() }) { diversionList ->
+            if (diversionList.isEmpty()) {
+                NothingHere()
+            } else {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    for (diversion in diversionList) {
+                        Diversion(diversion)
                     }
-                } else {
-                    DiversionListShimmer()
                 }
             }
-            is Result.Err -> {
-                val error = local.err;
-
-                ErrorWidget(error)
-            }
-        } }
+        }
     }
 
     @Composable

@@ -3,12 +3,13 @@ package me.miran.libreinfo.parsing.storage;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Looper;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
 import me.miran.libreinfo.activity.base.BaseActivity;
 import me.miran.libreinfo.exception.AppException;
+import me.miran.libreinfo.exception.StorageInitException;
+import me.miran.libreinfo.util.AppLog;
 import me.miran.libreinfo.util.CacheHelper;
 import me.miran.libreinfo.util.Pair;
 import me.miran.libreinfo.util.PreferencesHolder;
@@ -32,7 +33,7 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
     private static final Map<Class<?>, Object> instances = new HashMap<>();
     private static boolean initCalled = false;
 
-    private static AppException error;
+    private static volatile AppException error;
 
 
     public static void init(Context context) {
@@ -47,9 +48,29 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
         try {
             initInternal(context);
         } catch (AppException e) {
-            e.printStackTrace();
-            error = e;
+            AppLog.e("Failed to initialize storage", e);
+            fail(e);
         }
+    }
+
+    /**
+     * Records a fatal initialization error and wakes every thread blocked in a getter so none of them
+     * hang forever waiting for data that will never arrive. Also used to surface a failed cache/startup.
+     */
+    public static void fail(AppException e) {
+        synchronized (mutex) {
+            error = e;
+            for (CountDownLatch latch : latches.values()) {
+                while (latch.getCount() > 0) {
+                    latch.countDown();
+                }
+            }
+        }
+    }
+
+    @Nullable
+    public static AppException getError() {
+        return error;
     }
 
     public static void onActivity(BaseActivity activity) {
@@ -61,7 +82,7 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
     private static void initInternal(Context context) throws AppException {
         if (initCalled) return;
         initCalled = true;
-        Log.d("IdStorage", "Initializing...");
+        AppLog.d("Initializing...");
         long ms = System.currentTimeMillis();
 
         var preferences = context.getSharedPreferences("favStops", Context.MODE_PRIVATE);
@@ -92,11 +113,10 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
 
         synchronized (mutex) {
             storage = new IdStorage(lineStorage, stopStorage, postStorage, tripStorage, routeStopStorage, calendarStorage, apiStorage, stopMapper);
-            System.out.println("Saying on loaded");
             onLoaded(IdStorage.class, storage);
         }
 
-        Log.d("IdStorage", "Initialized in " + (System.currentTimeMillis() - ms) + "ms");
+        AppLog.d("Initialized in " + (System.currentTimeMillis() - ms) + "ms");
     }
 
     /**
@@ -130,7 +150,6 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
                 //noinspection unchecked
                 Consumer<T> listener = (Consumer<T>) pair.left();
 
-                System.out.println("LISTENER FREED ");
                 pair.right().runOnUiThread(() -> listener.accept(instance));
             }
             listeners.getOrDefault(clazz, List.of()).clear();
@@ -139,7 +158,7 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
 
     private static <T> void listen(Class<T> clazz, Consumer<T> consumer, Activity activity) {
         synchronized (mutex) {
-            Log.d("IdStorage", "Listening for " + clazz);
+            AppLog.d("Listening for " + clazz);
             listeners.computeIfAbsent(clazz, k -> new ArrayList<>()).add(new Pair<>(consumer, activity));
             if (!latches.containsKey(clazz)) {
                 latches.put(clazz, new CountDownLatch(1));
@@ -149,7 +168,7 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
 
     public static IdStorage getInstance() {
         if (!initCalled) {
-            Log.w("IdStorage", "IdStorage called before starting to get initialized");
+            AppLog.w("IdStorage called before starting to get initialized");
         }
 
         return getInstanceOf(IdStorage.class);
@@ -199,6 +218,8 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
             Object instance = instances.get(clazz);
             if (instance != null) return (T) instance;
 
+            if (error != null) throw new StorageInitException(error);
+
             if (!latches.containsKey(clazz)) {
                 latches.put(clazz, new CountDownLatch(1));
             }
@@ -206,14 +227,15 @@ public record IdStorage(LineStorage lineStorage, StopStorage stopStorage, PostSt
 
         int id = waitId++;
         try {
-            Log.d("IdStorage", "Waiting for " + clazz + " (" + id + ")");
+            AppLog.d("Waiting for " + clazz + " (" + id + ")");
             latches.get(clazz).await();
-            Log.d("IdStorage", "Freed up waiting thread for " + clazz + " (" + id + ")");
+            AppLog.d("Freed up waiting thread for " + clazz + " (" + id + ")");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
         synchronized (mutex) {
+            if (error != null) throw new StorageInitException(error);
             return (T) instances.get(clazz);
         }
     }

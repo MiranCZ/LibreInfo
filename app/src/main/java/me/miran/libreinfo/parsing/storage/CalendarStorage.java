@@ -1,7 +1,5 @@
 package me.miran.libreinfo.parsing.storage;
 
-import android.util.Log;
-
 import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -11,19 +9,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.miran.libreinfo.R;
+import me.miran.libreinfo.exception.AppException;
+import me.miran.libreinfo.exception.ErrorType;
 import me.miran.libreinfo.util.AppInputStream;
+import me.miran.libreinfo.util.AppLog;
 
 public class CalendarStorage {
 
     private final Map<Integer, CalendarEntry> serviceToCalendar;
     private final Map<Integer, Map<Date, ExceptionType>> exceptions;
 
-    public static CalendarStorage parse(AppInputStream calendar, AppInputStream calendarDates) {
+    public static CalendarStorage parse(AppInputStream calendar, AppInputStream calendarDates) throws AppException {
         try(calendar) {
             return parseInternal(calendar, calendarDates);
         } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
     }
 
@@ -75,7 +76,7 @@ public class CalendarStorage {
             exceptions.computeIfAbsent(serviceId, k -> new HashMap<>()).put(date, type);
         }
 
-        System.out.println("took " + (System.currentTimeMillis() - ms) + "ms " + entries.size());
+        AppLog.d("parsed " + entries.size() + " calendar entries in " + (System.currentTimeMillis() - ms) + "ms");
 
 
         return new CalendarStorage(serviceToCalendar, exceptions);
@@ -99,7 +100,7 @@ public class CalendarStorage {
         CalendarEntry entry = serviceToCalendar.get(serviceId);
 
         if (entry == null) {
-            Log.w("CalendarStorage", "entry for "+serviceId+" is not present!");
+            AppLog.w("entry for "+serviceId+" is not present!");
             return false;
         }
 

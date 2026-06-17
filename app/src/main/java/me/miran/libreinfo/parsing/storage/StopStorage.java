@@ -1,5 +1,8 @@
 package me.miran.libreinfo.parsing.storage;
 
+import me.miran.libreinfo.R;
+import me.miran.libreinfo.exception.AppException;
+import me.miran.libreinfo.exception.ErrorType;
 import me.miran.libreinfo.parsing.types.stop.Stop;
 import me.miran.libreinfo.parsing.types.stop.StopId;
 import me.miran.libreinfo.util.AppInputStream;
@@ -12,13 +15,12 @@ import java.util.List;
 
 public class StopStorage {
 
-    public static StopStorage parse(AppInputStream is, PreferencesHolder favStops, StopMapper mapper) {
+    public static StopStorage parse(AppInputStream is, PreferencesHolder favStops, StopMapper mapper) throws AppException {
         List<Stop> stops;
         try(is) {
             stops = Stop.parseStops(is, favStops, mapper);
         } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
 
         return new StopStorage(stops, mapper);

@@ -14,6 +14,8 @@ import com.google.android.material.snackbar.Snackbar;
 public class AppException extends Exception {
 
     private final Text text;
+    protected ErrorType type = ErrorType.GENERIC;
+
     public AppException(String message) {
         this(Text.literal(message));
     }
@@ -27,8 +29,30 @@ public class AppException extends Exception {
         this.text = text;
     }
 
+    public AppException(String message, Throwable cause) {
+        this(Text.literal(message), cause);
+    }
+
+    public AppException(int stringId, Throwable cause) {
+        this(Text.translatable(stringId), cause);
+    }
+
+    public AppException(Text text, Throwable cause) {
+        super(cause);
+        this.text = text;
+    }
+
     public String getPrettyText(Context context) {
         return text.getName(context);
+    }
+
+    public AppException withType(ErrorType type) {
+        this.type = type;
+        return this;
+    }
+
+    public ErrorType getType() {
+        return type;
     }
 
 
@@ -56,7 +80,7 @@ public class AppException extends Exception {
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(activity, R.style.AlertDialogStyle));
 
         builder.setMessage(getPrettyText(activity))
-                .setTitle("Error");
+                .setTitle(activity.getString(R.string.generic_error));
 
         AlertDialog dialog = builder.create();
         dialog.show();

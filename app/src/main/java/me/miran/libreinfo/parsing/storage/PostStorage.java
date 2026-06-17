@@ -1,9 +1,13 @@
 package me.miran.libreinfo.parsing.storage;
 
+import me.miran.libreinfo.R;
+import me.miran.libreinfo.exception.AppException;
+import me.miran.libreinfo.exception.ErrorType;
 import me.miran.libreinfo.parsing.types.Location;
 import me.miran.libreinfo.parsing.types.Post;
 import me.miran.libreinfo.parsing.types.stop.Stop;
 import me.miran.libreinfo.util.AppInputStream;
+import me.miran.libreinfo.util.AppLog;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,12 +16,12 @@ import java.util.List;
 
 public class PostStorage {
 
-    public static PostStorage parse(AppInputStream array, StopStorage stopStorage) {
-        List<Post> posts = null;
+    public static PostStorage parse(AppInputStream array, StopStorage stopStorage) throws AppException {
+        List<Post> posts;
         try(array) {
             posts = Post.parsePosts(array, stopStorage);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
 
         return new PostStorage(posts, stopStorage);
@@ -57,7 +61,7 @@ public class PostStorage {
         }
 
         Post dummyPost = new Post(Stop.NONE, postID, postID+". nastupiste", Location.NONE);
-        System.out.println("[WARN] Unable to find post with args "+stopID + " ; "+postID + " ; "+getPosts(stopID));
+        AppLog.w("Unable to find post with args "+stopID + " ; "+postID + " ; "+getPosts(stopID));
 
         postsForStop[stopID].add(dummyPost);
         return dummyPost;
@@ -69,7 +73,7 @@ public class PostStorage {
 
     public List<Post> getPosts(int stopId) {
         if (stopId < 0 || stopId >= postsForStop.length) {
-            System.out.println("[WARN] Tried to get posts for unregistered stop! " + stopId);
+            AppLog.w("Tried to get posts for unregistered stop! " + stopId);
             return List.of();
         }
 

@@ -1,6 +1,5 @@
 package me.miran.libreinfo.activity
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,11 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import com.valentinilk.shimmer.Shimmer
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,15 +19,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
-import me.miran.libreinfo.exception.RequestException
 import me.miran.libreinfo.parsing.storage.IdStorage
 import me.miran.libreinfo.parsing.types.DateTime
 import me.miran.libreinfo.parsing.types.Event
-import me.miran.libreinfo.util.Result
+import me.miran.libreinfo.util.load.rememberLoad
 import me.miran.libreinfo.util.request.RequestHelper
 import kotlin.random.Random
 
@@ -40,50 +32,24 @@ class EventsActivity : KBaseActivity(R.string.events) {
 
     @Composable
     override fun CreateElements() {
-        var eventsResult by remember { mutableStateOf(Result.ok<List<Event>?, RequestException>(null)) }
-
         val context = LocalContext.current
-        LaunchedEffect(Unit) {
-            val result = withContext(Dispatchers.IO) {
 
-                val storage = IdStorage.getInstance();
-
-                try {
-                    Result.ok<List<Event>, RequestException>(Event.parseEvents(RequestHelper.getEvents(context), storage.lineStorage()))
-                } catch (e: RequestException) {
-                    Result.err(e)
-                }
-            }
-
-            eventsResult = result
+        val events = rememberLoad {
+            val storage = IdStorage.getInstance()
+            Event.parseEvents(RequestHelper.getEvents(context), storage.lineStorage())
         }
 
-        Crossfade(targetState = eventsResult) { local -> when (local) {
-            is Result.Ok -> {
-                val events = local.value
-
-                if (events != null) {
-                    if (events.isEmpty()) {
-                        NothingHere()
-                    } else {
-                        Column(Modifier.verticalScroll(rememberScrollState())) {
-                            for (event in events) {
-                                Event(event)
-                            }
-                        }
+        AsyncContent(events, loading = { EventListShimmer() }) { eventList ->
+            if (eventList.isEmpty()) {
+                NothingHere()
+            } else {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    for (event in eventList) {
+                        Event(event)
                     }
-                } else {
-                    EventListShimmer()
                 }
             }
-            is Result.Err -> {
-                val error = local.err
-
-                ErrorWidget(error)
-            }
-        } }
-
-
+        }
     }
 
     @Composable

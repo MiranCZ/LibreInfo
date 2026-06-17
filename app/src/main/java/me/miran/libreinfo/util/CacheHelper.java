@@ -3,9 +3,10 @@ package me.miran.libreinfo.util;
 import static me.miran.libreinfo.util.StorageFile.*;
 
 import android.content.Context;
-import android.util.Log;
 
+import me.miran.libreinfo.R;
 import me.miran.libreinfo.exception.AppException;
+import me.miran.libreinfo.exception.ErrorType;
 import me.miran.libreinfo.util.request.RequestHelper;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -42,8 +43,7 @@ public class CacheHelper {
         try {
             serverUpdateTime = RequestHelper.getLastStaticUpdate(context);
         } catch (AppException e) {
-            Log.e("DataCache", "failed to get static update timestamp "+e.getMessage());
-            e.printStackTrace();
+            AppLog.w("failed to get static update timestamp, using cached data", e);
         }
     }
 
@@ -56,21 +56,21 @@ public class CacheHelper {
             try(var data = RequestHelper.getData(context)) {
                 writeToCache(data, context, "data");
             } catch (Exception e) {
-                throw new AppException("Failed to write to cache");
+                throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
             }
         } else {
             boolean allExtraced = true;
 
             for (var file : StorageFile.values()) {
                 if (!Files.exists(getCachedPath(context, file))) {
-                    Log.d("DataCache", file.fileName + " was not previously extracted, falling back");
+                    AppLog.d(file.fileName + " was not previously extracted, falling back");
                     allExtraced = false;
                     break;
                 }
             }
 
             if (allExtraced) {
-                Log.d("DataCache", "Everything was already extracted, exiting!");
+                AppLog.d("Everything was already extracted, exiting!");
                 return;
             }
         }
@@ -90,14 +90,14 @@ public class CacheHelper {
                 Path finalPath = getCachedPath(context, name);
 
 
-                Log.d("DataCache", "extracting "+name);
+                AppLog.d("extracting "+name);
                 int dataLen = is.readInt();
 
                 if (Files.exists(tmpPath)) {
                     Files.delete(tmpPath);
-                    Log.d("DataCache", "deleting stale temp entry for "+name);
+                    AppLog.d("deleting stale temp entry for "+name);
                 } else if (Files.exists(finalPath) && !freshFetch) {
-                    Log.d("DataCache", name + " already exists, skipping");
+                    AppLog.d(name + " already exists, skipping");
 
                     long skipped = 0;
 
@@ -143,7 +143,7 @@ public class CacheHelper {
                 );
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
     }
 
@@ -151,7 +151,7 @@ public class CacheHelper {
         try {
             return new RandomAccessFile(getCachedPath(context, ROUTE_STOPS).toFile(), "r");
         } catch (FileNotFoundException e) {
-            throw new AppException("File `route_stops` was not found");
+            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
     }
 
@@ -200,7 +200,7 @@ public class CacheHelper {
         try {
             return new AppInputStream(new BufferedInputStream(new FileInputStream(getCachedPath(context, name).toFile())));
         } catch (Exception e) {
-            throw new AppException("Failed to read cache file "+ Arrays.toString(name));
+            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
     }
 
@@ -217,11 +217,11 @@ public class CacheHelper {
             long time = bytesToLong(timeB);
 
             if (time < serverUpdateTime) {
-                Log.d("CacheHelper", "found old cache file "+ Arrays.toString(name));
+                AppLog.d("found old cache file "+ Arrays.toString(name));
                 return false;
             }
         } catch (IOException e) {
-            throw new AppException("Failed to read metadata file");
+            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
 
         return true;

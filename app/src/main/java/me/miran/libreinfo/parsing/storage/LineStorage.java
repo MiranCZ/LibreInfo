@@ -2,8 +2,12 @@ package me.miran.libreinfo.parsing.storage;
 
 import android.graphics.Color;
 
+import me.miran.libreinfo.R;
+import me.miran.libreinfo.exception.AppException;
+import me.miran.libreinfo.exception.ErrorType;
 import me.miran.libreinfo.parsing.types.LineAlias;
 import me.miran.libreinfo.util.AppInputStream;
+import me.miran.libreinfo.util.AppLog;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +20,7 @@ import java.util.Optional;
 
 public class LineStorage {
 
-    public static LineStorage parse(AppInputStream is) {
+    public static LineStorage parse(AppInputStream is) throws AppException {
         List<LineAlias> aliases = new ArrayList<>();
 
         try(is) {
@@ -33,8 +37,7 @@ public class LineStorage {
 
             return new LineStorage(aliases);
         } catch (IOException e) {
-            e.printStackTrace();
-            return new LineStorage(List.of());
+            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
     }
 
@@ -67,7 +70,7 @@ public class LineStorage {
         if (!idToAlias.containsKey(id)) {
             // this does actually happen sometimes due to the api not listing all line aliases
             // the original client deals with it by just ignoring the entry, I think this is at least a bit better
-            System.out.println("[WARN] Vehicle with id "+id+" not found! Creating a dummy one...");
+            AppLog.w("Vehicle with id "+id+" not found! Creating a dummy one...");
 
             LineAlias dummy = new LineAlias(id, String.valueOf(id), android.graphics.Color.MAGENTA, "#FF00FF", Color.WHITE, "#FFFFFF");
             idToAlias.put(id, dummy);

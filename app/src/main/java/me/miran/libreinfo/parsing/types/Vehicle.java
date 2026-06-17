@@ -76,8 +76,6 @@ public record Vehicle(int id, int idB, int idC, int vType, int lType, Location l
         Stop lastStop = storage.stopStorage().getStop(StopId.original(lastStopId));
         Stop finalStop = storage.stopStorage().getStop(StopId.original(finalStopId));
 
-        System.out.println("stop "+obj.get("LastStopID").getAsInt() + " has "+lastStop);
-
         Optional<String> finalStopName;
 
         if (obj.has("FinalStopName")) {

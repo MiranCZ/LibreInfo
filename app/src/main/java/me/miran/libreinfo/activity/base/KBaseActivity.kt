@@ -108,6 +108,7 @@ import me.miran.libreinfo.activity.base.snackbar.SnackBarType
 import me.miran.libreinfo.activity.settings.DelayRenderType
 import me.miran.libreinfo.exception.AppException
 import me.miran.libreinfo.parsing.storage.ApiStorage
+import me.miran.libreinfo.parsing.storage.IdStorage
 import me.miran.libreinfo.parsing.types.DateTime
 import me.miran.libreinfo.parsing.types.Diversion
 import me.miran.libreinfo.parsing.types.LineAlias
@@ -120,6 +121,8 @@ import me.miran.libreinfo.ui.theme.AppTypography
 import me.miran.libreinfo.util.HtmlHelper
 import me.miran.libreinfo.util.LocalDeparturesSettings
 import me.miran.libreinfo.util.Text
+import me.miran.libreinfo.util.load.LoadResult
+import me.miran.libreinfo.util.load.LoadState
 import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.random.Random
@@ -134,11 +137,19 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
 
     private val snackBarHostState = SnackbarHostState()
 
+    // FIXME should be final
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setBaseContent {
-            CreateElements()
+            val error = IdStorage.getError();
+
+            if (error != null) {
+                // surface a fatal startup/data-init failure
+                ErrorWidget(error)
+            } else {
+                CreateElements()
+            }
         }
     }
 
@@ -255,20 +266,61 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         }
     }
 
+    /**
+     * Renders [result] as the appropriate state: [loading] while in flight, [ErrorWidget] (with a
+     * working retry button) on failure, and [content] on success.
+     */
     @Composable
-    fun ErrorWidget(error: AppException, modifier: Modifier = Modifier) {
+    fun <T> AsyncContent(
+        result: LoadResult<T>,
+        modifier: Modifier = Modifier,
+        loading: @Composable () -> Unit = { Loading() },
+        content: @Composable (T) -> Unit,
+    ) {
+        Crossfade(targetState = result.state, modifier = modifier) { state ->
+            when (state) {
+                is LoadState.Loading -> loading()
+                is LoadState.Error -> ErrorWidget(state.error, onRetry = result.retry)
+                is LoadState.Success -> content(state.data)
+            }
+        }
+    }
+
+    @Composable
+    fun ErrorWidget(error: AppException, modifier: Modifier = Modifier, onRetry: (() -> Unit)? = null) {
         val context = LocalContext.current
+        val type = error.type
 
         Box(modifier.fillMaxWidth()) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
-                        painter = painterResource(R.drawable.triangle_exclamation_regular),
+                        painter = painterResource(type.icon),
                         "error",
                         tint = Color.Red
                 )
 
-                Text("An error occurred", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                Text(error.getPrettyText(context), fontSize = 24.sp, fontWeight = FontWeight.Normal)
+                Text(stringResource(type.title), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    error.getPrettyText(context),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Normal,
+                    textAlign = TextAlign.Center
+                )
+
+
+                if (onRetry != null && type.retryable) {
+                    AppButton(
+                        onClick = onRetry,
+                        modifier = Modifier.padding(top = 16.dp).fillMaxWidth(0.5f),
+                    ) {
+                        Text(
+                            stringResource(R.string.retry),
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 16.sp,
+                            color = colorResource(R.color.secondaryColor)
+                        )
+                    }
+                }
             }
         }
     }

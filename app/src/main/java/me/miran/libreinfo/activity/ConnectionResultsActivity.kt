@@ -1,6 +1,5 @@
 package me.miran.libreinfo.activity
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -19,11 +18,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -39,17 +33,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.valentinilk.shimmer.Shimmer
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
-import me.miran.libreinfo.exception.AppException
-import me.miran.libreinfo.exception.RequestException
 import me.miran.libreinfo.parsing.storage.IdStorage
 import me.miran.libreinfo.parsing.types.DateTime
 import me.miran.libreinfo.parsing.types.connection.Connection
 import me.miran.libreinfo.parsing.types.stop.Stop
-import me.miran.libreinfo.util.Result
+import me.miran.libreinfo.util.load.rememberLoad
 import me.miran.libreinfo.util.request.RequestHelper
 
 class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
@@ -60,50 +50,26 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
         val toStop = intent.getParcelableExtra<Stop>("toStop")!!
         val departureTime = intent.getStringExtra("departureTime")!!
 
-        var result by remember {
-            mutableStateOf(Result.ok<List<ConnectionUi>?, AppException>(null))
-        }
         val context = LocalContext.current
 
-        LaunchedEffect(Unit) {
-            val r = withContext(Dispatchers.IO) {
-                val storage = IdStorage.getInstance()
-                try {
-                    val obj = RequestHelper.findConnections(context, fromStop, toStop, departureTime)
-                    val now = DateTime.now()
-                    val connections = obj.getAsJsonArray("connections").mapNotNull { element ->
-                        runCatching {
-                            buildConnectionUi(Connection.parse(element.asJsonObject, storage.stopStorage), storage, now)
-                        }.getOrNull()
-                    }
-                    Result.ok<List<ConnectionUi>?, AppException>(connections)
-                } catch (e: RequestException) {
-                    Result.err<List<ConnectionUi>?, AppException>(e)
-                } catch (e: Exception) {
-                    Result.err<List<ConnectionUi>?, AppException>(AppException(R.string.connection_load_error))
-                }
+        val result = rememberLoad(fromStop, toStop, departureTime) {
+            val storage = IdStorage.getInstance()
+            val obj = RequestHelper.findConnections(context, fromStop, toStop, departureTime)
+            val now = DateTime.now()
+            obj.getAsJsonArray("connections").map { element ->
+                buildConnectionUi(Connection.parse(element.asJsonObject, storage.stopStorage), storage, now)
             }
-            result = r
         }
 
-        Crossfade(targetState = result) { r ->
-            when (r) {
-                is Result.Ok -> {
-                    val connections = r.value
-                    if (connections == null) {
-                        ConnectionsShimmer()
-                    } else if (connections.isEmpty()) {
-                        NothingHere()
-                    } else {
-                        LazyColumn {
-                            items(connections) { connection ->
-                                ConnectionCard(connection)
-                            }
-                        }
+        AsyncContent(result, loading = { ConnectionsShimmer() }) { connections ->
+            if (connections.isEmpty()) {
+                NothingHere()
+            } else {
+                LazyColumn {
+                    items(connections) { connection ->
+                        ConnectionCard(connection)
                     }
                 }
-
-                is Result.Err -> ErrorWidget(r.err)
             }
         }
     }

@@ -1,7 +1,11 @@
 package me.miran.libreinfo.parsing.storage;
 
+import me.miran.libreinfo.R;
+import me.miran.libreinfo.exception.AppException;
+import me.miran.libreinfo.exception.ErrorType;
 import me.miran.libreinfo.parsing.types.RouteStop;
 import me.miran.libreinfo.parsing.types.Time;
+import me.miran.libreinfo.util.AppLog;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -9,8 +13,7 @@ import java.io.RandomAccessFile;
 
 public class RouteStopStorage {
 
-
-    public static RouteStopStorage parse(DataInputStream is, RandomAccessFile routeStops, StopMapper mapper) {
+    public static RouteStopStorage parse(DataInputStream is, RandomAccessFile routeStops, StopMapper mapper) throws AppException {
         try(is) {
             int[][] stopIdToRoute = new int[mapper.internalStopsLength()][];
 
@@ -30,8 +33,7 @@ public class RouteStopStorage {
 
             return new RouteStopStorage(stopIdToRoute, routeStops);
         } catch (IOException e) {
-            e.printStackTrace();
-            return new RouteStopStorage(new int[0][], routeStops);
+            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
     }
 
@@ -55,7 +57,7 @@ public class RouteStopStorage {
         try {
             return getRouteStopsParsedInternal((short) stopId);
         } catch (IOException e) {
-            e.printStackTrace();
+            AppLog.e("Failed to read route stops for stop " + stopId, e);
             return new RouteStop[0];
         }
     }
@@ -64,7 +66,7 @@ public class RouteStopStorage {
         try {
             return getRouteStopsFromSegmentParsedInternal(start, length);
         } catch (IOException e) {
-            e.printStackTrace();
+            AppLog.e("Failed to read route stop segment [" + start + ", " + (start + length) + ")", e);
             return new RouteStop[0];
         }
     }
@@ -73,7 +75,7 @@ public class RouteStopStorage {
         try {
             return parseStop(id);
         } catch (IOException e) {
-            e.printStackTrace();
+            AppLog.e("Failed to read route stop " + id, e);
             return null;
         }
     }

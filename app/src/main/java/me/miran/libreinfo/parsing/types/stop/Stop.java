@@ -79,7 +79,6 @@ public final class Stop implements Parcelable {
     public void setFavourite(boolean favourite) {
         this.favourite = favourite;
         favStops.putBoolean(id.internal(), favourite);
-        System.out.println("CHANGED VAOURITE TO "+favourite);
     }
 
     public boolean isFavourite() {

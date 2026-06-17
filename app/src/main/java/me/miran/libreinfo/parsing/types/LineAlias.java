@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +14,7 @@ import androidx.annotation.NonNull;
 
 import me.miran.libreinfo.R;
 import me.miran.libreinfo.parsing.storage.LineStorage;
+import me.miran.libreinfo.util.AppLog;
 import me.miran.libreinfo.util.Csv;
 import me.miran.libreinfo.util.CsvHelper;
 import me.miran.libreinfo.util.LineColorFixer;
@@ -83,8 +83,7 @@ public record LineAlias(int id, String lineDisplayName, int backgroundColor, Str
             try {
                 result.add(parse(line));
             } catch (Exception e) {
-                e.printStackTrace();
-                Log.e("LineAlias", line.toString());
+                AppLog.e("Failed to parse line alias: " + line, e);
             }
         }
         LineColorFixer colorFixer = new LineColorFixer(result);

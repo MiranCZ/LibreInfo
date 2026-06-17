@@ -1,6 +1,5 @@
 package me.miran.libreinfo.activity
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,11 +13,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,64 +24,37 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.valentinilk.shimmer.Shimmer
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
-import me.miran.libreinfo.exception.RequestException
 import me.miran.libreinfo.parsing.storage.IdStorage
 import me.miran.libreinfo.parsing.types.Vehicle
 import me.miran.libreinfo.util.DelayUtil
-import me.miran.libreinfo.util.Result
+import me.miran.libreinfo.util.load.rememberLoad
 import me.miran.libreinfo.util.request.RequestHelper
 
 class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
 
     @Composable
     override fun CreateElements() {
-        var vehiclesResult by remember { mutableStateOf(Result.ok<List<Vehicle>?, RequestException>(null)) }
-
         val context = LocalContext.current
-        LaunchedEffect(Unit) {
-            val result = withContext(Dispatchers.IO) {
-                val storage = IdStorage.getInstance();
 
-                try {
-                    Result.ok<List<Vehicle>, RequestException>(Vehicle.parseVehicles(RequestHelper.getVehicles(context), storage))
-                } catch (e: RequestException) {
-                    Result.err(e)
-                }
-            }
-
-            vehiclesResult = result
+        val vehicles = rememberLoad {
+            val storage = IdStorage.getInstance()
+            Vehicle.parseVehicles(RequestHelper.getVehicles(context), storage)
+                .sortedBy { vehicle -> vehicle.line.id }
         }
 
-        Crossfade(targetState = vehiclesResult) { local -> when (local) {
-            is Result.Ok -> {
-                var vehicles = local.value
-
-                if (vehicles != null) {
-                    vehicles = vehicles.sortedBy { vehicle -> vehicle.line.id }
-
-                    if (vehicles.isEmpty()) {
-                        NothingHere()
-                    } else {
-                        LazyColumn {
-                            items(vehicles) { vehicle ->
-                                VehicleEntry(vehicle)
-                            }
-                        }
+        AsyncContent(vehicles, loading = { VehicleListShimmer() }) { vehicleList ->
+            if (vehicleList.isEmpty()) {
+                NothingHere()
+            } else {
+                LazyColumn {
+                    items(vehicleList) { vehicle ->
+                        VehicleEntry(vehicle)
                     }
-                } else {
-                    VehicleListShimmer()
                 }
             }
-            is Result.Err -> {
-                val error = local.err
-
-                ErrorWidget(error)
-            }
-        } }
+        }
     }
 
     @Composable

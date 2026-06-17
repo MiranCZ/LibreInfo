@@ -1,5 +1,7 @@
 package me.miran.libreinfo.parsing.types;
 
+import me.miran.libreinfo.util.AppLog;
+
 import java.util.List;
 
 public record MinuteRange(int from, int to) {
@@ -25,7 +27,7 @@ public record MinuteRange(int from, int to) {
             return new MinuteRange(Integer.parseInt(parts[0].strip()), Integer.parseInt(parts[1].strip()));
         }
 
-        System.out.println("[WARN] Another separator that isn't handled for ranges! "+str);
+        AppLog.w("Another separator that isn't handled for ranges! "+str);
 
         // try to recover at least somehow
         String from = "";

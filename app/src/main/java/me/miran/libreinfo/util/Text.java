@@ -11,7 +11,16 @@ public interface Text {
     }
 
     static Text translatable(int id) {
-        return new TranslatableText(id);
+        return new TranslatableText(id, new Object[0]);
+    }
+
+    /**
+     * A translatable string with format arguments. Any argument that is itself a {@link Text}
+     * (e.g. an endpoint name) is resolved against the context before formatting, so nested
+     * translatable pieces stay translatable.
+     */
+    static Text translatable(int id, Object... args) {
+        return new TranslatableText(id, args);
     }
 
     String getName(Context context);
@@ -31,14 +40,25 @@ public interface Text {
 
     class TranslatableText implements Text {
         private final int id;
+        private final Object[] args;
 
-        TranslatableText(int id) {
+        TranslatableText(int id, Object[] args) {
             this.id = id;
+            this.args = args;
         }
 
         @Override
         public String getName(Context context) {
-            return ContextCompat.getString(context, id);
+            if (args.length == 0) {
+                return ContextCompat.getString(context, id);
+            }
+
+            Object[] resolved = new Object[args.length];
+            for (int i = 0; i < args.length; i++) {
+                Object arg = args[i];
+                resolved[i] = (arg instanceof Text text) ? text.getName(context) : arg;
+            }
+            return context.getString(id, resolved);
         }
     }
 

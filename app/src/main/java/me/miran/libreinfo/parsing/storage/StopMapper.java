@@ -4,12 +4,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import me.miran.libreinfo.R;
+import me.miran.libreinfo.exception.AppException;
+import me.miran.libreinfo.exception.ErrorType;
 import me.miran.libreinfo.util.AppInputStream;
 
 public class StopMapper {
 
 
-    public static StopMapper parse(AppInputStream is) {
+    public static StopMapper parse(AppInputStream is) throws AppException {
         try (is) {
             int size = is.readInt();
 
@@ -25,8 +28,7 @@ public class StopMapper {
 
             return new StopMapper(map, mappedToNormal);
         } catch (IOException e) {
-            e.printStackTrace();
-            return new StopMapper(Map.of(), new int[0]);
+            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
     }
 
