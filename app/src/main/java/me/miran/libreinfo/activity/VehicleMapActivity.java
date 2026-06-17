@@ -474,6 +474,9 @@ public class VehicleMapActivity extends BaseActivity {
                                         vehicle.location().toLatLng(),
                                         0,
                                         16.5,
+                                        0,
+                                        0,
+                                        16,
                                         new double[4]
                                 )
                         )
