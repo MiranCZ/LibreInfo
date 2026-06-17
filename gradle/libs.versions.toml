@@ -1,5 +1,5 @@
 [versions]
-agp = "8.9.2"
+agp = "9.2.1"
 flexboxLayout = "3.0.0"
 junit = "4.13.2"
 junitVersion = "1.1.5"
@@ -7,7 +7,7 @@ espressoCore = "3.5.1"
 appcompat = "1.6.1"
 material = "1.10.0"
 gson = "2.13.2"
-kotlin = "2.2.0"
+kotlin = "2.2.10"
 coreKtx = "1.17.0"
 
 [libraries]
