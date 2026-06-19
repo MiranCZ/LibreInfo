@@ -9,11 +9,11 @@ import me.miran.libreinfo.util.AppLog;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 
 public class RouteStopStorage {
 
-    public static RouteStopStorage parse(DataInputStream is, RandomAccessFile routeStops, StopMapper mapper) throws AppException {
+    public static RouteStopStorage parse(DataInputStream is, ByteBuffer routeStops, StopMapper mapper) throws AppException {
         try(is) {
             int[][] stopIdToRoute = new int[mapper.internalStopsLength()][];
 
@@ -40,11 +40,10 @@ public class RouteStopStorage {
 
     private static final int ROUTE_STOP_SIZE_BYTES = Short.BYTES + Integer.BYTES + 2 * Short.BYTES + 4 * Byte.BYTES;
     private final int[][] stopIdToRouteStops;
-    private final byte[] buffer = new byte[ROUTE_STOP_SIZE_BYTES];
-    private final RandomAccessFile routeStops;
+    private final ByteBuffer routeStops;
 
 
-    private RouteStopStorage(int[][] stopIdToRoute, RandomAccessFile routeStops) {
+    private RouteStopStorage(int[][] stopIdToRoute, ByteBuffer routeStops) {
         this.stopIdToRouteStops = stopIdToRoute;
         this.routeStops = routeStops;
     }
@@ -95,28 +94,18 @@ public class RouteStopStorage {
 
     private RouteStop parseStop(int routeId) throws IOException {
         long pos = (long) (ROUTE_STOP_SIZE_BYTES) * routeId;
-        routeStops.seek(pos);
-
-        int len = routeStops.read(buffer);
-        if (len != buffer.length) {
-            throw new IllegalStateException();
+        if (pos > Integer.MAX_VALUE) {
+            throw new IllegalStateException("File too large!");
         }
+        routeStops.position((int) pos);
 
-        int bufferPos = 0;
-        short stopId = readShort(buffer, bufferPos);
-        bufferPos += 2;
+        short stopId = routeStops.getShort();
+        int tripId = routeStops.getInt();
+        short postId = routeStops.getShort();
+        short sequence = routeStops.getShort();
 
-        int tripId = readInt(buffer, bufferPos);
-        bufferPos += 4;
-
-        short postId = readShort(buffer, bufferPos);
-        bufferPos += 2;
-
-        short sequence = readShort(buffer, bufferPos);
-        bufferPos += 2;
-
-        Time arrival = new Time(buffer[bufferPos++], buffer[bufferPos++]);
-        Time departure = new Time(buffer[bufferPos++], buffer[bufferPos++]);
+        Time arrival = new Time(routeStops.get(), routeStops.get());
+        Time departure = new Time(routeStops.get(), routeStops.get());
 
         return new RouteStop(stopId, tripId, postId, sequence, arrival, departure);
     }
@@ -131,48 +120,23 @@ public class RouteStopStorage {
         for (int i = 0, routesLength = routes.length; i < routesLength; i++) {
             int routeId = routes[i];
             long pos = (long) (ROUTE_STOP_SIZE_BYTES) * routeId;
-            routeStops.seek(pos);
-
-            int len = routeStops.read(buffer);
-            if (len != buffer.length) {
-                throw new IllegalStateException();
+            if (pos > Integer.MAX_VALUE) {
+                throw new IllegalStateException("File too large!");
             }
 
-            int bufferPos = 0;
-            short sid = readShort(buffer, bufferPos);
-            bufferPos += 2;
+            routeStops.position((int) pos);
 
-            int tripId = readInt(buffer, bufferPos);
-            bufferPos += 4;
+            short sid = routeStops.getShort();
+            int tripId = routeStops.getInt();
+            short postId = routeStops.getShort();
+            short sequence = routeStops.getShort();
 
-            short postId = readShort(buffer, bufferPos);
-            bufferPos += 2;
-
-            short sequence = readShort(buffer, bufferPos);
-            bufferPos += 2;
-
-            Time arrival = new Time(buffer[bufferPos++], buffer[bufferPos++]);
-            Time departure = new Time(buffer[bufferPos++], buffer[bufferPos++]);
+            Time arrival = new Time(routeStops.get(), routeStops.get());
+            Time departure = new Time(routeStops.get(), routeStops.get());
 
             results[i] = new RouteStop(sid, tripId, postId, sequence, arrival, departure);
         }
         return results;
-    }
-
-    private short readShort(byte[] buffer, int pos) {
-        int ch1 = buffer[pos++] & 0xFF;
-        int ch2 = buffer[pos++] & 0xFF;
-        return (short)((ch1 << 8) | (ch2));
-    }
-
-    private int readInt(byte[] buffer, int pos) {
-        int ch1 = (int) buffer[pos++] & 0xFF;
-        int ch2 = (int) buffer[pos++] & 0xFF;
-        int ch3 = (int) buffer[pos++] & 0xFF;
-        int ch4 = (int) buffer[pos++] & 0xFF;
-
-        return ((ch1 << 24) | (ch2 << 16) | (ch3 << 8) | (ch4));
-
     }
 
 }

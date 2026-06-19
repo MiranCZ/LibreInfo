@@ -15,12 +15,12 @@ import org.tukaani.xz.XZInputStream;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -147,10 +147,10 @@ public class CacheHelper {
         }
     }
 
-    public static RandomAccessFile getRouteStopsRAF(Context context) throws AppException {
-        try {
-            return new RandomAccessFile(getCachedPath(context, ROUTE_STOPS).toFile(), "r");
-        } catch (FileNotFoundException e) {
+    public static ByteBuffer getRouteStopsBuff(Context context) throws AppException {
+        try(var channel = FileChannel.open(getCachedPath(context, ROUTE_STOPS), StandardOpenOption.READ)) {
+            return channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+        } catch (IOException e) {
             throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
     }
