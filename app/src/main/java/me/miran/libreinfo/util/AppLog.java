@@ -2,6 +2,8 @@ package me.miran.libreinfo.util;
 
 import android.util.Log;
 
+import me.miran.libreinfo.BuildConfig;
+
 
 public final class AppLog {
 
@@ -9,7 +11,9 @@ public final class AppLog {
     }
 
     public static void d(String message) {
-        Log.d(callerTag(), message);
+        if (BuildConfig.DEBUG) {
+            Log.d(callerTag(), message);
+        }
     }
 
     public static void w(String message) {
@@ -29,7 +33,9 @@ public final class AppLog {
     }
 
     public static void d(String tag, String message) {
-        Log.d(tag, message);
+        if (BuildConfig.DEBUG) {
+            Log.d(tag, message);
+        }
     }
 
     public static void w(String tag, String message) {

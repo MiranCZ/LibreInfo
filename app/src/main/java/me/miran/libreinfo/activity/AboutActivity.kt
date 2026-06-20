@@ -11,6 +11,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import me.miran.libreinfo.BuildConfig
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.attribution.AttributionActivity
 import me.miran.libreinfo.activity.base.NavigationActivity
@@ -30,7 +31,7 @@ class AboutActivity : NavigationActivity(R.string.about) {
 
                 Row {
                     Text("Verze ", fontWeight = FontWeight.Bold, fontSize = 24.sp)
-                    Text("0.1", color = Color.White, fontSize = 24.sp)
+                    Text(BuildConfig.VERSION_NAME, color = Color.White, fontSize = 24.sp)
                 }
             }
         }
