@@ -47,6 +47,12 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
             )
 
             AttributionItem(
+                "MapTiler",
+                "Poskytovatel mapových podkladů a dlaždic",
+                R.drawable.maptiler_icon
+            )
+
+            AttributionItem(
                 "Font Awesome",
                 "Knihovna vektorových ikon a log",
                 R.drawable.fontawesome_icon
