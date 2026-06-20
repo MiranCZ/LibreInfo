@@ -3,6 +3,7 @@ activityCompose = "1.11.0"
 agp = "9.2.1"
 androidPluginAnnotationV9 = "3.0.2"
 androidSdk = "13.3.0"
+composeBom = "2026.01.00"
 composeShimmer = "1.4.0"
 flexbox = "3.0.0"
 flexboxLayout = "3.0.0"
@@ -22,8 +23,9 @@ xz = "1.12"
 
 [libraries]
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
-android-plugin-annotation-v9 = { module = "org.maplibre.gl:android-plugin-annotation-v9", version.ref = "androidPluginAnnotationV9" }
-android-sdk = { module = "org.maplibre.gl:android-sdk", version.ref = "androidSdk" }
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+maplibre-annotation = { module = "org.maplibre.gl:android-plugin-annotation-v9", version.ref = "androidPluginAnnotationV9" }
+maplibre-sdk = { module = "org.maplibre.gl:android-sdk", version.ref = "androidSdk" }
 compose-shimmer = { module = "com.valentinilk.shimmer:compose-shimmer", version.ref = "composeShimmer" }
 flexbox = { module = "com.google.android.flexbox:flexbox", version.ref = "flexbox" }
 flexbox-layout = { module = "com.github.google:flexbox-layout", version.ref = "flexboxLayout" }

@@ -78,9 +78,8 @@ secrets {
 
 dependencies {
 
-    val composeBom = platform("androidx.compose:compose-bom:2026.01.00")
-    implementation(composeBom)
-    androidTestImplementation(composeBom)
+    implementation(platform(libs.compose.bom))
+    androidTestImplementation(platform(libs.compose.bom))
 
     implementation(libs.material3)
     implementation(libs.activity.compose)
@@ -97,8 +96,8 @@ dependencies {
     implementation(libs.flexbox)
     implementation(libs.okhttp)
     implementation(libs.gson)
-    implementation(libs.android.sdk)
-    implementation(libs.android.plugin.annotation.v9)
+    implementation(libs.maplibre.sdk)
+    implementation(libs.maplibre.annotation)
     implementation(libs.xz)
     implementation(libs.compose.shimmer)
     implementation(libs.core.ktx)
