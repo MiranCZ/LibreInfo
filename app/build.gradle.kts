@@ -1,3 +1,16 @@
+import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.variant.BuiltArtifactsLoader
+import com.android.build.api.variant.FilterConfiguration
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.TaskAction
+import java.io.File
 import java.util.Properties
 
 plugins {
@@ -70,6 +83,21 @@ android {
     }
 }
 
+// AGP 9 removed the legacy `applicationVariants`/`outputFileName` rename API. The
+// supported approach is to listen to the APK artifact and copy each output to a
+// cleanly named file. Copies land in build/outputs/apk-renamed/<variant>/.
+androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        val copyTask = tasks.register<CopyRenamedApks>(
+            "copyRenamedApksFor${variant.name.replaceFirstChar { it.uppercase() }}"
+        ) {
+            output.set(layout.buildDirectory.dir("outputs/apk-renamed/${variant.name}"))
+            builtArtifactsLoader.set(variant.artifacts.getBuiltArtifactsLoader())
+        }
+        variant.artifacts.use(copyTask).wiredWith { it.input }.toListenTo(SingleArtifact.APK)
+    }
+}
+
 secrets {
     // This checked-in file provides fallback values so builds (e.g. CI) don't
     // fail when a secret is missing locally.
@@ -104,4 +132,38 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+}
+
+/**
+ * Copies each built APK to a cleanly named file - `LibreInfo-v<version>-<abi>.apk`.
+ * The ABI is read from the APK's split metadata (the universal APK has no ABI filter).
+ */
+abstract class CopyRenamedApks : DefaultTask() {
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val input: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val output: DirectoryProperty
+
+    @get:Internal
+    abstract val builtArtifactsLoader: Property<BuiltArtifactsLoader>
+
+    @TaskAction
+    fun taskAction() {
+        val outDir = output.get()
+
+        val builtArtifacts = builtArtifactsLoader.get().load(input.get())
+            ?: throw RuntimeException("Cannot load APKs")
+
+        builtArtifacts.elements.forEach { artifact ->
+            val abi = artifact.filters
+                .firstOrNull { it.filterType == FilterConfiguration.FilterType.ABI }
+                ?.identifier ?: "universal"
+            val version = artifact.versionName?.takeIf { it.isNotBlank() }
+                ?: builtArtifacts.variantName
+            val name = "LibreInfo-v$version-$abi.apk"
+            File(artifact.outputFile).copyTo(outDir.file(name).asFile, overwrite = true)
+        }
+    }
 }
