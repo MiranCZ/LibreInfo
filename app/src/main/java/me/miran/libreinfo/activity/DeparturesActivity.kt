@@ -1,7 +1,5 @@
 package me.miran.libreinfo.activity
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,6 +8,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,8 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.gson.JsonObject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
 import me.miran.libreinfo.activity.data.DelaysDataHolder
@@ -38,6 +35,7 @@ import me.miran.libreinfo.util.DeparturesSettings
 import me.miran.libreinfo.util.LocalDeparturesSettings
 import me.miran.libreinfo.util.OfflineDepartures
 import me.miran.libreinfo.util.Text
+import me.miran.libreinfo.util.load.rememberLoad
 import me.miran.libreinfo.util.request.RequestHelper
 
 
@@ -77,39 +75,30 @@ class DeparturesActivity : KBaseActivity("") {
 
         val provider = AppContainer.storageProvider
         var storage: IdStorage? by remember { mutableStateOf(provider.getInstanceOrNull()) }
-        var departuresResult: Departures? by remember { mutableStateOf(null) }
 
         LaunchedEffect(Unit) {
             if (stop.isFavourite) {
                 vm.setLiked(true)
             }
-
-            val s = withContext(Dispatchers.IO) {
-                provider.getInstance()
-            }
-            storage = s
-
-            val delays = DelaysDataHolder.getDelays()
-            val deps = withContext(Dispatchers.IO) {
-                Departures("Work in progress...", OfflineDepartures.getOffline(
-                    s,
-                    stop.id.internal,
-                    departuresSettings.maxEntries,
-                    delays
-                ))
-            }
-            departuresResult = deps
         }
 
-        Crossfade(targetState = departuresResult) { deps ->
-            if (deps != null) {
-                if (!deps.departures.isEmpty()) {
-                    this.Departures(deps, storage!!)
-                } else {
-                    NothingHere()
-                }
+        val delays = DelaysDataHolder.getDelays()
+        val departuresResult = rememberLoad {
+            storage = provider.getInstance()
+
+            Departures("Work in progress...", OfflineDepartures.getOffline(
+                storage,
+                stop.id.internal,
+                departuresSettings.maxEntries,
+                delays
+            ))
+        }
+
+        AsyncContent(departuresResult, loading = { DeparturesShimmer(storage) }) { deps ->
+            if (!deps.departures.isEmpty()) {
+                this.Departures(deps, storage!!)
             } else {
-                DeparturesShimmer(storage)
+                NothingHere()
             }
         }
     }
