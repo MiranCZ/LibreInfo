@@ -34,9 +34,11 @@ import java.nio.file.StandardOpenOption;
 
 public class StorageManager {
 
-    private long serverUpdateTime = -1;
+    private static final Object DATA_LOCK = new Object();
     private static boolean initCalled = false;
+
     private final Context context;
+    private long serverUpdateTime = -1;
 
 
     public StorageManager(Context context) {
@@ -52,6 +54,12 @@ public class StorageManager {
         }
         initCalled = true;
 
+        synchronized (DATA_LOCK) {
+            initInternal();
+        }
+    }
+
+    private void initInternal() throws AppException {
         try {
             serverUpdateTime = RequestHelper.getLastStaticUpdate(context);
         } catch (AppException e) {
@@ -87,6 +95,36 @@ public class StorageManager {
             }
         } else {
             fullDataReload(false);
+        }
+    }
+
+    /**
+     * Used by the background worker to update data
+     *
+     * @return true if updated
+     */
+    public boolean update() throws AppException {
+        if (Looper.getMainLooper().isCurrentThread()) {
+            throw new RuntimeException("Should be called from background thread since blocking operations are performed");
+        }
+
+        synchronized (DATA_LOCK) {
+            // no catching, if update fails worker should know
+            serverUpdateTime = RequestHelper.getLastStaticUpdate(context);
+
+            DataCachedState state = getDataState();
+
+            if (state.isMissing()) {
+                fullDataReload(false);
+                return true;
+            }
+
+            if (state.isStale()) {
+                fullDataReload(true);
+                return true;
+            }
+
+            return false;
         }
     }
 

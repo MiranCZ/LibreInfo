@@ -2,9 +2,16 @@ package me.miran.libreinfo;
 
 import android.content.Context;
 
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+
+import java.util.concurrent.TimeUnit;
+
 import me.miran.libreinfo.exception.AppException;
 import me.miran.libreinfo.parsing.storage.manager.AppContainer;
-import me.miran.libreinfo.parsing.storage.manager.IdStorage;
 import me.miran.libreinfo.util.AppLog;
 import me.miran.libreinfo.parsing.storage.manager.StorageManager;
 import me.miran.libreinfo.util.Settings;
@@ -14,6 +21,8 @@ public class Application extends android.app.Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        setupAutoUpdate();
 
         Context context = this;
         new Thread(() -> {
@@ -28,4 +37,23 @@ public class Application extends android.app.Application {
             }
         }).start();
     }
+
+    private void setupAutoUpdate() {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.UNMETERED)
+                .setRequiresCharging(true)
+                .build();
+
+        PeriodicWorkRequest request =
+                new PeriodicWorkRequest.Builder(UpdateWorker.class, 24, TimeUnit.HOURS)
+                        .setConstraints(constraints)
+                        .build();
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "id-storage-update",
+                ExistingPeriodicWorkPolicy.KEEP,
+                request
+        );
+    }
+
 }

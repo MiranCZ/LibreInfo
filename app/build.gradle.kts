@@ -57,6 +57,8 @@ dependencies {
     implementation(libs.material.icons.extended)
     implementation(libs.lifecycle.viewmodel.compose)
 
+    implementation(libs.work.runtime)
+
     implementation(libs.ui.tooling.preview)
     debugImplementation(libs.ui.tooling)
 
