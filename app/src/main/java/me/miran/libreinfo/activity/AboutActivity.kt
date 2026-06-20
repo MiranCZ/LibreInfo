@@ -30,7 +30,7 @@ class AboutActivity : NavigationActivity(R.string.about) {
 
                 Row {
                     Text("Verze ", fontWeight = FontWeight.Bold, fontSize = 24.sp)
-                    Text("0.2-Alpha", color = Color.White, fontSize = 24.sp)
+                    Text("0.1", color = Color.White, fontSize = 24.sp)
                 }
             }
         }

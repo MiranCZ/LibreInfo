@@ -23,7 +23,7 @@
     <string name="ascending">Vzestupně</string>
     <string name="descending">Sestupně</string>
     <string name="sort_by">Řadit podle</string>
-    <string name="about_text">Neoficiální aplikace pro mhd v Brně.\nData jsou získávána z veřejných zdrojů.\n\n!!Na requesty je používán mnou hostovaný server, selfhosting zatím není implemented!!\n\nMapa je stále v dost mizerném stavu, nejsou settings.\n+ Nefungují další, spíš minor, věci...</string>
+    <string name="about_text">Neoficiální aplikace pro mhd v Brně.\nData jsou získávána z veřejných zdrojů.\n\n!!Na requesty je používán mnou hostovaný server, selfhosting zatím není implemented!!\n\nMapa je z mnoho důvodů stále v dost mizerném stavu\n.</string>
     <string name="select_poi">Vyberte objekt</string>
     <string name="nothing_here">Zdá se, že tady nic není…</string>
     <string name="vehicle_delay">Zdržení:</string>
