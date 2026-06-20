@@ -124,6 +124,7 @@ import me.miran.libreinfo.util.LocalDeparturesSettings
 import me.miran.libreinfo.util.Text
 import me.miran.libreinfo.util.load.LoadResult
 import me.miran.libreinfo.util.load.LoadState
+import me.miran.libreinfo.util.load.rememberDelayedLoadState
 import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.random.Random
@@ -278,8 +279,10 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         loading: @Composable () -> Unit = { Loading() },
         content: @Composable (T) -> Unit,
     ) {
-        Crossfade(targetState = result.state, modifier = modifier) { state ->
+        val display = rememberDelayedLoadState(result.state)
+        Crossfade(targetState = display, modifier = modifier) { state ->
             when (state) {
+                null -> {}
                 is LoadState.Loading -> loading()
                 is LoadState.Error -> ErrorWidget(state.error, onRetry = result.retry)
                 is LoadState.Success -> content(state.data)
