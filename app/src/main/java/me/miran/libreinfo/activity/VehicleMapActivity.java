@@ -30,8 +30,6 @@ import me.miran.libreinfo.BuildConfig;
 import me.miran.libreinfo.R;
 import me.miran.libreinfo.activity.base.BaseActivity;
 import me.miran.libreinfo.activity.bottomsheet.VehicleInfoBottomSheet;
-import me.miran.libreinfo.activity.testing.OverpassDownloader;
-import me.miran.libreinfo.activity.testing.OverpassToGeoJson;
 import me.miran.libreinfo.exception.RequestException;
 import me.miran.libreinfo.parsing.storage.manager.AppContainer;
 import me.miran.libreinfo.parsing.storage.manager.IdStorage;
@@ -304,18 +302,15 @@ public class VehicleMapActivity extends BaseActivity {
             }
             if (!selectedContext.fetchedLine && selectedContext.selected == vehicle.id()) {
                 selectedContext.fetchedLine = true;
-                new Thread(() -> {
-                    String overpassJson = OverpassDownloader.downloadData(vehicle.line().lineDisplayName());
-
-                    OverpassToGeoJson.GeoJsonPair pair = OverpassToGeoJson.convert(overpassJson, vehicle.finalStop().name);
-
-                    runOnUiThread(() -> {
-                        routeSource.setGeoJson(pair.routesGeoJson);
-                        routeLayer.setProperties(
-                                PropertyFactory.lineColor(vehicle.line().backgroundColorStr())
-                        );
-                    });
-                }).start();
+                // TODO implement trip shapes
+//                new Thread(() -> {
+//                    runOnUiThread(() -> {
+//                        routeSource.setGeoJson(pair.routesGeoJson);
+//                        routeLayer.setProperties(
+//                                PropertyFactory.lineColor(vehicle.line().backgroundColorStr())
+//                        );
+//                    });
+//                }).start();
 
             }
         }
