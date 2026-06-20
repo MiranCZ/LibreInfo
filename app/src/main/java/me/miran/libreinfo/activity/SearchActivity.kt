@@ -6,9 +6,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -22,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,11 +48,11 @@ import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
 import me.miran.libreinfo.activity.data.DelaysDataHolder
 import me.miran.libreinfo.exception.RequestException
-import me.miran.libreinfo.parsing.storage.manager.IdStorage
 import me.miran.libreinfo.parsing.storage.StopStorage
 import me.miran.libreinfo.parsing.storage.manager.AppContainer
 import me.miran.libreinfo.parsing.types.stop.Stop
 import me.miran.libreinfo.util.FuzzySearch
+import me.miran.libreinfo.util.load.rememberLoad
 import me.miran.libreinfo.util.request.RequestHelper
 
 class SearchActivity : KBaseActivity(R.string.departures) {
@@ -87,9 +90,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
     @Composable
     @Preview
     override fun CreateElements() {
-        val inst = AppContainer.storageProvider.getBlocking(StopStorage::class.java).searcher
-
-        SearchableList(inst)
+        SearchableList()
     }
 
     override fun setBaseContent(
@@ -124,39 +125,12 @@ class SearchActivity : KBaseActivity(R.string.departures) {
     }
 
     @Composable
-    fun SearchableList(
-        searcher: FuzzySearch<Stop>,
-        vm: SearchViewModel = viewModel()
-    ) {
-        val liked by vm.liked
-
-        val color = colorResource(R.color.widget_background);
-
-        var forceRecompose by remember { mutableStateOf(0) }
-        var query by remember { mutableStateOf("") }
-
-        val filteredItems = remember(query, forceRecompose, liked) {
-            val res = searcher.getResults(query)
-
-            if (liked) {
-                val first: ArrayList<Stop> = ArrayList()
-                val second: ArrayList<Stop> = ArrayList()
-
-                for (v in res) {
-                    if (v.isFavourite) {
-                        first.add(v)
-                    } else {
-                        second.add(v)
-                    }
-                }
-                first.addAll(second)
-
-                first
-            } else {
-                res
-            }
+    fun SearchableList(vm: SearchViewModel = viewModel()) {
+        val searcherResult = rememberLoad {
+            AppContainer.storageProvider.get(StopStorage::class).searcher
         }
 
+        var query by remember { mutableStateOf("") }
         val focusRequester = remember { FocusRequester() }
 
         Column(Modifier.padding(horizontal = 8.dp)) {
@@ -187,50 +161,91 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                 }
             )
 
-            key(forceRecompose, liked) {
-                LazyColumn(Modifier.padding(top = 8.dp)) {
-                    items(filteredItems) { item ->
+            AsyncContent(searcherResult, loading = { StopListShimmer() }) { searcher ->
+                StopList(searcher, query, vm)
+            }
+        }
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clickable(null, ripple(), onClick = {
-                                    if (intent.getBooleanExtra(EXTRA_PICKER_MODE, false)) {
-                                        setResult(RESULT_OK, Intent().apply { putExtra(EXTRA_RESULT_STOP, item) })
-                                        finish()
-                                    } else {
-                                        startActivity(DeparturesActivity::class) { i -> i.putExtra("stop", item) }
-                                    }
-                                })
-                                .padding(17.dp)
-                                .fillMaxWidth()
-                        ) {
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
+    }
 
-                            if (item.isFavourite) {
-                                Icon(
-                                    painter = painterResource(R.drawable.heart_solid),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = Color.Red
-                                )
-                            } else {
-                                Icon(
-                                    painter = painterResource(R.drawable.stop),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = colorResource(R.color.light_blue)
-                                )
-                            }
+    @Composable
+    fun StopList(
+        searcher: FuzzySearch<Stop>,
+        query: String,
+        vm: SearchViewModel = viewModel()
+    ) {
+        val liked by vm.liked
 
-                            Text(
-                                text = item.name,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                modifier = Modifier.padding(start = 20.dp)
+        var forceRecompose by remember { mutableIntStateOf(0) }
+
+        val filteredItems = remember(query, forceRecompose, liked) {
+            val res = searcher.getResults(query)
+
+            if (liked) {
+                val first: ArrayList<Stop> = ArrayList()
+                val second: ArrayList<Stop> = ArrayList()
+
+                for (v in res) {
+                    if (v.isFavourite) {
+                        first.add(v)
+                    } else {
+                        second.add(v)
+                    }
+                }
+                first.addAll(second)
+
+                first
+            } else {
+                res
+            }
+        }
+
+        key(forceRecompose, liked) {
+            LazyColumn(Modifier.padding(top = 8.dp)) {
+                items(filteredItems) { item ->
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clickable(null, ripple(), onClick = {
+                                if (intent.getBooleanExtra(EXTRA_PICKER_MODE, false)) {
+                                    setResult(RESULT_OK, Intent().apply { putExtra(EXTRA_RESULT_STOP, item) })
+                                    finish()
+                                } else {
+                                    startActivity(DeparturesActivity::class) { i -> i.putExtra("stop", item) }
+                                }
+                            })
+                            .padding(17.dp)
+                            .fillMaxWidth()
+                    ) {
+
+                        if (item.isFavourite) {
+                            Icon(
+                                painter = painterResource(R.drawable.heart_solid),
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp),
+                                tint = Color.Red
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(R.drawable.stop),
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp),
+                                tint = colorResource(R.color.light_blue)
                             )
                         }
-                        Divider()
+
+                        Text(
+                            text = item.name,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(start = 20.dp)
+                        )
                     }
+                    Divider()
                 }
             }
         }
@@ -244,9 +259,25 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                 forceRecompose += 1
             }
         }
+    }
 
-        LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
+    @Composable
+    fun StopListShimmer() {
+        val shimmer = rememberActivityShimmer()
+        Column(Modifier.padding(top = 8.dp)) {
+            repeat(12) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(17.dp)
+                        .fillMaxWidth()
+                ) {
+                    ShimmerBox(Modifier.size(20.dp), shimmer)
+                    Spacer(Modifier.width(20.dp))
+                    ShimmerText(shimmer, widthFraction = 0.6f, variance = 0.3f, height = 16.dp)
+                }
+                Divider()
+            }
         }
     }
 
