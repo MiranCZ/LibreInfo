@@ -26,6 +26,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.Fragment;
 
+import me.miran.libreinfo.BuildConfig;
 import me.miran.libreinfo.R;
 import me.miran.libreinfo.activity.base.BaseActivity;
 import me.miran.libreinfo.activity.bottomsheet.VehicleInfoBottomSheet;
@@ -158,7 +159,7 @@ public class VehicleMapActivity extends BaseActivity {
             var stopBitmap = toBitmap(context, R.drawable.stop, 64);
             var busBitmap = toBitmap(context, R.drawable.vehicle_arrow, 96);
 
-            map.setStyle("https://api.maptiler.com/maps/basic-v2/style.json?key=U4nGAJfk1oEvXcTaX02N");
+            map.setStyle("https://api.maptiler.com/maps/basic-v2/style.json?key="+ BuildConfig.MAPTILER_API_KEY);
 
             double lat = getIntent().getDoubleExtra("lat", -1);
             double lng = getIntent().getDoubleExtra("lng", -1);

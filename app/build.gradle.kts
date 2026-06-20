@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.secrets.gradle.plugin)
 }
 
 val keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -67,6 +68,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+}
+
+secrets {
+    // This checked-in file provides fallback values so builds (e.g. CI) don't
+    // fail when a secret is missing locally.
+    defaultPropertiesFileName = "secrets.defaults.properties"
 }
 
 dependencies {
