@@ -108,7 +108,8 @@ import me.miran.libreinfo.activity.base.snackbar.SnackBarType
 import me.miran.libreinfo.activity.settings.DelayRenderType
 import me.miran.libreinfo.exception.AppException
 import me.miran.libreinfo.parsing.storage.ApiStorage
-import me.miran.libreinfo.parsing.storage.IdStorage
+import me.miran.libreinfo.parsing.storage.manager.AppContainer
+import me.miran.libreinfo.parsing.storage.manager.IdStorage
 import me.miran.libreinfo.parsing.types.DateTime
 import me.miran.libreinfo.parsing.types.Diversion
 import me.miran.libreinfo.parsing.types.LineAlias
@@ -142,7 +143,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setBaseContent {
-            val error = IdStorage.getError();
+            val error = AppContainer.storageProvider.error();
 
             if (error != null) {
                 // surface a fatal startup/data-init failure

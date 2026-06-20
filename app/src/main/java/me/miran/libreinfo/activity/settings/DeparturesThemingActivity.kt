@@ -30,7 +30,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
-import me.miran.libreinfo.parsing.storage.IdStorage
+import me.miran.libreinfo.parsing.storage.manager.AppContainer
+import me.miran.libreinfo.parsing.storage.manager.IdStorage
 import me.miran.libreinfo.parsing.types.StopTime
 import me.miran.libreinfo.parsing.types.Time
 import me.miran.libreinfo.parsing.types.TimeMark
@@ -59,13 +60,14 @@ class DeparturesThemingActivity : KBaseActivity(R.string.departures_theming) {
     override fun CreateElements() {
         val vm: DeparturesSettingsViewModel = viewModel()
 
-        var storage: IdStorage? by remember { mutableStateOf(IdStorage.getInstanceOrNull()) }
+        val provider = AppContainer.storageProvider
+        var storage: IdStorage? by remember { mutableStateOf(provider.getInstanceOrNull()) }
 
         LaunchedEffect(Unit) {
             vm.load()
 
             val storageRes = withContext(Dispatchers.IO) {
-                IdStorage.getInstance()
+                provider.getInstance()
             }
 
             storage = storageRes

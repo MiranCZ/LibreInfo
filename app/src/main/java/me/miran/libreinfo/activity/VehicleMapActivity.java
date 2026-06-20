@@ -32,7 +32,8 @@ import me.miran.libreinfo.activity.bottomsheet.VehicleInfoBottomSheet;
 import me.miran.libreinfo.activity.testing.OverpassDownloader;
 import me.miran.libreinfo.activity.testing.OverpassToGeoJson;
 import me.miran.libreinfo.exception.RequestException;
-import me.miran.libreinfo.parsing.storage.IdStorage;
+import me.miran.libreinfo.parsing.storage.manager.AppContainer;
+import me.miran.libreinfo.parsing.storage.manager.IdStorage;
 import me.miran.libreinfo.parsing.types.MapVehicle;
 import me.miran.libreinfo.parsing.types.Post;
 import me.miran.libreinfo.util.request.RequestHelper;
@@ -113,8 +114,7 @@ public class VehicleMapActivity extends BaseActivity {
 
 
         new Thread(() -> {
-            storage = IdStorage.getInstance();
-
+            storage = AppContainer.INSTANCE.getStorageProvider().getBlocking(IdStorage.class);
 
             final CountDownLatch latch = new CountDownLatch(1);
             var ref = new Object() {

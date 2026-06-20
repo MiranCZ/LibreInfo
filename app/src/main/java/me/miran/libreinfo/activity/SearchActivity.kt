@@ -45,8 +45,9 @@ import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
 import me.miran.libreinfo.activity.data.DelaysDataHolder
 import me.miran.libreinfo.exception.RequestException
-import me.miran.libreinfo.parsing.storage.IdStorage
+import me.miran.libreinfo.parsing.storage.manager.IdStorage
 import me.miran.libreinfo.parsing.storage.StopStorage
+import me.miran.libreinfo.parsing.storage.manager.AppContainer
 import me.miran.libreinfo.parsing.types.stop.Stop
 import me.miran.libreinfo.util.FuzzySearch
 import me.miran.libreinfo.util.request.RequestHelper
@@ -86,7 +87,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
     @Composable
     @Preview
     override fun CreateElements() {
-        val inst = IdStorage.getInstanceOrBlock(StopStorage::class.java).searcher
+        val inst = AppContainer.storageProvider.getBlocking(StopStorage::class.java).searcher
 
         SearchableList(inst)
     }

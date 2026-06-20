@@ -8,7 +8,8 @@ import androidx.annotation.Nullable;
 
 import me.miran.libreinfo.R;
 import me.miran.libreinfo.activity.base.BaseActivity;
-import me.miran.libreinfo.parsing.storage.IdStorage;
+import me.miran.libreinfo.parsing.storage.manager.AppContainer;
+import me.miran.libreinfo.parsing.storage.manager.IdStorage;
 import me.miran.libreinfo.parsing.types.stop.Stop;
 import me.miran.libreinfo.parsing.types.stop.StopId;
 import me.miran.libreinfo.util.OfflineDepartures;
@@ -39,7 +40,7 @@ public class DeparturePerformanceActivity extends BaseActivity {
             text.setText("Calculating...");
 
             new Thread(() -> {
-                IdStorage storage = IdStorage.getInstance();
+                IdStorage storage = AppContainer.INSTANCE.getStorageProvider().getBlocking(IdStorage.class);
 
                 long ms = System.currentTimeMillis();
 

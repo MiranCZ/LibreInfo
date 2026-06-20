@@ -5,7 +5,9 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
-import me.miran.libreinfo.parsing.storage.IdStorage;
+import me.miran.libreinfo.parsing.storage.PostStorage;
+import me.miran.libreinfo.parsing.storage.manager.AppContainer;
+import me.miran.libreinfo.parsing.storage.manager.IdStorage;
 import me.miran.libreinfo.parsing.storage.StopStorage;
 import me.miran.libreinfo.parsing.types.stop.Stop;
 import me.miran.libreinfo.parsing.types.stop.StopId;
@@ -28,7 +30,7 @@ public record Post(Stop stop, int postID, String name, Location location) implem
             int stopId = in.readInt();
             int postId = in.readInt();
 
-            return IdStorage.getPostStorageOrBlock().getPost(stopId, postId);
+            return AppContainer.INSTANCE.getStorageProvider().getBlocking(PostStorage.class).getPost(stopId, postId);
         }
 
         @Override

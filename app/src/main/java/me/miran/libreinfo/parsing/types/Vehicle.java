@@ -2,14 +2,8 @@ package me.miran.libreinfo.parsing.types;
 
 import android.content.Context;
 import android.text.SpannableString;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.TextView;
 
-import me.miran.libreinfo.R;
-import me.miran.libreinfo.parsing.storage.IdStorage;
+import me.miran.libreinfo.parsing.storage.manager.IdStorage;
 import me.miran.libreinfo.parsing.types.stop.Stop;
 import me.miran.libreinfo.parsing.types.stop.StopId;
 import me.miran.libreinfo.util.DelayUtil;

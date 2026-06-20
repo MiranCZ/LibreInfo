@@ -1,10 +1,7 @@
 package me.miran.libreinfo.activity
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -35,7 +32,8 @@ import androidx.compose.ui.unit.sp
 import com.valentinilk.shimmer.Shimmer
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
-import me.miran.libreinfo.parsing.storage.IdStorage
+import me.miran.libreinfo.parsing.storage.manager.AppContainer
+import me.miran.libreinfo.parsing.storage.manager.IdStorage
 import me.miran.libreinfo.parsing.types.DateTime
 import me.miran.libreinfo.parsing.types.connection.Connection
 import me.miran.libreinfo.parsing.types.stop.Stop
@@ -53,7 +51,7 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
         val context = LocalContext.current
 
         val result = rememberLoad(fromStop, toStop, departureTime) {
-            val storage = IdStorage.getInstance()
+            val storage = AppContainer.storageProvider.getInstance()
             val obj = RequestHelper.findConnections(context, fromStop, toStop, departureTime)
             val now = DateTime.now()
             obj.getAsJsonArray("connections").map { element ->

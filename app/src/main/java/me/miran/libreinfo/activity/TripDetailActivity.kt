@@ -47,7 +47,7 @@ import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
 import me.miran.libreinfo.exception.RequestException
 import me.miran.libreinfo.parsing.storage.CalendarStorage
-import me.miran.libreinfo.parsing.storage.IdStorage
+import me.miran.libreinfo.parsing.storage.manager.IdStorage
 import me.miran.libreinfo.parsing.types.LineAlias
 import me.miran.libreinfo.parsing.types.RouteStop
 import me.miran.libreinfo.parsing.types.StopTime
@@ -59,7 +59,8 @@ import me.miran.libreinfo.util.DelayUtil
 import me.miran.libreinfo.util.DelayUtil.getDelayColor
 import me.miran.libreinfo.util.request.RequestHelper
 import com.valentinilk.shimmer.Shimmer
-import kotlinx.coroutines.delay
+import me.miran.libreinfo.parsing.storage.ApiStorage
+import me.miran.libreinfo.parsing.storage.manager.AppContainer
 import java.util.function.Function
 
 // TODO periodic updates
@@ -72,12 +73,14 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
         val highlightedStopId = intent.getIntExtra("stopId", -1)
         val vehicleId = intent.getIntExtra("vehicleId", -1)
 
-        var storage: IdStorage? by remember { mutableStateOf(IdStorage.getInstanceOrNull()) }
+        val provider = AppContainer.storageProvider
+
+        var storage: IdStorage? by remember { mutableStateOf(provider.getInstanceOrNull()) }
         var tripData: TripInfoData? by remember { mutableStateOf(null) }
 
         LaunchedEffect(Unit) {
             val (storageRes, tripDataRes) = withContext(Dispatchers.IO) {
-                val storage = IdStorage.getInstance()
+                val storage = provider.getInstance()
                 val res = storage.apiStorage.getLineIdAndRoute(tripId)
 
                 var vehicleInfo = VehicleTripInfo.NONE

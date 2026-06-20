@@ -26,7 +26,8 @@ import androidx.compose.ui.unit.sp
 import com.valentinilk.shimmer.Shimmer
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
-import me.miran.libreinfo.parsing.storage.IdStorage
+import me.miran.libreinfo.parsing.storage.manager.AppContainer
+import me.miran.libreinfo.parsing.storage.manager.IdStorage
 import me.miran.libreinfo.parsing.types.Vehicle
 import me.miran.libreinfo.util.DelayUtil
 import me.miran.libreinfo.util.load.rememberLoad
@@ -39,7 +40,7 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
         val context = LocalContext.current
 
         val vehicles = rememberLoad {
-            val storage = IdStorage.getInstance()
+            val storage = AppContainer.storageProvider.getInstance()
             Vehicle.parseVehicles(RequestHelper.getVehicles(context), storage)
                 .sortedBy { vehicle -> vehicle.line.id }
         }

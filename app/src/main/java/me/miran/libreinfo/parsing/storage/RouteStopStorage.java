@@ -11,10 +11,10 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class RouteStopStorage {
+public class RouteStopStorage implements AppStorage {
 
     public static RouteStopStorage parse(DataInputStream is, ByteBuffer routeStops, StopMapper mapper) throws AppException {
-        try(is) {
+        try {
             int[][] stopIdToRoute = new int[mapper.internalStopsLength()][];
 
             int size = is.readInt();

@@ -15,13 +15,13 @@ import me.miran.libreinfo.exception.ErrorType;
 import me.miran.libreinfo.util.AppInputStream;
 import me.miran.libreinfo.util.AppLog;
 
-public class CalendarStorage {
+public class CalendarStorage implements AppStorage {
 
     private final Map<Integer, CalendarEntry> serviceToCalendar;
     private final Map<Integer, Map<Date, ExceptionType>> exceptions;
 
     public static CalendarStorage parse(AppInputStream calendar, AppInputStream calendarDates) throws AppException {
-        try(calendar) {
+        try {
             return parseInternal(calendar, calendarDates);
         } catch (IOException e) {
             throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);

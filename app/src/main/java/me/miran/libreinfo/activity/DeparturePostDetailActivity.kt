@@ -23,7 +23,8 @@ import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
 import me.miran.libreinfo.activity.data.DelaysDataHolder
 import me.miran.libreinfo.exception.RequestException
-import me.miran.libreinfo.parsing.storage.IdStorage
+import me.miran.libreinfo.parsing.storage.manager.AppContainer
+import me.miran.libreinfo.parsing.storage.manager.IdStorage
 import me.miran.libreinfo.parsing.types.Post
 import me.miran.libreinfo.parsing.types.Time
 import me.miran.libreinfo.parsing.types.departure.Departure
@@ -67,7 +68,7 @@ class DeparturePostDetailActivity : KBaseActivity("") {
             }
 
             val (depsRes, storageRes) = withContext(Dispatchers.IO) {
-                val storage = IdStorage.getInstance()
+                val storage = AppContainer.storageProvider.getInstance()
 
                 val departureList = OfflineDepartures.getOfflineForPost(
                     storage,

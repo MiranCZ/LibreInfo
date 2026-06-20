@@ -5,6 +5,7 @@ import android.util.SparseArray;
 import me.miran.libreinfo.R;
 import me.miran.libreinfo.exception.AppException;
 import me.miran.libreinfo.exception.ErrorType;
+import me.miran.libreinfo.parsing.storage.manager.IdStorage;
 import me.miran.libreinfo.parsing.types.Trip;
 import me.miran.libreinfo.util.AppInputStream;
 
@@ -13,10 +14,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class TripStorage {
+public class TripStorage implements AppStorage {
 
     public static TripStorage parse(AppInputStream is) throws AppException {
-        try(is) {
+        try {
             int size = is.readInt();
 
             String[] headsignPool = new String[size];

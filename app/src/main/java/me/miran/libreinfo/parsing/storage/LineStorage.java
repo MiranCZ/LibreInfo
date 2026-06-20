@@ -18,12 +18,12 @@ import java.util.Map;
 import java.util.Optional;
 
 
-public class LineStorage {
+public class LineStorage implements AppStorage {
 
     public static LineStorage parse(AppInputStream is) throws AppException {
         List<LineAlias> aliases = new ArrayList<>();
 
-        try(is) {
+        try {
             while (is.readBoolean()) {
                 int routeId = is.readInt();
 

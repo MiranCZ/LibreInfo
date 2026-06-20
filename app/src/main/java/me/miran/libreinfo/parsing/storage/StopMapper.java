@@ -9,7 +9,7 @@ import me.miran.libreinfo.exception.AppException;
 import me.miran.libreinfo.exception.ErrorType;
 import me.miran.libreinfo.util.AppInputStream;
 
-public class StopMapper {
+public class StopMapper implements AppStorage {
 
 
     public static StopMapper parse(AppInputStream is) throws AppException {

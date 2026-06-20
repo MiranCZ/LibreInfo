@@ -13,11 +13,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class StopStorage {
+public class StopStorage implements AppStorage {
 
     public static StopStorage parse(AppInputStream is, PreferencesHolder favStops, StopMapper mapper) throws AppException {
         List<Stop> stops;
-        try(is) {
+        try {
             stops = Stop.parseStops(is, favStops, mapper);
         } catch (IOException e) {
             throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);

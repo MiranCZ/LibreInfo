@@ -1,6 +1,6 @@
 package me.miran.libreinfo.parsing.types;
 
-import me.miran.libreinfo.parsing.storage.IdStorage;
+import me.miran.libreinfo.parsing.storage.manager.IdStorage;
 import me.miran.libreinfo.parsing.types.stop.Stop;
 import me.miran.libreinfo.parsing.types.stop.StopId;
 

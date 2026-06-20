@@ -14,11 +14,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class PostStorage {
+public class PostStorage implements AppStorage {
 
     public static PostStorage parse(AppInputStream array, StopStorage stopStorage) throws AppException {
         List<Post> posts;
-        try(array) {
+        try {
             posts = Post.parsePosts(array, stopStorage);
         } catch (IOException e) {
             throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);

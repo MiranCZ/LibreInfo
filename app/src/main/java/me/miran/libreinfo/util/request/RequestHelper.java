@@ -8,7 +8,7 @@ import android.net.NetworkCapabilities;
 import me.miran.libreinfo.R;
 import me.miran.libreinfo.exception.AppException;
 import me.miran.libreinfo.exception.RequestException;
-import me.miran.libreinfo.parsing.storage.IdStorage;
+import me.miran.libreinfo.parsing.storage.manager.IdStorage;
 import me.miran.libreinfo.parsing.storage.StopMapper;
 import me.miran.libreinfo.parsing.types.stop.Stop;
 import me.miran.libreinfo.parsing.types.stop.StopId;
@@ -72,8 +72,6 @@ public class RequestHelper {
     }
 
     public static JsonObject getStopDelays(Context context, StopId stopId) throws RequestException {
-        StopMapper mapper = IdStorage.getStopMapper();
-
         return makeOwnRequest(context, "stopdelays?stopid="+stopId.original(), JsonObject.class);
     }
 

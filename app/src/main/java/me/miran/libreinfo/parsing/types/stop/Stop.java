@@ -5,7 +5,9 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
-import me.miran.libreinfo.parsing.storage.IdStorage;
+import me.miran.libreinfo.parsing.storage.StopStorage;
+import me.miran.libreinfo.parsing.storage.manager.AppContainer;
+import me.miran.libreinfo.parsing.storage.manager.IdStorage;
 import me.miran.libreinfo.parsing.storage.StopMapper;
 import me.miran.libreinfo.parsing.types.Location;
 import me.miran.libreinfo.util.AppInputStream;
@@ -42,7 +44,7 @@ public final class Stop implements Parcelable {
         @Override
         public Stop createFromParcel(Parcel in) {
             int id = in.readInt();
-            return IdStorage.getStopStorageOrBlock().getStop(StopId.internal(id));
+            return AppContainer.INSTANCE.getStorageProvider().getBlocking(StopStorage.class).getStop(StopId.internal(id));
         }
 
         @Override

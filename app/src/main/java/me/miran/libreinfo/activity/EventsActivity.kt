@@ -21,7 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
-import me.miran.libreinfo.parsing.storage.IdStorage
+import me.miran.libreinfo.parsing.storage.manager.AppContainer
+import me.miran.libreinfo.parsing.storage.manager.IdStorage
 import me.miran.libreinfo.parsing.types.DateTime
 import me.miran.libreinfo.parsing.types.Event
 import me.miran.libreinfo.util.load.rememberLoad
@@ -35,7 +36,7 @@ class EventsActivity : KBaseActivity(R.string.events) {
         val context = LocalContext.current
 
         val events = rememberLoad {
-            val storage = IdStorage.getInstance()
+            val storage = AppContainer.storageProvider.getInstance()
             Event.parseEvents(RequestHelper.getEvents(context), storage.lineStorage())
         }
 

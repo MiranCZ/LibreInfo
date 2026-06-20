@@ -3,16 +3,17 @@ package me.miran.libreinfo.parsing.storage;
 import me.miran.libreinfo.R;
 import me.miran.libreinfo.exception.AppException;
 import me.miran.libreinfo.exception.ErrorType;
+import me.miran.libreinfo.parsing.storage.manager.StorageProvider;
 import me.miran.libreinfo.util.AppInputStream;
 import me.miran.libreinfo.util.Pair;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-public class ApiStorage {
+public class ApiStorage implements AppStorage {
 
     public static ApiStorage parse(AppInputStream is) throws AppException {
-        try (is) {
+        try {
             int size = is.readInt();
 
             int[] map = new int[size];

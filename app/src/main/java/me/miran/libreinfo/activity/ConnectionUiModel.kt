@@ -1,7 +1,7 @@
 package me.miran.libreinfo.activity
 
 import java.time.temporal.ChronoUnit
-import me.miran.libreinfo.parsing.storage.IdStorage
+import me.miran.libreinfo.parsing.storage.manager.IdStorage
 import me.miran.libreinfo.parsing.types.DateTime
 import me.miran.libreinfo.parsing.types.LineAlias
 import me.miran.libreinfo.parsing.types.Trip

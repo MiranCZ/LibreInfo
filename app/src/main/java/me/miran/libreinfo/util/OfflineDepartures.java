@@ -1,7 +1,7 @@
 package me.miran.libreinfo.util;
 
 import me.miran.libreinfo.parsing.storage.CalendarStorage;
-import me.miran.libreinfo.parsing.storage.IdStorage;
+import me.miran.libreinfo.parsing.storage.manager.IdStorage;
 import me.miran.libreinfo.parsing.types.RouteStop;
 import me.miran.libreinfo.parsing.types.Time;
 import me.miran.libreinfo.parsing.types.TimeMark;

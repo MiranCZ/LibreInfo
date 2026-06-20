@@ -1,17 +1,13 @@
 package me.miran.libreinfo.activity
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,9 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.valentinilk.shimmer.Shimmer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.gson.JsonObject
@@ -36,7 +30,8 @@ import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
 import me.miran.libreinfo.activity.data.DelaysDataHolder
 import me.miran.libreinfo.exception.RequestException
-import me.miran.libreinfo.parsing.storage.IdStorage
+import me.miran.libreinfo.parsing.storage.manager.AppContainer
+import me.miran.libreinfo.parsing.storage.manager.IdStorage
 import me.miran.libreinfo.parsing.types.departure.Departures
 import me.miran.libreinfo.parsing.types.stop.Stop
 import me.miran.libreinfo.util.DeparturesSettings
@@ -80,7 +75,8 @@ class DeparturesActivity : KBaseActivity("") {
         val stop = intent.getParcelableExtra<Stop>("stop")!!
         val vm: StopViewModel = viewModel()
 
-        var storage: IdStorage? by remember { mutableStateOf(IdStorage.getInstanceOrNull()) }
+        val provider = AppContainer.storageProvider
+        var storage: IdStorage? by remember { mutableStateOf(provider.getInstanceOrNull()) }
         var departuresResult: Departures? by remember { mutableStateOf(null) }
 
         LaunchedEffect(Unit) {
@@ -89,7 +85,7 @@ class DeparturesActivity : KBaseActivity("") {
             }
 
             val s = withContext(Dispatchers.IO) {
-                IdStorage.getInstance()
+                provider.getInstance()
             }
             storage = s
 
@@ -130,7 +126,7 @@ class DeparturesActivity : KBaseActivity("") {
                 }
             }
 
-            val storage = IdStorage.getInstance()
+            val storage = AppContainer.storageProvider.getBlocking(IdStorage::class.java)
             val departures = Departures(
                 "Work in progress...",
                 OfflineDepartures.getOffline(

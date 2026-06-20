@@ -17,7 +17,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.KBaseActivity
-import me.miran.libreinfo.parsing.storage.IdStorage
+import me.miran.libreinfo.parsing.storage.manager.AppContainer
+import me.miran.libreinfo.parsing.storage.manager.IdStorage
 import me.miran.libreinfo.parsing.types.Diversion
 import me.miran.libreinfo.util.load.rememberLoad
 import me.miran.libreinfo.util.request.RequestHelper
@@ -29,7 +30,7 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
         val context = LocalContext.current
 
         val diversions = rememberLoad {
-            val storage = IdStorage.getInstance()
+            val storage = AppContainer.storageProvider.getInstance()
             Diversion.parseDiversions(RequestHelper.getDiversions(context), storage.lineStorage)
         }
 
