@@ -1,7 +1,7 @@
 services:
 
   caddy:
-    image: caddy:2-alpine
+    build: ./caddy
     restart: unless-stopped
     ports:
       - "80:80"
@@ -12,6 +12,7 @@ services:
       - caddy_config:/config
     depends_on:
       - api
+      - gtfs-rt
     networks:
       - public
       - internal

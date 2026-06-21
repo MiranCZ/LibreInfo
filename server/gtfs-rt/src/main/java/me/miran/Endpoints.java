@@ -1,8 +1,6 @@
 package me.miran;
 
-import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import me.miran.model.StopDelay;
 import me.miran.model.VehicleInfo;
@@ -17,12 +15,11 @@ public class Endpoints {
     private static final String JSON = "application/json";
 
     private final VehicleQuery query;
-    private final Gson gson = new GsonBuilder()
-            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-            .create();
+    private final Gson gson;
 
-    public Endpoints(VehicleQuery query) {
+    public Endpoints(VehicleQuery query, Gson gson) {
         this.query = query;
+        this.gson = gson;
     }
 
     public String handleVehicles(Request request, Response response) {
