@@ -19,7 +19,7 @@ data class DeparturesSettings(
                 delayRender = p.getEnum(
                     KEY_DELAY_RENDER,
                     DelayRenderType::class.java,
-                    DelayRenderType.PARENTHESES
+                    DelayRenderType.BOX
                 ),
                 showLowFloor = p.getBoolean(KEY_SHOW_LOW_FLOOR, true),
                 maxEntries = p.getInt(KEY_MAX_ENTRIES, 5)
