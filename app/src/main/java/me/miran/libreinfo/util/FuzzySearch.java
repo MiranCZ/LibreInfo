@@ -1,6 +1,7 @@
 package me.miran.libreinfo.util;
 
 
+import java.text.Collator;
 import java.text.Normalizer;
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -49,7 +50,8 @@ public class FuzzySearch<T> {
         }
         this.longest = longest;
 
-        this.items.sort(Comparator.comparing(String::toLowerCase));
+        Collator collator = Collator.getInstance(new Locale("cs", "CZ"));
+        this.items.sort(Comparator.comparing(collator::getCollationKey));
 
         this.lowItems = new ArrayList<>();
         this.normalizedItems = new ArrayList<>();
