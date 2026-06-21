@@ -21,8 +21,8 @@ import java.util.concurrent.TimeUnit;
  *
  * <p>A single producer thread calls {@link #record(Vehicle)}; HTTP request threads read via the
  * {@link VehicleQuery} accessors. State is held in concurrent maps and {@link VehicleInfo}
- * publishes its fields safely, so no coarse locking is needed. Stale trips are pruned by a
- * periodic garbage collector started with {@link #start()}.
+ * publishes its fields safely, so no coarse locking is needed. Stale trips and vehicle snapshots
+ * are pruned by a periodic garbage collector started with {@link #start()}.
  */
 public class VehicleStore implements VehicleQuery {
 
@@ -33,6 +33,9 @@ public class VehicleStore implements VehicleQuery {
 
     /** Latest raw {@code attributes} payload per vehicle, keyed by {@code id}, for {@code /vehicles}. */
     private final Map<String, JsonObject> vehicles = new ConcurrentHashMap<>();
+
+    /** Wall-clock time of the latest observation per vehicle {@code id}, used to prune {@link #vehicles}. */
+    private final Map<String, Long> vehicleSeenAt = new ConcurrentHashMap<>();
 
     /** {@code LineID -> RouteID -> VehicleInfo}. */
     private final Map<Integer, Map<Integer, VehicleInfo>> vehicleInfos = new ConcurrentHashMap<>();
@@ -57,7 +60,11 @@ public class VehicleStore implements VehicleQuery {
 
     /** Folds a fresh observation into the trip history and the latest-snapshot map. */
     public void record(Vehicle v) {
-        long now = System.currentTimeMillis();
+        record(v, System.currentTimeMillis());
+    }
+
+    /** Same as {@link #record(Vehicle)} but with an injectable clock. Package-private for testing. */
+    void record(Vehicle v, long now) {
         Map<Integer, VehicleInfo> lineMap =
                 vehicleInfos.computeIfAbsent(v.lineId(), k -> new ConcurrentHashMap<>());
         VehicleInfo info = lineMap.get(v.routeId());
@@ -72,28 +79,41 @@ public class VehicleStore implements VehicleQuery {
             info.setChangedAt(now);
             info.getPreviousStops().add(new StopDelay(v.lastStop(), v.delay()));
         }
-        // The latest delay is always recorded, even when the vehicle hasn't moved stops.
+        // The latest delay and contact time are always recorded, even when the vehicle hasn't moved stops.
         info.setDelay(v.delay());
+        info.setLastSeen(now);
 
         vehicles.put(v.id(), v.raw());
+        vehicleSeenAt.put(v.id(), now);
     }
 
-    /** Drops trips whose last update is older than {@link #MAX_AGE_MILLIS}. */
+    /** Drops trips and vehicle snapshots not seen within {@link #MAX_AGE_MILLIS}. */
     void runGc() {
+        runGc(System.currentTimeMillis());
+    }
+
+    /** Same as {@link #runGc()} but with an injectable clock. Package-private for testing. */
+    void runGc(long now) {
         try {
-            long now = System.currentTimeMillis();
-            int before = countTrips();
+            int tripsBefore = countTrips();
+            int vehiclesBefore = vehicles.size();
 
             for (Iterator<Map.Entry<Integer, Map<Integer, VehicleInfo>>> lineIt =
                  vehicleInfos.entrySet().iterator(); lineIt.hasNext(); ) {
                 Map<Integer, VehicleInfo> lineMap = lineIt.next().getValue();
-                lineMap.values().removeIf(info -> (now - info.getChangedAt()) >= MAX_AGE_MILLIS);
+                lineMap.values().removeIf(info -> (now - info.getLastSeen()) >= MAX_AGE_MILLIS);
                 if (lineMap.isEmpty()) {
                     lineIt.remove();
                 }
             }
 
-            log.info("GC: cleaned {} -> {} trips", before, countTrips());
+            vehicleSeenAt.forEach((id, seenAt) -> {
+                if ((now - seenAt) >= MAX_AGE_MILLIS && vehicleSeenAt.remove(id, seenAt)) {
+                    vehicles.remove(id);
+                }
+            });
+
+            log.info("GC: trips {} -> {}, vehicles {} -> {}", tripsBefore, countTrips(), vehiclesBefore, vehicles.size());
         } catch (Exception e) {
             log.error("GC failed", e);
         }

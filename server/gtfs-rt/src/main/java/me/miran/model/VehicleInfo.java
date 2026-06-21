@@ -17,6 +17,7 @@ public class VehicleInfo {
     private volatile int lastStop;
     private volatile long changedAt;
     private volatile int delay;
+    private transient volatile long lastSeen;
     private final List<StopDelay> previousStops = new CopyOnWriteArrayList<>();
 
     public VehicleInfo(String carId, int lastStop, long changedAt, int delay) {
@@ -24,6 +25,7 @@ public class VehicleInfo {
         this.lastStop = lastStop;
         this.changedAt = changedAt;
         this.delay = delay;
+        this.lastSeen = changedAt;
     }
 
     public String getCarId() {
@@ -56,6 +58,14 @@ public class VehicleInfo {
 
     public void setDelay(int delay) {
         this.delay = delay;
+    }
+
+    public long getLastSeen() {
+        return lastSeen;
+    }
+
+    public void setLastSeen(long lastSeen) {
+        this.lastSeen = lastSeen;
     }
 
     public List<StopDelay> getPreviousStops() {
