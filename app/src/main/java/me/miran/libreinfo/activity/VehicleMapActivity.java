@@ -116,9 +116,6 @@ public class VehicleMapActivity extends BaseActivity {
             storage = AppContainer.INSTANCE.getStorageProvider().getBlocking(IdStorage.class);
 
             final CountDownLatch latch = new CountDownLatch(1);
-            var ref = new Object() {
-                final List<MapVehicle> vehicles = new ArrayList<>();
-            };
 
             runOnUiThread(() -> setupMap(storage, (geoJson, map) -> {
                 new Thread(() -> {
@@ -127,22 +124,8 @@ public class VehicleMapActivity extends BaseActivity {
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-
-                    updateGeoJson(geoJson, map, ref.vehicles);
-
-                    for (MapVehicle vehicle : ref.vehicles) {
-                        idToVehMap.put(vehicle.id(), vehicle);
-                    }
                 }).start();
             }));
-
-            try {
-                for (JsonElement vehicle : RequestHelper.getVehicles(this)) {
-                    ref.vehicles.add(MapVehicle.parse(vehicle.getAsJsonObject(), storage));
-                }
-            } catch (RequestException e) {
-                e.showError(this);
-            }
 
             latch.countDown();
         }).start();
@@ -235,9 +218,24 @@ public class VehicleMapActivity extends BaseActivity {
                 });
 
                 VehicleWebsocket.subscribe(VehicleMapActivity.class, message -> {
-                    MapVehicle vehicle = MapVehicle.parse(new Gson().fromJson(message, JsonObject.class).getAsJsonObject("attributes"), storage);
+                    JsonObject input = new Gson().fromJson(message, JsonObject.class);
 
-                    updateGeoJson(source, map, vehicle);
+                    if (input.get("type").getAsString().equals("snapshot")) {
+                        var array = input.getAsJsonArray("vehicles");
+
+                        List<MapVehicle> vehicles = new ArrayList<>();
+                        for (var el : array) {
+                            vehicles.add(MapVehicle.parse(el.getAsJsonObject(), storage));
+                        }
+
+                        updateGeoJson(source, map, vehicles);
+                    } else {
+                        var vehicleJson = input.getAsJsonObject("vehicle");
+
+                        MapVehicle vehicle = MapVehicle.parse(vehicleJson, storage);
+
+                        updateGeoJson(source, map, vehicle);
+                    }
                 });
 
 

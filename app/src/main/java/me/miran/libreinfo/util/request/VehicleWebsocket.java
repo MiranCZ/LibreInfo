@@ -16,7 +16,7 @@ import okio.ByteString;
 
 public class VehicleWebsocket {
 
-    private static final String SOCKET_URL = "wss://gis.brno.cz/geoevent/ws/services/ODAE_public_transit_stream_service/StreamServer/subscribe";
+    private static final String SOCKET_URL = "wss://api.libre-info.com/stream";
     private static final OkHttpClient client = new OkHttpClient();
     private static final List<WebsocketListener> listeners = new ArrayList<>();
     private static final Map<Class<?>, List<WebsocketListener>> listenerMap = new HashMap<>();

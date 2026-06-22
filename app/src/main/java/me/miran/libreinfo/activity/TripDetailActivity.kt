@@ -17,9 +17,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,12 +62,22 @@ import me.miran.libreinfo.util.DelayUtil
 import me.miran.libreinfo.util.DelayUtil.getDelayColor
 import me.miran.libreinfo.util.request.RequestHelper
 import com.valentinilk.shimmer.Shimmer
+import me.miran.libreinfo.activity.settings.DelayRenderType
 import me.miran.libreinfo.parsing.storage.ApiStorage
 import me.miran.libreinfo.parsing.storage.manager.AppContainer
+import me.miran.libreinfo.util.DeparturesSettings
+import me.miran.libreinfo.util.LocalDeparturesSettings
 import java.util.function.Function
 
 // TODO periodic updates
 class TripDetailActivity : KBaseActivity(R.string.trip) {
+
+    private var departuresSettings by mutableStateOf(DeparturesSettings())
+
+    override fun onResume() {
+        super.onResume()
+        departuresSettings = DeparturesSettings.fromPrefs()
+    }
 
     @Composable
     override fun CreateElements() {
@@ -169,7 +182,9 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
 
         Crossfade(targetState = tripData) { data ->
             if (data != null) {
-                TripInfo(storage!!, data)
+                CompositionLocalProvider(LocalDeparturesSettings provides departuresSettings) {
+                    TripInfo(storage!!, data)
+                }
             } else {
                 TripDetailShimmer()
             }
@@ -417,14 +432,39 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
         isLastStop: Boolean,
         alpha: Float = 1f,
     ) {
+        val depSettings = LocalDeparturesSettings.current
+
         val arrival = stopTime.getArrival(false)
         val departure = stopTime.getDeparture(false)
         val delay = stopTime.delay
 
         if (stopTime.immediateDeparture() || isLastStop) {
             val time = arrival.addMinutes(delay).format()
-            val label = if (delay != 0) "($delay) $time" else time
-            Text(label, color = Color(getDelayColor(delay)).copy(alpha = alpha))
+
+            var delayStr = ""
+            val color = Color(getDelayColor(delay)).copy(alpha = alpha)
+
+            if (delay > 0) {
+                when (depSettings.delayRender) {
+                    DelayRenderType.PARENTHESES -> {
+                        delayStr = " ($delay) "
+                    }
+
+                    DelayRenderType.BOX -> {
+                        Surface(
+                            color = color.copy(alpha = color.alpha * 0.2f),
+                            shape = RoundedCornerShape(4.dp),
+                            modifier = Modifier.padding(end = 4.dp)
+                        ) {
+                            Text(" +$delay ", color = color, fontSize = 14.sp)
+                        }
+                    }
+
+                    else -> {}
+                }
+            }
+
+            Text("$delayStr$time", color = color)
             return
         }
 

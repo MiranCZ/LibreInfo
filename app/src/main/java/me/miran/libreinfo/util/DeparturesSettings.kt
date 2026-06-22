@@ -8,7 +8,7 @@ private const val KEY_SHOW_LOW_FLOOR = "dep_show_low_floor"
 private const val KEY_MAX_ENTRIES = "dep_max_entries"
 
 data class DeparturesSettings(
-    val delayRender: DelayRenderType = DelayRenderType.BOX,
+    val delayRender: DelayRenderType = DelayRenderType.DEFAULT,
     val showLowFloor: Boolean = true,
     val maxEntries: Int = 5
 ) {
@@ -19,7 +19,7 @@ data class DeparturesSettings(
                 delayRender = p.getEnum(
                     KEY_DELAY_RENDER,
                     DelayRenderType::class.java,
-                    DelayRenderType.BOX
+                    DelayRenderType.DEFAULT
                 ),
                 showLowFloor = p.getBoolean(KEY_SHOW_LOW_FLOOR, true),
                 maxEntries = p.getInt(KEY_MAX_ENTRIES, 5)
