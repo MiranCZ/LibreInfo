@@ -118,6 +118,22 @@ def run_motis_import(docker_client: docker.DockerClient) -> None:
     log.info("MOTIS import finished successfully")
 
 
+def run_gtfs_parser(docker_client: docker.DockerClient) -> None:
+    log.info("Running gtfs-parser...")
+
+    container = docker_client.containers.get("gtfs-parser")
+    container.start()
+
+    for line in container.logs(stream=True, follow=True):
+        log.info(f"[gtfs-parser] {line.decode().rstrip()}")
+
+    exit_code = container.wait()["StatusCode"]
+    if exit_code != 0:
+        raise RuntimeError(f"gtfs-parser exited with code {exit_code}")
+
+    log.info("gtfs-parser finished successfully")
+
+
 def ensure_running(docker_client: docker.DockerClient, name: str) -> bool:
     """Start container if not already running. Returns True if it was started."""
     container = docker_client.containers.get(name)
@@ -166,6 +182,10 @@ def main() -> None:
                 restart_motis(docker_client)
             else:
                 ensure_running(docker_client, "motis")
+            if not PARSER_DONE_FILE.exists():
+                log.info("gtfs-parser has not run yet, bootstrapping...")
+                run_gtfs_parser(docker_client)
+                PARSER_DONE_FILE.write_text("ok")
             log.info("Done")
             return
 
@@ -175,6 +195,10 @@ def main() -> None:
         if osm_changed:
             reasons.append("OSM extract updated")
         log.info(f"Changes detected: {', '.join(reasons)}")
+
+        if gtfs_changed:
+            run_gtfs_parser(docker_client)
+            PARSER_DONE_FILE.write_text("ok")
 
         run_pfaedle(docker_client)
         run_motis_import(docker_client)

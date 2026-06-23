@@ -17,3 +17,4 @@ GTFS_HASH_FILE = RAW_DIR / ".gtfs-hash"
 OSM_HASH_FILE = OSM_DIR / ".osm-hash"
 
 MOTIS_IMPORTED_FILE = RAW_DIR / ".motis-imported"
+PARSER_DONE_FILE = RAW_DIR / ".parser-done"

@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '8.3.5'
+}
+
+group = 'io.github.mirancz'
+version = '0.1'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+dependencies {
+    implementation 'org.tukaani:xz:1.10'
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'me.miran.Main'
+    }
+}
