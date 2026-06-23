@@ -6,7 +6,7 @@ import me.miran.libreinfo.util.Text;
 public class Endpoint {
 
     public static final Endpoint STATIC_GTFS = new Endpoint(
-            "https://mirancz.github.io/gtfsstatic",
+            "https://api.libre-info.com/static",
             Text.translatable(R.string.endpoint_static_gtfs)
     );
 
