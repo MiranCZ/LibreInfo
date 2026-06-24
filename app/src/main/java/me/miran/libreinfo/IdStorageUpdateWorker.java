@@ -11,13 +11,13 @@ import me.miran.libreinfo.exception.AppException;
 import me.miran.libreinfo.parsing.storage.manager.StorageManager;
 import me.miran.libreinfo.util.AppLog;
 
-public class UpdateWorker extends Worker {
+public class IdStorageUpdateWorker extends Worker {
 
     /**
      * @param appContext   The application {@link Context}
      * @param workerParams Parameters to setup the internal state of this worker
      */
-    public UpdateWorker(@NonNull Context appContext, @NonNull WorkerParameters workerParams) {
+    public IdStorageUpdateWorker(@NonNull Context appContext, @NonNull WorkerParameters workerParams) {
         super(appContext, workerParams);
     }
 

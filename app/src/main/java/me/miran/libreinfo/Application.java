@@ -45,7 +45,7 @@ public class Application extends android.app.Application {
                 .build();
 
         PeriodicWorkRequest request =
-                new PeriodicWorkRequest.Builder(UpdateWorker.class, 24, TimeUnit.HOURS)
+                new PeriodicWorkRequest.Builder(IdStorageUpdateWorker.class, 24, TimeUnit.HOURS)
                         .setConstraints(constraints)
                         .build();
 
