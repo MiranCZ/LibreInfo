@@ -19,6 +19,9 @@ plugins {
     alias(libs.plugins.secrets.gradle.plugin)
 }
 
+val appVersionCode = providers.gradleProperty("APP_VERSION_CODE")
+val appVersionName = providers.gradleProperty("APP_VERSION_NAME")
+
 val keystorePropertiesFile = rootProject.file("keystore.properties")
 val keystoreProperties = Properties().apply {
     if (keystorePropertiesFile.exists()) {
@@ -34,8 +37,8 @@ android {
         applicationId = "me.miran.libreinfo"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "0.1.1"
+        versionCode = appVersionCode.get().toInt()
+        versionName = appVersionName.get()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -95,6 +98,46 @@ androidComponents {
             builtArtifactsLoader.set(variant.artifacts.getBuiltArtifactsLoader())
         }
         variant.artifacts.use(copyTask).wiredWith { it.input }.toListenTo(SingleArtifact.APK)
+
+        val versionJsonTask = tasks.register(
+            "generateVersionJsonFor${variant.name.replaceFirstChar { it.uppercase() }}"
+        ) {
+            val code = appVersionCode
+            val name = appVersionName
+            val outFile = layout.buildDirectory
+                .file("outputs/apk-renamed/${variant.name}/version.json")
+
+            val abiCfg = android.splits.abi
+            val abis = buildList {
+                addAll(android.splits.abiFilters)
+                if (abiCfg.isUniversalApk) add("universal")
+                if (isEmpty()) add("universal")
+            }
+
+            doLast {
+                val v = name.get()
+                val json = com.google.gson.JsonObject().apply {
+                    addProperty("versionCode", code.get().toInt())
+                    addProperty("versionName", v)
+
+                    val apksList = com.google.gson.JsonObject().apply {
+                        abis.forEach{ abi ->
+                            val fileName = "LibreInfo-v$v-$abi.apk"
+                            addProperty(abi, fileName)
+                        }
+                    }
+
+                    add("apks", apksList)
+                }
+                outFile.get().asFile.apply {
+                    parentFile.mkdirs()
+                    writeText(json.toString())
+                }
+                println("Wrote ${outFile.get().asFile}")
+            }
+        }
+
+        copyTask.configure { finalizedBy(versionJsonTask) }
     }
 }
 
