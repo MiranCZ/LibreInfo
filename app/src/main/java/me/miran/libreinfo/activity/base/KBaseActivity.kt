@@ -82,6 +82,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -89,6 +90,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -345,38 +347,50 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
     }
 
     @Composable
-    fun LineIcon(line: LineAlias, padding: Dp = 4.dp) {
-        LineIcon(line.lineDisplayName, Color(line.textColor), Color(line.backgroundColor()), padding)
+    fun LineIcon(line: LineAlias, padding: Dp = 4.dp, scale: Float = 1f) {
+        LineIcon(line.lineDisplayName, Color(line.textColor), Color(line.backgroundColor()), padding, scale)
     }
 
     @Composable
-    fun LineIcon(text: String, textColor: Color, backgroundColor: Color, padding: Dp = 4.dp) {
-        val shape = RoundedCornerShape(8.dp)
-        Surface(color = backgroundColor, shape = shape, modifier = Modifier
-            .padding(padding)
-            .layout { measurable, constraints ->
-                val measured = measurable.measure(constraints)
+    fun LineIcon(text: String, textColor: Color, backgroundColor: Color, padding: Dp = 4.dp, scale: Float = 1f) {
+        val shape = RoundedCornerShape(8.dp * scale)
+        val density = LocalDensity.current
 
-                var w = measured.width
-                val h = measured.height
+        val size = with(density) { 31.sp.toDp() * scale }
 
-                w = max(w, h)
+        val outline = backgroundColor == Color.Black
 
-                val squareConstraints = Constraints.fixed(width = w, height = h)
-                val placeable = measurable.measure(squareConstraints)
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(padding)) {
+            Box(
+                Modifier
+                    .size(size)
+                    .background(
+                        color = backgroundColor,
+                        shape = shape
+                    )
+                    .then(
+                        if (outline) {
+                            Modifier.border(1.5.dp * scale, textColor, shape = shape)
+                        } else {
+                            Modifier
+                        }
+                    )
+            )
+            {}
 
-                layout(w, h) {
-                    placeable.place(0, 0)
-                }
-            }
-            .then(
-                if (backgroundColor == Color.Black) {
-                    Modifier.border(1.5.dp, textColor, shape = shape)
-                } else {
-                    Modifier
-                }
-            )) {
-            Text(text, textAlign = TextAlign.Center, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(5.dp), color = textColor)
+            val fontSize = when {
+                text.length < 3 -> 16.sp
+                text.length == 3 -> 14.sp
+                else -> 12.sp
+            } * scale
+
+            Text(
+                text,
+                textAlign = TextAlign.Center,
+                fontSize = fontSize,
+                fontWeight = FontWeight.Bold,
+                color = textColor
+            )
         }
     }
 
