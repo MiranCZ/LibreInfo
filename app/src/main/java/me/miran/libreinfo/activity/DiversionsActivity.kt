@@ -99,12 +99,26 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
         val context = LocalContext.current
         val vm: DiversionsViewModel = viewModel()
 
-        val diversions = rememberLoad {
+        val loadResult = rememberLoad {
             val storage = AppContainer.storageProvider.getInstance()
-            Diversion.parseDiversions(RequestHelper.getDiversions(context), storage.lineStorage)
+            Pair(storage, Diversion.parseDiversions(RequestHelper.getDiversions(context), storage.lineStorage))
         }
 
-        AsyncContent(diversions, loading = { DiversionListShimmer() }) { diversionList ->
+        AsyncContent(loadResult, loading = { DiversionListShimmer() }) { res ->
+            val storage = res.first
+            val diversionList = res.second
+
+            if (vm.showFilterPopup) {
+                val lines = HashSet(storage.lineStorage.allAliases)
+
+                for (diversion in diversionList) {
+                    lines.addAll(diversion.lines)
+                }
+
+
+                LineFilterSheet(lines.sortedBy {it.id})
+            }
+
             if (diversionList.isEmpty()) {
                 NothingHere()
             } else {
@@ -125,9 +139,6 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
             }
         }
 
-        if (vm.showFilterPopup) {
-            LineFilterSheet()
-        }
 
     }
 
@@ -189,7 +200,7 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun LineFilterSheet() {
+    fun LineFilterSheet(aliases: List<LineAlias>) {
         val vm: DiversionsViewModel = viewModel()
         val scope = rememberCoroutineScope()
 
@@ -207,13 +218,12 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
                 .fillMaxHeight(0.8f)
                 .padding(horizontal = 8.dp)) {
                 var value by remember { mutableStateOf("") }
-                val finalItems = AppContainer.storageProvider.getInstanceOrNull()!!.lineStorage.allAliases
 
-                val items = remember(value, finalItems) {
+                val items = remember(value, aliases) {
                     if (value.isEmpty()) {
-                        finalItems.toList()
+                        aliases.toList()
                     } else {
-                        finalItems.filter { it.lineDisplayName.contains(value, ignoreCase = true) }
+                        aliases.filter { it.lineDisplayName.contains(value, ignoreCase = true) }
                     }
                 }
 
