@@ -242,7 +242,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
         Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    LineIcon(storage.lineStorage.getAlias(data.lineId), padding = 0.dp)
+                    LineIcon(line = storage.lineStorage.getAlias(data.lineId), padding = 0.dp)
                     Text(
                         data.headsign,
                         fontSize = 20.sp,

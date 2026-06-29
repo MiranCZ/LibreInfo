@@ -139,7 +139,7 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
 
         Column(Modifier.clickable(onClick = openTripDetail)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                LineIcon(leg.alias, padding = 0.dp)
+                LineIcon(line = leg.alias, padding = 0.dp)
 
                 Text(
                     leg.headsign,
