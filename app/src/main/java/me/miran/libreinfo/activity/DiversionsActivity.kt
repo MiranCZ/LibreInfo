@@ -116,7 +116,7 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
                 }
 
 
-                LineFilterSheet(lines.sortedBy {it.id})
+                LineFilterSheet(lines.sorted())
             }
 
             if (diversionList.isEmpty()) {
