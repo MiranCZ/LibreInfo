@@ -22,7 +22,7 @@ public class Application extends android.app.Application {
     public void onCreate() {
         super.onCreate();
 
-        setupAutoUpdate();
+        setupWorkers();
 
         Context context = this;
         new Thread(() -> {
@@ -38,7 +38,12 @@ public class Application extends android.app.Application {
         }).start();
     }
 
-    private void setupAutoUpdate() {
+    private void setupWorkers() {
+        setupIdStorageUpdateWorker();
+        setupAppUpdateWorker();
+    }
+
+    private void setupIdStorageUpdateWorker() {
         Constraints constraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.UNMETERED)
                 .setRequiresCharging(true)
@@ -51,6 +56,25 @@ public class Application extends android.app.Application {
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
                 "id-storage-update",
+                ExistingPeriodicWorkPolicy.KEEP,
+                request
+        );
+    }
+
+    private void setupAppUpdateWorker() {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.UNMETERED)
+                .setRequiresCharging(true)
+                .setRequiresStorageNotLow(true)
+                .build();
+
+        PeriodicWorkRequest request =
+                new PeriodicWorkRequest.Builder(AppUpdateWorker.class, 24, TimeUnit.HOURS)
+                        .setConstraints(constraints)
+                        .build();
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "app-update",
                 ExistingPeriodicWorkPolicy.KEEP,
                 request
         );

@@ -15,10 +15,15 @@ public class Endpoint {
             Text.translatable(R.string.endpoint_app_server)
     );
 
+    public static final Endpoint GITHUB_API = new Endpoint(
+        "https://api.github.com",
+            Text.literal("Github API")
+    );
+
     public final String url;
     public final Text name;
 
-    private Endpoint(String URL, Text name) {
+    Endpoint(String URL, Text name) {
         url = URL;
         this.name = name;
     }

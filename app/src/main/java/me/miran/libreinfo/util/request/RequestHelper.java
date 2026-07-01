@@ -81,31 +81,47 @@ public class RequestHelper {
                 JsonObject.class);
     }
 
+    public static JsonObject getLatestReleaseInfo(Context context) throws RequestException {
+        return makeRequest(context, Endpoint.GITHUB_API.resolve("repos","MiranCZ","LibreInfo", "releases", "latest"), JsonObject.class);
+    }
+
+
+    public static <T extends JsonElement> T readJsonUrl(Context context, String URL, String endpointName, Class<T> type) throws RequestException {
+        return makeRequest(context, new Endpoint(URL, Text.literal(endpointName)), type);
+    }
+
+    public static InputStream readUrl(Context context, String URL, String endpointName) throws RequestException {
+        return readUrl(context, new Endpoint(URL, Text.literal(endpointName)));
+    }
+
     private static <T extends JsonElement> T makeOwnRequest(Context context, String endpoint, Class<T> type) throws RequestException {
         Endpoint resolved = Endpoint.APP_SERVER.resolve(endpoint);
-        try (InputStream stream = readUrl(context, resolved)) {
+        return makeRequest(context, resolved, type);
+    }
+    private static <T extends JsonElement> T makeRequest(Context context, Endpoint endpoint, Class<T> type) throws RequestException {
+        try (InputStream stream = readUrl(context, endpoint)) {
             if (stream == null) {
-                throw RequestException.reachError(resolved);
+                throw RequestException.reachError(endpoint);
             }
 
             String output = new String(IOUtil.readAllBytes(stream), StandardCharsets.UTF_8);
 
             if (output.isBlank()) {
-                throw RequestException.readError(resolved);
+                throw RequestException.readError(endpoint);
             }
 
             return new Gson().fromJson(output, type);
         } catch (RequestException e) {
             throw e;
         } catch (JsonSyntaxException e) {
-            AppLog.e("Failed to parse response from " + resolved.url, e);
-            throw RequestException.parseError(resolved);
+            AppLog.e("Failed to parse response from " + endpoint.url, e);
+            throw RequestException.parseError(endpoint);
         } catch (IOException e) {
-            AppLog.e("IO error reading from " + resolved.url, e);
-            throw new RequestException(Text.translatable(R.string.error_read, resolved.name), e);
+            AppLog.e("IO error reading from " + endpoint.url, e);
+            throw new RequestException(Text.translatable(R.string.error_read, endpoint.name), e);
         } catch (Exception e) {
-            AppLog.e("Unexpected error reading from " + resolved.url, e);
-            throw RequestException.unknownError(resolved, e);
+            AppLog.e("Unexpected error reading from " + endpoint.url, e);
+            throw RequestException.unknownError(endpoint, e);
         }
     }
 

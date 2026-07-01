@@ -11,6 +11,7 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
+import java.security.MessageDigest
 import java.util.Properties
 
 plugins {
@@ -86,6 +87,22 @@ android {
     }
 }
 
+/**
+ * Computes the lowercase hex SHA-256 of [file]
+ */
+fun sha256Hex(file: File): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    file.inputStream().use { input ->
+        val buffer = ByteArray(8 * 1024)
+        while (true) {
+            val read = input.read(buffer)
+            if (read < 0) break
+            digest.update(buffer, 0, read)
+        }
+    }
+    return digest.digest().joinToString("") { "%02x".format(it) }
+}
+
 // AGP 9 removed the legacy `applicationVariants`/`outputFileName` rename API. The
 // supported approach is to listen to the APK artifact and copy each output to a
 // cleanly named file. Copies land in build/outputs/apk-renamed/<variant>/.
@@ -120,10 +137,19 @@ androidComponents {
                     addProperty("versionCode", code.get().toInt())
                     addProperty("versionName", v)
 
+                    val apkDir = outFile.get().asFile.parentFile
                     val apksList = com.google.gson.JsonObject().apply {
-                        abis.forEach{ abi ->
+                        abis.forEach { abi ->
                             val fileName = "LibreInfo-v$v-$abi.apk"
-                            addProperty(abi, fileName)
+                            val apkFile = File(apkDir, fileName)
+                            if (!apkFile.exists()) {
+                                throw RuntimeException("Cannot hash $fileName - not found in $apkDir")
+                            }
+                            val entry = com.google.gson.JsonObject().apply {
+                                addProperty("name", fileName)
+                                addProperty("hash", sha256Hex(apkFile))
+                            }
+                            add(abi, entry)
                         }
                     }
 
