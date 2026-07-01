@@ -8,12 +8,11 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -75,19 +74,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -109,7 +106,6 @@ import me.miran.libreinfo.activity.settings.DelayRenderType
 import me.miran.libreinfo.exception.AppException
 import me.miran.libreinfo.parsing.storage.ApiStorage
 import me.miran.libreinfo.parsing.storage.manager.AppContainer
-import me.miran.libreinfo.parsing.storage.manager.IdStorage
 import me.miran.libreinfo.parsing.types.DateTime
 import me.miran.libreinfo.parsing.types.Diversion
 import me.miran.libreinfo.parsing.types.LineAlias
@@ -126,7 +122,6 @@ import me.miran.libreinfo.util.load.LoadResult
 import me.miran.libreinfo.util.load.LoadState
 import me.miran.libreinfo.util.load.rememberDelayedLoadState
 import java.util.function.Consumer
-import kotlin.math.max
 import kotlin.random.Random
 import kotlin.reflect.KClass
 
@@ -339,44 +334,60 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
             for (line in lines) {
-                LineIcon(line, padding = 0.dp)
+                LineIcon(line = line, padding = 0.dp)
             }
         }
     }
 
+    // TODO refactor signature
+    // NOTE: Reason for a special `scale` argument instead of using `Modifier.scale`
+    // is that `Modifier.scale` is not measured by other containers with the scale applied
+    // FIXME figure out if the scaling can be done in a better way
     @Composable
-    fun LineIcon(line: LineAlias, padding: Dp = 4.dp) {
-        LineIcon(line.lineDisplayName, Color(line.textColor), Color(line.backgroundColor()), padding)
+    fun LineIcon(modifier: Modifier = Modifier, line: LineAlias, padding: Dp = 4.dp, scale: Float = 1f) {
+        LineIcon(modifier, line.lineDisplayName, Color(line.textColor), Color(line.backgroundColor()), padding, scale)
     }
 
     @Composable
-    fun LineIcon(text: String, textColor: Color, backgroundColor: Color, padding: Dp = 4.dp) {
-        val shape = RoundedCornerShape(8.dp)
-        Surface(color = backgroundColor, shape = shape, modifier = Modifier
-            .padding(padding)
-            .layout { measurable, constraints ->
-                val measured = measurable.measure(constraints)
+    fun LineIcon(modifier: Modifier = Modifier, text: String, textColor: Color, backgroundColor: Color, padding: Dp = 4.dp, scale: Float = 1f) {
+        val shape = RoundedCornerShape(8.dp * scale)
+        val density = LocalDensity.current
 
-                var w = measured.width
-                val h = measured.height
+        val size = with(density) { 31.sp.toDp() * scale }
 
-                w = max(w, h)
+        val outline = backgroundColor == Color.Black
 
-                val squareConstraints = Constraints.fixed(width = w, height = h)
-                val placeable = measurable.measure(squareConstraints)
+        Box(contentAlignment = Alignment.Center, modifier = modifier.padding(padding)) {
+            Box(
+                Modifier
+                    .size(size)
+                    .background(
+                        color = backgroundColor,
+                        shape = shape
+                    )
+                    .then(
+                        if (outline) {
+                            Modifier.border(1.5.dp * scale, textColor, shape = shape)
+                        } else {
+                            Modifier
+                        }
+                    )
+            )
+            {}
 
-                layout(w, h) {
-                    placeable.place(0, 0)
-                }
-            }
-            .then(
-                if (backgroundColor == Color.Black) {
-                    Modifier.border(1.5.dp, textColor, shape = shape)
-                } else {
-                    Modifier
-                }
-            )) {
-            Text(text, textAlign = TextAlign.Center, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(5.dp), color = textColor)
+            val fontSize = when {
+                text.length < 3 -> 16.sp
+                text.length == 3 -> 14.sp
+                else -> 12.sp
+            } * scale
+
+            Text(
+                text,
+                textAlign = TextAlign.Center,
+                fontSize = fontSize,
+                fontWeight = FontWeight.Bold,
+                color = textColor
+            )
         }
     }
 
@@ -468,11 +479,11 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
     }
 
     @Composable
-    fun NothingHere() {
+    fun NothingHere(text: String = stringResource(R.string.nothing_here)) {
         Container(Modifier.padding(16.dp)) {
             Box(Modifier.fillMaxWidth(),contentAlignment = Alignment.Center) {
                 Text(
-                    stringResource(R.string.nothing_here),
+                    text,
                     fontWeight = FontWeight.Medium,
                     style = AppTypography.titleMedium
                 )
@@ -519,12 +530,11 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         modifier: Modifier = Modifier,
         onClick: () -> Unit = {},
         color: Color = colorResource(R.color.widget_background),
+        border: BorderStroke? = null,
         minHeight: Dp? = null,
         content: @Composable RowScope.() -> Unit,
     ) {
         val interactionSource = remember { MutableInteractionSource() }
-        val isPressed by interactionSource.collectIsPressedAsState()
-        val scale by animateFloatAsState(if (isPressed) 0.98f else 1f, label = "button_scale")
 
         var modifier = modifier
         if (minHeight != null) {
@@ -538,11 +548,12 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                 onClick = onClick,
                 content = content,
                 shape = RoundedCornerShape(12.dp),
+                border = border,
                 colors = ButtonDefaults.buttonColors().copy(
                     containerColor = color
                 ),
                 interactionSource = interactionSource,
-                modifier = modifier.fillMaxWidth().scale(scale)
+                modifier = modifier.fillMaxWidth()
             )
         }
     }
@@ -758,7 +769,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         ) {
             Row(Modifier.fillMaxWidth()) {
                 Row(Modifier.weight(3f)) {
-                    LineIcon(departure.line)
+                    LineIcon(line = departure.line)
                     Text(
                         departure.finalStop,
                         fontSize = 14.sp,

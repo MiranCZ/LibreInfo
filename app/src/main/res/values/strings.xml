@@ -66,4 +66,7 @@
     <string name="error_unknown">Neočekávaná chyba (%1$s)</string>
     <string name="endpoint_static_gtfs">statická data</string>
     <string name="endpoint_app_server">server aplikace</string>
+    <string name="apply">Použít</string>
+    <string name="clear_filters">Zrušit filtry</string>
+    <string name="filters_found_nothing">Tyto filtry nic nenašly</string>
 </resources>

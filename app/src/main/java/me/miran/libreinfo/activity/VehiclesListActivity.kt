@@ -113,7 +113,7 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
 
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth()) {
                     Row(Modifier.weight(1f)) {
-                        LineIcon(item.line, padding = 0.dp)
+                        LineIcon(line = item.line, padding = 0.dp)
                         Text(
                             item.finalStopText,
                             fontSize = 20.sp,
