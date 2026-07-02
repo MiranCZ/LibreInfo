@@ -35,7 +35,42 @@ public class UpdateDownloader {
         UP_TO_DATE, DOWNLOADED, FAILURE, ERROR
     }
 
+    public enum CheckStatus {
+        UP_TO_DATE, UPDATE_AVAILABLE, FAILURE, ERROR
+    }
+
+
+    public static class CheckResult {
+        public final CheckStatus status;
+        public final String versionName;
+        private final JsonObject releaseInfo;
+        private final JsonObject versionInfo;
+
+        private CheckResult(CheckStatus status, String versionName, JsonObject releaseInfo, JsonObject versionInfo) {
+            this.status = status;
+            this.versionName = versionName;
+            this.releaseInfo = releaseInfo;
+            this.versionInfo = versionInfo;
+        }
+
+        static CheckResult of(CheckStatus status) {
+            return new CheckResult(status, "", new JsonObject(), new JsonObject());
+        }
+    }
+
     public static UpdateResult checkAndDownload(Context context) {
+        CheckResult check = checkForUpdate(context);
+
+        return switch (check.status) {
+            case UP_TO_DATE -> UpdateResult.UP_TO_DATE;
+            case UPDATE_AVAILABLE -> download(context, check);
+            case FAILURE -> UpdateResult.FAILURE;
+            case ERROR -> UpdateResult.ERROR;
+        };
+    }
+
+
+    public static CheckResult checkForUpdate(Context context) {
         try {
             JsonObject releaseInfo = RequestHelper.getLatestReleaseInfo(context);
 
@@ -44,20 +79,33 @@ public class UpdateDownloader {
 
             int releaseVersionCode = versionInfo.get("versionCode").getAsInt();
 
+            AppUpdater.recordCheck();
+
             // we should update
             if (BuildConfig.VERSION_CODE < releaseVersionCode) {
-                return downloadApk(context, releaseInfo, versionInfo);
+                String versionName = versionInfo.get("versionName").getAsString();
+
+                return new CheckResult(CheckStatus.UPDATE_AVAILABLE, versionName, releaseInfo, versionInfo);
             }
 
-            return UpdateResult.UP_TO_DATE;
+            return CheckResult.of(CheckStatus.UP_TO_DATE);
         } catch (AppException e) {
-            AppLog.w("App update failed ", e);
-            return UpdateResult.FAILURE;
+            AppLog.w("App update check failed ", e);
+            return CheckResult.of(CheckStatus.FAILURE);
         } catch (Exception e) {
             AppLog.e("An unexpected error occurred", e);
-            return UpdateResult.ERROR;
+            return CheckResult.of(CheckStatus.ERROR);
         }
     }
+
+    public static UpdateResult download(Context context, CheckResult check) {
+        if (check.status != CheckStatus.UPDATE_AVAILABLE) {
+            return UpdateResult.ERROR;
+        }
+        return downloadApk(context, check.releaseInfo, check.versionInfo);
+    }
+
+
 
     private static UpdateResult downloadApk(Context context, JsonObject releaseInfo, JsonObject versionInfo) {
         JsonObject apksInfo = versionInfo.getAsJsonObject("apks");

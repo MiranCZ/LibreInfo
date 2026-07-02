@@ -79,4 +79,23 @@
     <string name="install_failed_message">Aktualizaci se nepodařilo nainstalovat. Zkuste to prosím znovu později.</string>
     <string name="debug_info">Pro vývojáře</string>
     <string name="update_preparing">Připravuji instalaci…</string>
+    <string name="updating_settings">Aktualizace</string>
+    <string name="auto_download_updates">Automaticky stahovat aktualizace</string>
+    <string name="update_wifi_charging_note">Automatické aktualizace se stahují pouze když je zařízení připojené k WiFi a nabíjí se.</string>
+    <string name="last_checked">Naposledy zkontrolováno</string>
+    <string name="never">Nikdy</string>
+    <string name="check_for_updates">Zkontrolovat aktualizace</string>
+    <string name="checking_updates">Kontroluji…</string>
+    <string name="update_check_up_to_date">Máte nejnovější verzi</string>
+    <string name="update_check_downloaded">Aktualizace byla stažena</string>
+    <string name="update_check_failed">Kontrola aktualizací se nezdařila</string>
+    <string name="update_available_title">Nová verze</string>
+    <string name="update_available_message">Je k dispozici nová verze %1$s. Chcete ji stáhnout?</string>
+    <string name="update_download_action">Stáhnout</string>
+    <string name="update_downloading">Stahuji…</string>
+    <string name="update_download_failed">Stažení se nezdařilo</string>
+    <string name="update_prompt_title">Automatické aktualizace</string>
+    <string name="update_prompt_message">Má aplikace automaticky stahovat aktualizace?\nAktualizace se stáhne pouze když je zařízení připojené k WiFi a nabíjí se.\nSvoji volbu můžete kdykoliv změnit v nastavení.</string>
+    <string name="update_prompt_enable">Zapnout</string>
+    <string name="update_prompt_decline">Teď ne</string>
 </resources>

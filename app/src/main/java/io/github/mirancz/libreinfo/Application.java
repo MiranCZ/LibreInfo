@@ -14,22 +14,22 @@ import io.github.mirancz.libreinfo.exception.AppException;
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer;
 import io.github.mirancz.libreinfo.util.AppLog;
 import io.github.mirancz.libreinfo.parsing.storage.manager.StorageManager;
+import io.github.mirancz.libreinfo.util.AppUpdater;
 import io.github.mirancz.libreinfo.util.Settings;
 
 public class Application extends android.app.Application {
 
-    private static final String APP_UPDATE_WORKER_ID = "app-update";
-
     @Override
     public void onCreate() {
         super.onCreate();
+
+        Settings.init(this);
 
         setupWorkers();
 
         Context context = this;
         new Thread(() -> {
             try {
-                Settings.init(context);
                 long ms = System.currentTimeMillis();
                 new StorageManager(context).init();
                 AppLog.d("Extracted data in " + (System.currentTimeMillis() - ms) + "ms");
@@ -43,11 +43,10 @@ public class Application extends android.app.Application {
     private void setupWorkers() {
         setupIdStorageUpdateWorker();
 
-        if (BuildConfig.AUTO_UPDATE_ENABLED) {
-            setupAppUpdateWorker();
+        if (BuildConfig.AUTO_UPDATE_ENABLED && AppUpdater.isAutoUpdateEnabled()) {
+            AppUpdater.schedulePeriodic(this);
         } else {
-            // Flag turned off drop the update work to be sure
-            WorkManager.getInstance(this).cancelUniqueWork(APP_UPDATE_WORKER_ID);
+            AppUpdater.cancelPeriodic(this);
         }
     }
 
@@ -64,25 +63,6 @@ public class Application extends android.app.Application {
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
                 "id-storage-update",
-                ExistingPeriodicWorkPolicy.KEEP,
-                request
-        );
-    }
-
-    private void setupAppUpdateWorker() {
-        Constraints constraints = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.UNMETERED)
-                .setRequiresCharging(true)
-                .setRequiresStorageNotLow(true)
-                .build();
-
-        PeriodicWorkRequest request =
-                new PeriodicWorkRequest.Builder(AppUpdateWorker.class, 24, TimeUnit.HOURS)
-                        .setConstraints(constraints)
-                        .build();
-
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-                APP_UPDATE_WORKER_ID,
                 ExistingPeriodicWorkPolicy.KEEP,
                 request
         );

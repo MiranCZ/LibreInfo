@@ -43,6 +43,7 @@ import kotlinx.coroutines.withContext
 import io.github.mirancz.libreinfo.activity.base.NavigationActivity
 import io.github.mirancz.libreinfo.activity.settings.SettingsActivity
 import io.github.mirancz.libreinfo.util.ApkInstaller
+import io.github.mirancz.libreinfo.util.AppUpdater
 import io.github.mirancz.libreinfo.util.UpdateHelper
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
@@ -73,11 +74,22 @@ class MainActivity : NavigationActivity(R.string.app_name) {
         var updateReady by rememberSaveable { mutableStateOf(false) }
         var dismissed by rememberSaveable { mutableStateOf(false) }
         var showRationale by rememberSaveable { mutableStateOf(false) }
+        var showUpdatePrompt by rememberSaveable { mutableStateOf(!AppUpdater.isFirstRunPromptShown()) }
 
         LaunchedEffect(Unit) {
             updateReady = withContext(Dispatchers.IO) {
                 UpdateHelper.isUpdateDownloaded(context)
             }
+        }
+
+        if (showUpdatePrompt) {
+            AutoUpdatePromptDialog(
+                onChoice = { enabled ->
+                    AppUpdater.markFirstRunPromptShown()
+                    AppUpdater.setAutoUpdateEnabled(context, enabled)
+                    showUpdatePrompt = false
+                }
+            )
         }
 
         // Returning from the "install unknown apps" settings screen; if the user granted it continue straight into the installation they originally asked for
@@ -175,6 +187,40 @@ class MainActivity : NavigationActivity(R.string.app_name) {
                     ) {
                         Text(stringResource(R.string.install), color = Color.White)
 
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun AutoUpdatePromptDialog(onChoice: (Boolean) -> Unit) {
+        Dialog(onDismissRequest = { onChoice(false) }) {
+            Container {
+                Column {
+                    Text(
+                        stringResource(R.string.update_prompt_title),
+                        color = colorResource(R.color.secondaryColor),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+
+                    Text(
+                        stringResource(R.string.update_prompt_message),
+                        color = colorResource(R.color.secondaryColor)
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        TextButton(onClick = { onChoice(false) }) {
+                            Text(stringResource(R.string.update_prompt_decline))
+                        }
+                        TextButton(onClick = { onChoice(true) }) {
+                            Text(stringResource(R.string.update_prompt_enable))
+                        }
                     }
                 }
             }
