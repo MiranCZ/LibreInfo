@@ -1,4 +1,4 @@
-package me.miran.libreinfo;
+package io.miran.libreinfo;
 
 import android.content.Context;
 

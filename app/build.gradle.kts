@@ -31,11 +31,11 @@ val keystoreProperties = Properties().apply {
 }
 
 android {
-    namespace = "me.miran.libreinfo"
+    namespace = "io.github.mirancz.libreinfo"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "me.miran.libreinfo"
+        applicationId = "io.github.mirancz.libreinfo"
         minSdk = 26
         targetSdk = 36
         versionCode = appVersionCode.get().toInt()
