@@ -27,6 +27,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -75,6 +77,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -121,6 +125,7 @@ import io.github.mirancz.libreinfo.util.Text
 import io.github.mirancz.libreinfo.util.load.LoadResult
 import io.github.mirancz.libreinfo.util.load.LoadState
 import io.github.mirancz.libreinfo.util.load.rememberDelayedLoadState
+import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
 import java.util.function.Consumer
 import kotlin.random.Random
@@ -156,6 +161,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
             AppTheme {
                 val context = LocalContext.current
 
+                Box {
                 Scaffold(
                     snackbarHost = { SnackbarHost(hostState = snackBarHostState) { data ->
                         val customVisuals = data.visuals as? CustomSnackBarVisuals
@@ -205,6 +211,44 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                         BottomOverlay(Modifier.align(Alignment.BottomCenter))
                     }
                 }
+
+                    @Suppress("SimplifyBooleanWithConstants", "KotlinConstantConditions")
+                    if (BuildConfig.BUILD_TYPE != "release") {
+                        DevRibbon(
+                            Modifier
+                                .align(Alignment.BottomEnd)
+                                .navigationBarsPadding()
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun DevRibbon(modifier: Modifier = Modifier) {
+        val corner = 96.dp
+        // Slides the strip along the diagonal so its center sits over the corner.
+        val shift = 22.dp
+
+        Box(modifier.size(corner).clipToBounds()) {
+            Box(
+                Modifier
+                    .align(Alignment.Center)
+                    .offset(x = shift, y = shift)
+                    .rotate(-45f)
+                    .width(corner * 2)
+                    .background(colorResource(R.color.ui_warning))
+                    .padding(vertical = 3.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "DEV",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                )
             }
         }
     }
