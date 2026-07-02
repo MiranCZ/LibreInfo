@@ -69,4 +69,14 @@
     <string name="apply">Použít</string>
     <string name="clear_filters">Zrušit filtry</string>
     <string name="filters_found_nothing">Tyto filtry nic nenašly</string>
+    <string name="update_ready">Je připravena aktualizace k instalaci</string>
+    <string name="close">Zavřít</string>
+    <string name="install">Nainstalovat</string>
+    <string name="install_permission_title">Povolit instalaci</string>
+    <string name="install_permission_rationale">Aby mohla aplikace nainstalovat staženou aktualizaci, potřebuje povolení instalovat aplikace z tohoto zdroje. Na další obrazovce prosím toto povolení zapněte.</string>
+    <string name="continue_action">Pokračovat</string>
+    <string name="install_failed_title">Instalace se nezdařila</string>
+    <string name="install_failed_message">Aktualizaci se nepodařilo nainstalovat. Zkuste to prosím znovu později.</string>
+    <string name="debug_info">Pro vývojáře</string>
+    <string name="update_preparing">Připravuji instalaci…</string>
 </resources>

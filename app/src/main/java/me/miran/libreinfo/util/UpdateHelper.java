@@ -59,7 +59,13 @@ public class UpdateHelper {
                 digest.update(buffer, 0, bytesRead);
             }
 
-            return UpdateDownloader.toHex(digest.digest()).equals(expectedHash);
+            if (UpdateDownloader.toHex(digest.digest()).equals(expectedHash)) {
+                return true;
+            }
+
+            AppLog.d("Stashed apk hash does not match");
+
+            return false;
         } catch (IOException e) {
             AppLog.e("Failed to read apk file", e);
             return false;

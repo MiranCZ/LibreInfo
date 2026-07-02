@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -199,8 +200,9 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                         )
                     }
                 ) { innerPadding ->
-                    Box(Modifier.padding(innerPadding)) {
+                    Box(Modifier.padding(innerPadding).fillMaxSize()) {
                         content()
+                        BottomOverlay(Modifier.align(Alignment.BottomCenter))
                     }
                 }
             }
@@ -209,6 +211,12 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
 
     @Composable
     abstract fun CreateElements()
+
+    /**
+     * Optional content pinned to the bottom of the screen, floating over [CreateElements].
+     */
+    @Composable
+    open fun BottomOverlay(modifier: Modifier) {}
 
     fun startActivity(clazz: KClass<out Activity>) {
         startActivity(clazz) {}
