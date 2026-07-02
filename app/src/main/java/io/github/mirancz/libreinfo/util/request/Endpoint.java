@@ -1,0 +1,41 @@
+package io.github.mirancz.libreinfo.util.request;
+
+import io.github.mirancz.libreinfo.R;
+import io.github.mirancz.libreinfo.util.Text;
+
+public class Endpoint {
+
+    public static final Endpoint STATIC_GTFS = new Endpoint(
+            "https://api.libre-info.com/static",
+            Text.translatable(R.string.endpoint_static_gtfs)
+    );
+
+    public static final Endpoint APP_SERVER = new Endpoint(
+            "https://api.libre-info.com",
+            Text.translatable(R.string.endpoint_app_server)
+    );
+
+    public static final Endpoint GITHUB_API = new Endpoint(
+        "https://api.github.com",
+            Text.literal("Github API")
+    );
+
+    public final String url;
+    public final Text name;
+
+    Endpoint(String URL, Text name) {
+        url = URL;
+        this.name = name;
+    }
+
+    public Endpoint resolve(String... subdomains) {
+        String result = url;
+
+        for (String subdomain : subdomains) {
+            result = result +"/"+ subdomain;
+        }
+
+        return new Endpoint(result, name);
+    }
+
+}

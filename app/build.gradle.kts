@@ -11,6 +11,7 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
+import java.security.MessageDigest
 import java.util.Properties
 
 plugins {
@@ -18,6 +19,9 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.secrets.gradle.plugin)
 }
+
+val appVersionCode = providers.gradleProperty("APP_VERSION_CODE")
+val appVersionName = providers.gradleProperty("APP_VERSION_NAME")
 
 val keystorePropertiesFile = rootProject.file("keystore.properties")
 val keystoreProperties = Properties().apply {
@@ -27,17 +31,34 @@ val keystoreProperties = Properties().apply {
 }
 
 android {
-    namespace = "me.miran.libreinfo"
+    namespace = "io.github.mirancz.libreinfo"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "me.miran.libreinfo"
+        applicationId = "io.github.mirancz.libreinfo"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "0.1.1"
+        versionCode = appVersionCode.get().toInt()
+        versionName = appVersionName.get()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // Two editions selected at build time:
+    //  - direct: distributed outside an app store (e.g. GitHub) — the in-app auto-updater is ON.
+    //  - store : distributed via a store that handles updates (Play / F-Droid) — updater OFF, and
+    //            src/store/AndroidManifest.xml strips REQUEST_INSTALL_PACKAGES + the installation receiver.
+    flavorDimensions += "distribution"
+
+    productFlavors {
+        create("direct") {
+            dimension = "distribution"
+            buildConfigField("boolean", "AUTO_UPDATE_ENABLED", "true")
+        }
+        create("store") {
+            dimension = "distribution"
+            buildConfigField("boolean", "AUTO_UPDATE_ENABLED", "false")
+        }
     }
 
     splits {
@@ -66,6 +87,15 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+        }
+        create("staging") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".debug"
+            signingConfig = signingConfigs.getByName("debug")
+        }
+
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -83,6 +113,22 @@ android {
     }
 }
 
+/**
+ * Computes the lowercase hex SHA-256 of [file]
+ */
+fun sha256Hex(file: File): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    file.inputStream().use { input ->
+        val buffer = ByteArray(8 * 1024)
+        while (true) {
+            val read = input.read(buffer)
+            if (read < 0) break
+            digest.update(buffer, 0, read)
+        }
+    }
+    return digest.digest().joinToString("") { "%02x".format(it) }
+}
+
 // AGP 9 removed the legacy `applicationVariants`/`outputFileName` rename API. The
 // supported approach is to listen to the APK artifact and copy each output to a
 // cleanly named file. Copies land in build/outputs/apk-renamed/<variant>/.
@@ -95,6 +141,55 @@ androidComponents {
             builtArtifactsLoader.set(variant.artifacts.getBuiltArtifactsLoader())
         }
         variant.artifacts.use(copyTask).wiredWith { it.input }.toListenTo(SingleArtifact.APK)
+
+        val versionJsonTask = tasks.register(
+            "generateVersionJsonFor${variant.name.replaceFirstChar { it.uppercase() }}"
+        ) {
+            val code = appVersionCode
+            val name = appVersionName
+            val outFile = layout.buildDirectory
+                .file("outputs/apk-renamed/${variant.name}/version.json")
+
+            val abiCfg = android.splits.abi
+            val abis = buildList {
+                addAll(android.splits.abiFilters)
+                if (abiCfg.isUniversalApk) add("universal")
+                if (isEmpty()) add("universal")
+            }
+
+            doLast {
+                val v = name.get()
+                val json = com.google.gson.JsonObject().apply {
+                    addProperty("versionCode", code.get().toInt())
+                    addProperty("versionName", v)
+
+                    val apkDir = outFile.get().asFile.parentFile
+                    val apksList = com.google.gson.JsonObject().apply {
+                        abis.forEach { abi ->
+                            val fileName = "LibreInfo-v$v-$abi.apk"
+                            val apkFile = File(apkDir, fileName)
+                            if (!apkFile.exists()) {
+                                throw RuntimeException("Cannot hash $fileName - not found in $apkDir")
+                            }
+                            val entry = com.google.gson.JsonObject().apply {
+                                addProperty("name", fileName)
+                                addProperty("hash", sha256Hex(apkFile))
+                            }
+                            add(abi, entry)
+                        }
+                    }
+
+                    add("apks", apksList)
+                }
+                outFile.get().asFile.apply {
+                    parentFile.mkdirs()
+                    writeText(json.toString())
+                }
+                println("Wrote ${outFile.get().asFile}")
+            }
+        }
+
+        copyTask.configure { finalizedBy(versionJsonTask) }
     }
 }
 

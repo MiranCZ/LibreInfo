@@ -1,0 +1,159 @@
+package io.github.mirancz.libreinfo.util;
+
+import android.content.SharedPreferences;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Optional;
+
+public class PreferencesHolder {
+
+    public static final PreferencesHolder NONE = new PreferencesHolder(new DummySharedPreferences());
+
+    private final SharedPreferences preferences;
+    private final SharedPreferences.Editor editor;
+
+    public PreferencesHolder(SharedPreferences sharedPreferences) {
+        this.preferences = sharedPreferences;
+        this.editor = sharedPreferences.edit();
+    }
+
+    public boolean getBoolean(int key, boolean defaultValue) {
+        return getBoolean(key+"", defaultValue);
+    }
+
+    public boolean getBoolean(String key, boolean defaultValue) {
+        return preferences.getBoolean(key, defaultValue);
+    }
+
+    public Optional<Integer> getInt(String key) {
+        if (preferences.contains(key)) {
+            return Optional.of(preferences.getInt(key, -1));
+        }
+        return Optional.empty();
+    }
+
+    public int getInt(String key, int defaultValue) {
+        return preferences.getInt(key, defaultValue);
+    }
+
+    public Optional<Long> getLong(String key) {
+        if (preferences.contains(key)) {
+            return Optional.of(preferences.getLong(key, -1));
+        }
+        return Optional.empty();
+    }
+
+    public long getLong(String key, long defaultValue) {
+        return preferences.getLong(key, defaultValue);
+    }
+
+    public Optional<Float> getFloat(String key) {
+        if (preferences.contains(key)) {
+            return Optional.of(preferences.getFloat(key, -1));
+        }
+        return Optional.empty();
+    }
+
+    public float getFloat(String key, float defaultValue) {
+        return preferences.getFloat(key, defaultValue);
+    }
+
+    public Optional<String> getString(String key) {
+        if (preferences.contains(key)) {
+            return Optional.ofNullable(preferences.getString(key, null));
+        }
+        return Optional.empty();
+    }
+
+    public String getString(String key, String defaultValue) {
+        return preferences.getString(key, defaultValue);
+    }
+
+    public <T extends Enum<T>> Optional<T> getEnum(String key, Class<T> clazz) {
+        if (preferences.contains(key)) {
+            int index = preferences.getInt(key, -1);
+
+            //noinspection DataFlowIssue
+            return Optional.of(clazz.getEnumConstants()[index]);
+        }
+        return Optional.empty();
+    }
+
+    public <T extends Enum<?>> T getEnum(String key, Class<T> clazz, T defaultValue) {
+        if (preferences.contains(key)) {
+            int index = preferences.getInt(key, -1);
+
+            //noinspection DataFlowIssue
+            return clazz.getEnumConstants()[index];
+        }
+
+        return defaultValue;
+    }
+
+    public Optional<List<Integer>> getIntList(String key) {
+        if (preferences.contains(key)) {
+            return Optional.of(getIntList(key, List.of()));
+        }
+
+        return Optional.empty();
+    }
+
+    public List<Integer> getIntList(String key, List<Integer> defaultValue) {
+        var json = getString(key);
+
+        if (json.isEmpty()) {
+            return defaultValue;
+        }
+
+        Type type = new TypeToken<List<Integer>>(){}.getType();
+        return new Gson().fromJson(json.get(), type);
+    }
+
+    public PreferencesHolder putBoolean(int key, boolean value) {
+        return putBoolean(key+"", value);
+    }
+
+    public PreferencesHolder putBoolean(String key, boolean value) {
+        editor.putBoolean(key, value);
+        return this;
+    }
+
+    public PreferencesHolder putInt(String key, int value) {
+        editor.putInt(key, value);
+        return this;
+    }
+
+    public PreferencesHolder putLong(String key, long value) {
+        editor.putLong(key, value);
+        return this;
+    }
+
+    public PreferencesHolder putFloat(String key, float value) {
+        editor.putFloat(key, value);
+        return this;
+    }
+
+    public PreferencesHolder putString(String key, String value) {
+        editor.putString(key, value);
+        return this;
+    }
+
+    public <T extends Enum<T>> PreferencesHolder putEnum(String key, T value) {
+        editor.putInt(key, value.ordinal());
+        return this;
+    }
+
+    public PreferencesHolder putIntList(String key, List<Integer> list) {
+        var json = new Gson().toJson(list);
+        return putString(key, json);
+    }
+
+    public void flush() {
+        editor.apply();
+    }
+
+}
