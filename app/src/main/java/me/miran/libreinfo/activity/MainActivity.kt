@@ -40,6 +40,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.miran.libreinfo.BuildConfig
 import me.miran.libreinfo.R
 import me.miran.libreinfo.activity.base.NavigationActivity
 import me.miran.libreinfo.activity.settings.SettingsActivity
@@ -66,6 +67,8 @@ class MainActivity : NavigationActivity(R.string.app_name) {
 
     @Composable
     override fun BottomOverlay(modifier: Modifier) {
+        if (!BuildConfig.AUTO_UPDATE_ENABLED) return
+
         val context = LocalContext.current
         var updateReady by rememberSaveable { mutableStateOf(false) }
         var dismissed by rememberSaveable { mutableStateOf(false) }

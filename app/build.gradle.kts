@@ -44,6 +44,23 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Two editions selected at build time:
+    //  - direct: distributed outside an app store (e.g. GitHub) — the in-app auto-updater is ON.
+    //  - store : distributed via a store that handles updates (Play / F-Droid) — updater OFF, and
+    //            src/store/AndroidManifest.xml strips REQUEST_INSTALL_PACKAGES + the installation receiver.
+    flavorDimensions += "distribution"
+
+    productFlavors {
+        create("direct") {
+            dimension = "distribution"
+            buildConfigField("boolean", "AUTO_UPDATE_ENABLED", "true")
+        }
+        create("store") {
+            dimension = "distribution"
+            buildConfigField("boolean", "AUTO_UPDATE_ENABLED", "false")
+        }
+    }
+
     splits {
         abi {
             isEnable = true

@@ -18,6 +18,8 @@ import me.miran.libreinfo.util.Settings;
 
 public class Application extends android.app.Application {
 
+    private static final String APP_UPDATE_WORKER_ID = "app-update";
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -40,7 +42,13 @@ public class Application extends android.app.Application {
 
     private void setupWorkers() {
         setupIdStorageUpdateWorker();
-        setupAppUpdateWorker();
+
+        if (BuildConfig.AUTO_UPDATE_ENABLED) {
+            setupAppUpdateWorker();
+        } else {
+            // Flag turned off drop the update work to be sure
+            WorkManager.getInstance(this).cancelUniqueWork(APP_UPDATE_WORKER_ID);
+        }
     }
 
     private void setupIdStorageUpdateWorker() {
@@ -74,7 +82,7 @@ public class Application extends android.app.Application {
                         .build();
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-                "app-update",
+                APP_UPDATE_WORKER_ID,
                 ExistingPeriodicWorkPolicy.KEEP,
                 request
         );
