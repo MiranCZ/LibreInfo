@@ -47,6 +47,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
@@ -60,6 +61,7 @@ import io.github.mirancz.libreinfo.parsing.types.LineAlias
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.util.Settings
 import kotlin.random.Random
 
 class DiversionsActivity : KBaseActivity(R.string.diversions) {
@@ -68,28 +70,29 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
     class DiversionsViewModel : ViewModel() {
         var showFilterPopup: Boolean by mutableStateOf(false)
         var filters: Set<LineAlias> by mutableStateOf(emptySet())
+        var applyFilters: Boolean by mutableStateOf(false)
+        var filtersLoaded: Boolean by mutableStateOf(false)
     }
 
     override fun setBaseContent(
         actions: @Composable RowScope.() -> Unit,
         content: @Composable () -> Unit
     ) {
-
-
         super.setBaseContent({
             val vm: DiversionsViewModel = viewModel()
+
 
             actions()
 
             IconButton(onClick = { vm.showFilterPopup = true }) {
-                val painter = if (vm.filters.isEmpty()) R.drawable.filter_empty else R.drawable.filter_full
+                val painter = if (vm.filters.isEmpty() || !vm.applyFilters) R.drawable.filter_empty else R.drawable.filter_full
 
-                    Icon(
-                        painter = painterResource(painter),
-                        contentDescription = "filter",
-                        tint = colorResource(R.color.light_blue),
-                        modifier = Modifier.size(32.dp)
-                    )
+                Icon(
+                    painter = painterResource(painter),
+                    contentDescription = "filter",
+                    tint = colorResource(R.color.light_blue),
+                    modifier = Modifier.size(32.dp)
+                )
             }
         }, content)
     }
@@ -107,6 +110,20 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
         AsyncContent(loadResult, loading = { DiversionListShimmer() }) { res ->
             val storage = res.first
             val diversionList = res.second
+
+            if (!vm.filtersLoaded) {
+                val savedFilters = Settings.get().getIntList("diversion_filters", emptyList<Int>())
+
+                val filters = HashSet<LineAlias>()
+                for (filter in savedFilters) {
+                    filters.add(storage.lineStorage.getAlias(filter))
+                }
+                vm.filters = filters
+                vm.applyFilters = Settings.get().getBoolean("apply_filters", false)
+
+                vm.filtersLoaded = true
+            }
+
 
             if (vm.showFilterPopup) {
                 val lines = HashSet(storage.lineStorage.allAliases)
@@ -126,7 +143,7 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
 
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     for (diversion in diversionList) {
-                        if (shouldShowDiversion(diversion, vm.filters)) {
+                        if (!vm.applyFilters || shouldShowDiversion(diversion, vm.filters)) {
                             rendered = true
                             Diversion(diversion)
                         }
@@ -211,9 +228,17 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
             filters.addAll(vm.filters)
         }
 
-        ModalBottomSheet(sheetState = sheetState, onDismissRequest = {
-            vm.showFilterPopup = false
-        }) {
+        val onApply: () -> Unit = {
+            vm.filters = HashSet(filters)
+            Settings.get().putIntList("diversion_filters", filters.map { it.id }).flush()
+
+            scope.launch { sheetState.hide() }
+                .invokeOnCompletion {
+                    if (!sheetState.isVisible) vm.showFilterPopup = false
+                }
+        }
+
+        ModalBottomSheet(sheetState = sheetState, onDismissRequest = onApply) {
             Column(Modifier
                 .fillMaxHeight(0.8f)
                 .padding(horizontal = 8.dp)) {
@@ -230,7 +255,26 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
 
                 AppTextField(value, placeHolder = stringResource(R.string.search), onValueChange = { value = it })
 
-                Spacer(Modifier.padding(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp,vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    var checked by remember{ mutableStateOf(vm.applyFilters) }
+
+                    Text("Aplikovat filtry", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                    AppSwitch(checked = checked, onCheckedChange = {
+                        checked = it
+                        vm.applyFilters = it
+
+                        Settings.get().putBoolean("apply_filters", it).flush()
+                    })
+                }
+
+
+                Divider()
 
                 val density = LocalDensity.current
 
@@ -293,13 +337,8 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
 
                 AppButton(
                     color = colorResource(R.color.light_blue),
-                    onClick = {
-                    vm.filters = HashSet(filters)
-                    scope.launch { sheetState.hide() }
-                        .invokeOnCompletion {
-                            if (!sheetState.isVisible) vm.showFilterPopup = false
-                        }
-                }) {
+                    onClick = onApply
+                ) {
                     Text(stringResource(R.string.apply), color = Color.White)
                 }
 

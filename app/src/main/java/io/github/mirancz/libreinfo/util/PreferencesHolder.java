@@ -2,6 +2,11 @@ package io.github.mirancz.libreinfo.util;
 
 import android.content.SharedPreferences;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Optional;
 
 public class PreferencesHolder {
@@ -89,6 +94,25 @@ public class PreferencesHolder {
         return defaultValue;
     }
 
+    public Optional<List<Integer>> getIntList(String key) {
+        if (preferences.contains(key)) {
+            return Optional.of(getIntList(key, List.of()));
+        }
+
+        return Optional.empty();
+    }
+
+    public List<Integer> getIntList(String key, List<Integer> defaultValue) {
+        var json = getString(key);
+
+        if (json.isEmpty()) {
+            return defaultValue;
+        }
+
+        Type type = new TypeToken<List<Integer>>(){}.getType();
+        return new Gson().fromJson(json.get(), type);
+    }
+
     public PreferencesHolder putBoolean(int key, boolean value) {
         return putBoolean(key+"", value);
     }
@@ -121,6 +145,11 @@ public class PreferencesHolder {
     public <T extends Enum<T>> PreferencesHolder putEnum(String key, T value) {
         editor.putInt(key, value.ordinal());
         return this;
+    }
+
+    public PreferencesHolder putIntList(String key, List<Integer> list) {
+        var json = new Gson().toJson(list);
+        return putString(key, json);
     }
 
     public void flush() {
