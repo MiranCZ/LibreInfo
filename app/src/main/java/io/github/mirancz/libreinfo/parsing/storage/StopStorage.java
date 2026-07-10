@@ -6,7 +6,7 @@ import io.github.mirancz.libreinfo.exception.ErrorType;
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop;
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId;
 import io.github.mirancz.libreinfo.util.AppInputStream;
-import io.github.mirancz.libreinfo.util.FuzzySearch;
+import io.github.mirancz.libreinfo.util.FuzzyStopSearch;
 import io.github.mirancz.libreinfo.util.PreferencesHolder;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class StopStorage implements AppStorage {
 
     private final List<Stop> stops;
     private final Stop[] idToStop;
-    private final FuzzySearch<Stop> searcher;
+    private final FuzzyStopSearch searcher;
     public final StopMapper mapper;
 
 
@@ -44,7 +44,7 @@ public class StopStorage implements AppStorage {
             idToStop[stop.id.internal()] = stop;
         }
 
-        this.searcher = new FuzzySearch<>(stops, stop -> stop.name);
+        this.searcher = new FuzzyStopSearch(stops);
     }
 
     public Stop getStop(StopId.StopIdHolder holder) {
@@ -75,7 +75,7 @@ public class StopStorage implements AppStorage {
         return stops;
     }
 
-    public FuzzySearch<Stop> getSearcher() {
+    public FuzzyStopSearch getSearcher() {
         return searcher;
     }
 }

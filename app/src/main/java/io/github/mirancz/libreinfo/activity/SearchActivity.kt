@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -49,11 +50,14 @@ import io.github.mirancz.libreinfo.activity.data.DelaysDataHolder
 import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.parsing.storage.StopStorage
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop
-import io.github.mirancz.libreinfo.util.FuzzySearch
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.util.FuzzyStopSearch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlin.collections.emptyList
 
 class SearchActivity : KBaseActivity(R.string.departures) {
 
@@ -173,7 +177,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
 
     @Composable
     fun StopList(
-        searcher: FuzzySearch<Stop>,
+        searcher: FuzzyStopSearch,
         query: String,
         vm: SearchViewModel = viewModel()
     ) {
@@ -181,31 +185,39 @@ class SearchActivity : KBaseActivity(R.string.departures) {
 
         var forceRecompose by remember { mutableIntStateOf(0) }
 
-        val filteredItems = remember(query, forceRecompose, liked) {
-            val res = searcher.getResults(query)
+        val listState = rememberLazyListState()
 
-            if (liked) {
-                val first: ArrayList<Stop> = ArrayList()
-                val second: ArrayList<Stop> = ArrayList()
+        var filteredItems: List<Stop> by remember { mutableStateOf(emptyList()) }
 
-                for (v in res) {
-                    if (v.isFavourite) {
-                        first.add(v)
-                    } else {
-                        second.add(v)
-                    }
-                }
-                first.addAll(second)
+        LaunchedEffect(query, forceRecompose, liked) {
+            val newItems = withContext(Dispatchers.Default) {
+                val res = searcher.search(
+                    query,
+                    isFavourite = { liked && it.isFavourite }
+                )
 
-                first
-            } else {
-                res
+                val result = ArrayList(res.favourites)
+                result.addAll(res.others)
+
+                result
+            }
+
+            filteredItems = newItems
+
+            if (filteredItems.isNotEmpty()) {
+                listState.scrollToItem(0)
             }
         }
 
         key(forceRecompose, liked) {
-            LazyColumn(Modifier.padding(top = 8.dp)) {
-                items(filteredItems) { item ->
+            LazyColumn(
+                Modifier.padding(top = 8.dp),
+                state = listState
+            ) {
+                items(
+                    filteredItems,
+                    key = { it.id.internal }
+                ) { item ->
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
