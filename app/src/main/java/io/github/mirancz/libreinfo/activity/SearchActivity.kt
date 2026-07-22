@@ -62,6 +62,7 @@ import io.github.mirancz.libreinfo.util.search.FuzzyStopSearch
 import io.github.mirancz.libreinfo.util.search.SortType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.math.ceil
 
 class SearchActivity : KBaseActivity(R.string.departures) {
 
@@ -284,8 +285,25 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                             text = item.name,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(start = 20.dp)
+                            modifier = Modifier.padding(start = 20.dp).weight(1f)
                         )
+
+                        if (location != null) {
+                            val distance = ceil(item.location.toAndroidLoc().distanceTo(location)).toInt()
+
+                            val text = if (distance < 1_000) {
+                                "$distance m"
+                            } else {
+                                "%.1f km".format(distance.toDouble()/1000.0)
+                            }
+
+                            Text(
+                                text = text,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = colorResource(R.color.secondary_color_tone)
+                            )
+                        }
                     }
                     Divider()
                 }
