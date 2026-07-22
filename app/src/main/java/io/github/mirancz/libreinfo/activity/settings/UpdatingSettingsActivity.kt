@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,6 +39,7 @@ import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
 import io.github.mirancz.libreinfo.util.AppUpdater
 import io.github.mirancz.libreinfo.util.UpdateDownloader
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.AppSwitch
 
 class UpdatingSettingsActivity : KBaseActivity(R.string.updating_settings) {
 

@@ -61,6 +61,7 @@ import io.github.mirancz.libreinfo.parsing.types.LineAlias
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.AppSwitch
 import io.github.mirancz.libreinfo.util.Settings
 import kotlin.random.Random
 

@@ -40,6 +40,7 @@ import io.github.mirancz.libreinfo.parsing.types.departure.VehicleInfo
 import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.AppSwitch
 
 class DeparturesThemingActivity : KBaseActivity(R.string.departures_theming) {
 

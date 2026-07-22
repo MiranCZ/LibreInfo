@@ -214,6 +214,9 @@ dependencies {
     implementation(libs.ui.tooling.preview)
     debugImplementation(libs.ui.tooling)
 
+    implementation(libs.play.services.location)
+    implementation(libs.kotlinx.coroutines.play.services)
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.flexbox)
@@ -224,7 +227,9 @@ dependencies {
     implementation(libs.xz)
     implementation(libs.compose.shimmer)
     implementation(libs.core.ktx)
+
     testImplementation(libs.junit)
+
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }

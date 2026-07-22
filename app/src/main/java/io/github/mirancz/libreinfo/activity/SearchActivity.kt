@@ -1,6 +1,7 @@
 package io.github.mirancz.libreinfo.activity
 
 import android.content.Intent
+import android.location.Location
 import android.os.Bundle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -33,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,19 +47,21 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.gson.JsonObject
+import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.data.DelaysDataHolder
+import io.github.mirancz.libreinfo.activity.settings.LocationSettingsActivity
 import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.parsing.storage.StopStorage
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
-import io.github.mirancz.libreinfo.util.load.rememberLoad
-import io.github.mirancz.libreinfo.util.request.RequestHelper
-import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
-import io.github.mirancz.libreinfo.util.FuzzyStopSearch
+import io.github.mirancz.libreinfo.util.load.rememberLoad
+import io.github.mirancz.libreinfo.util.location.LocationProviderFactory
+import io.github.mirancz.libreinfo.util.request.RequestHelper
+import io.github.mirancz.libreinfo.util.search.FuzzyStopSearch
+import io.github.mirancz.libreinfo.util.search.SortType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlin.collections.emptyList
 
 class SearchActivity : KBaseActivity(R.string.departures) {
 
@@ -130,8 +134,16 @@ class SearchActivity : KBaseActivity(R.string.departures) {
 
     @Composable
     fun SearchableList(vm: SearchViewModel = viewModel()) {
-        val searcherResult = rememberLoad {
-            AppContainer.storageProvider.get(StopStorage::class).searcher
+        val context = LocalContext.current
+
+        val dataResult = rememberLoad {
+            val location = if (LocationSettingsActivity.shouldSortByDistance()) {
+                LocationProviderFactory.create(context).getLastKnownLocation()
+            } else null
+
+            Pair(
+                AppContainer.storageProvider.get(StopStorage::class).searcher, location
+            )
         }
 
         var query by remember { mutableStateOf("") }
@@ -165,8 +177,11 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                 }
             )
 
-            AsyncContent(searcherResult, loading = { StopListShimmer() }) { searcher ->
-                StopList(searcher, query, vm)
+            AsyncContent(dataResult, loading = { StopListShimmer() }) { data ->
+                val searcher = data.first
+                val location = data.second
+
+                StopList(searcher, query, location, vm)
             }
         }
 
@@ -179,6 +194,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
     fun StopList(
         searcher: FuzzyStopSearch,
         query: String,
+        location: Location? = null,
         vm: SearchViewModel = viewModel()
     ) {
         val liked by vm.liked
@@ -191,8 +207,15 @@ class SearchActivity : KBaseActivity(R.string.departures) {
 
         LaunchedEffect(query, forceRecompose, liked) {
             val newItems = withContext(Dispatchers.Default) {
+                val sortType = if (location != null) {
+                    SortType.LocationBased(location)
+                } else {
+                    SortType.Alphabetical
+                }
+
                 val res = searcher.search(
                     query,
+                    sortType = sortType,
                     isFavourite = { liked && it.isFavourite }
                 )
 
@@ -224,10 +247,17 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                         modifier = Modifier
                             .clickable(null, ripple(), onClick = {
                                 if (intent.getBooleanExtra(EXTRA_PICKER_MODE, false)) {
-                                    setResult(RESULT_OK, Intent().apply { putExtra(EXTRA_RESULT_STOP, item) })
+                                    setResult(
+                                        RESULT_OK,
+                                        Intent().apply { putExtra(EXTRA_RESULT_STOP, item) })
                                     finish()
                                 } else {
-                                    startActivity(DeparturesActivity::class) { i -> i.putExtra("stop", item) }
+                                    startActivity(DeparturesActivity::class) { i ->
+                                        i.putExtra(
+                                            "stop",
+                                            item
+                                        )
+                                    }
                                 }
                             })
                             .padding(17.dp)

@@ -1,5 +1,6 @@
-package io.github.mirancz.libreinfo.util
+package io.github.mirancz.libreinfo.util.search
 
+import android.location.Location
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
 import kotlinx.coroutines.yield
 import java.text.CollationKey
@@ -9,7 +10,6 @@ import java.util.Locale
 import java.util.PriorityQueue
 import kotlin.math.max
 
-/// THIS CODE HAS BEEN AI GENERATED
 /**
  * Fuzzy search over Czech stop names.
  *
@@ -205,9 +205,6 @@ class FuzzyStopSearch(stops: List<Stop>) {
         if (byScore != 0) byScore else a.entry.sortKey.compareTo(b.entry.sortKey)
     }
 
-    /** Heap comparator: root of the bounded heap is the WORST kept match. */
-    private val worstFirst = resultOrder.reversed()
-
     /**
      * Returns competitive favourites and the best [limit] other matches, each
      * section best first. Call from a background thread. An empty query
@@ -219,12 +216,24 @@ class FuzzyStopSearch(stops: List<Stop>) {
         rawQuery: String,
         limit: Int = 50,
         isFavourite: (Stop) -> Boolean = { false },
+        sortType: SortType = SortType.Alphabetical
     ): Results {
         val cleaned = rawQuery.trim().replace(WHITESPACE, " ")
         if (cleaned.isEmpty()) {
             val (fav, rest) = allByName.partition { isFavourite(it) }
 
-            return Results(fav, rest)
+            return when (sortType) {
+                is SortType.Alphabetical -> {
+                    Results(fav, rest)
+                }
+                is SortType.LocationBased -> {
+
+                    Results(
+                        sortByLocation(fav, limit, sortType.location),
+                        sortByLocation(rest, limit, sortType.location)
+                    )
+                }
+            }
         }
 
         if (limit <= 0) return Results(emptyList(), emptyList())
@@ -236,6 +245,11 @@ class FuzzyStopSearch(stops: List<Stop>) {
                 lower = CharArray(t.length) { t[it].lowercaseChar() },
                 folded = CharArray(t.length) { foldChar(t[it]) },
             )
+        }
+
+        val resultOrder = when(sortType) {
+            is SortType.Alphabetical -> resultOrder
+            is SortType.LocationBased -> locationComparator(sortType.location)
         }
 
         var qMask = 0L
@@ -261,7 +275,7 @@ class FuzzyStopSearch(stops: List<Stop>) {
         // candidate costs one primitive int compare (the CollationKey is only
         // consulted on score ties) and allocates nothing.
         val favMatches = ArrayList<Match>()
-        val heap = PriorityQueue(limit + 1, worstFirst)
+        val heap = PriorityQueue(limit + 1, resultOrder.reversed())
         var bestScore = 0
 
         for (e in entries) {
@@ -360,6 +374,41 @@ class FuzzyStopSearch(stops: List<Stop>) {
             pinned.map { it.entry.stop },
             top.map { it.entry.stop },
         )
+    }
+
+    fun sortByLocation(stops: List<Stop>,limit: Int, location: Location): List<Stop> {
+        val resultOrder = Comparator<Stop> { a, b ->
+            (location.distanceTo(a.location.toAndroidLoc())
+                .compareTo(location.distanceTo(b.location.toAndroidLoc())))
+        }
+
+        val heap: PriorityQueue<Stop> = PriorityQueue(limit + 1, resultOrder.reversed())
+
+        for (e in stops) {
+            val worst = heap.peek()
+
+            if (heap.size < limit) {
+                heap.offer(e)
+            } else if (resultOrder.compare(e, worst) < 0) {
+                heap.poll()
+                heap.offer(e)
+            }
+        }
+
+        val top = ArrayList(heap)
+        top.sortWith(resultOrder)
+
+        return top
+    }
+
+    private fun locationComparator(location: Location): Comparator<Match> {
+        val resultOrder = Comparator<Match> { a, b ->
+            val byScore = b.score.compareTo(a.score)
+
+            if (byScore != 0) byScore else (location.distanceTo(a.entry.stop.location.toAndroidLoc())
+                .compareTo(location.distanceTo(b.entry.stop.location.toAndroidLoc())))
+        }
+        return resultOrder
     }
 
     /**

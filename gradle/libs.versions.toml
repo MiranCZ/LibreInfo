@@ -11,10 +11,12 @@ junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
 appcompat = "1.7.0"
+kotlinxCoroutinesPlayServices = "1.11.0"
 lifecycleViewmodelCompose = "2.8.5"
 material = "1.10.0"
 gson = "2.14.0"
 kotlin = "2.4.0"
+playServicesLocation = "21.4.0"
 secretsGradlePlugin = "2.0.1"
 coreKtx = "1.17.0"
 okhttp = "5.4.0"
@@ -24,6 +26,7 @@ xz = "1.12"
 [libraries]
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 maplibre-annotation = { module = "org.maplibre.gl:android-plugin-annotation-v9", version.ref = "androidPluginAnnotationV9" }
 maplibre-sdk = { module = "org.maplibre.gl:android-sdk", version.ref = "androidSdk" }
 compose-shimmer = { module = "com.valentinilk.shimmer:compose-shimmer", version.ref = "composeShimmer" }
@@ -40,6 +43,7 @@ core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx"
 material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 material3 = { module = "androidx.compose.material3:material3" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 work-runtime = { module = "androidx.work:work-runtime", version.ref = "workRuntime" }

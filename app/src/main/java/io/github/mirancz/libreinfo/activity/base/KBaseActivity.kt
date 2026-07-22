@@ -60,8 +60,6 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -610,25 +608,6 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         }
     }
 
-
-    @Composable
-    fun AppSwitch(
-        checked: Boolean,
-        onCheckedChange: (Boolean) -> Unit,
-        modifier: Modifier = Modifier,
-        enabled: Boolean = true,
-    ) {
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            modifier = modifier,
-            enabled = enabled,
-            colors = SwitchDefaults.colors(
-                checkedTrackColor = colorResource(R.color.light_blue),
-                checkedThumbColor = Color.White,
-            )
-        )
-    }
 
     @Composable
     fun <T> AppDropdown(

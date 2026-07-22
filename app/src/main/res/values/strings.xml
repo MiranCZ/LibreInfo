@@ -80,6 +80,7 @@
     <string name="debug_info">Pro vývojáře</string>
     <string name="update_preparing">Připravuji instalaci…</string>
     <string name="updating_settings">Aktualizace</string>
+    <string name="location">Poloha</string>
     <string name="auto_download_updates">Automaticky stahovat aktualizace</string>
     <string name="update_wifi_charging_note">Automatické aktualizace se stahují pouze když je zařízení připojené k WiFi a nabíjí se.</string>
     <string name="last_checked">Naposledy zkontrolováno</string>
@@ -98,4 +99,7 @@
     <string name="update_prompt_message">Má aplikace automaticky stahovat aktualizace?\nAktualizace se stáhne pouze když je zařízení připojené k WiFi a nabíjí se.\nSvoji volbu můžete kdykoliv změnit v nastavení.</string>
     <string name="update_prompt_enable">Zapnout</string>
     <string name="update_prompt_decline">Teď ne</string>
+    <string name="allow_location_text">Pro změnu nastevení musí mít aplikace povolený přístup k poloze zařízení</string>
+    <string name="allow_location">Povolit přístup k poloze</string>
+    <string name="sort_stops_by_distance">Řadit zastávky podle vzdálenosti</string>
 </resources>

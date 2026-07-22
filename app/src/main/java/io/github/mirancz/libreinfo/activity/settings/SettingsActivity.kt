@@ -11,9 +11,15 @@ class SettingsActivity : NavigationActivity(R.string.settings) {
     @Composable
     override fun CreateNavigation() {
         NavigationItem(R.drawable.palette, R.string.departures_theming, DeparturesThemingActivity::class)
+
+        NavigationItem(R.drawable.location_dot, R.string.location, LocationSettingsActivity::class)
+
+        @Suppress("KotlinConstantConditions")
         if (BuildConfig.AUTO_UPDATE_ENABLED) {
             NavigationItem(R.drawable.download, R.string.updating_settings, UpdatingSettingsActivity::class)
         }
+
+        @Suppress("KotlinConstantConditions")
         if (BuildConfig.DEBUG) {
             NavigationItem(R.drawable.code, "dev options", DevSettingsActivity::class)
         }

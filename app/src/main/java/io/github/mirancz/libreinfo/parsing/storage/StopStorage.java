@@ -6,7 +6,7 @@ import io.github.mirancz.libreinfo.exception.ErrorType;
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop;
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId;
 import io.github.mirancz.libreinfo.util.AppInputStream;
-import io.github.mirancz.libreinfo.util.FuzzyStopSearch;
+import io.github.mirancz.libreinfo.util.search.FuzzyStopSearch;
 import io.github.mirancz.libreinfo.util.PreferencesHolder;
 
 import java.io.IOException;
