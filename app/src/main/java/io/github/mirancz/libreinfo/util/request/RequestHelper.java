@@ -5,6 +5,7 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 
+import io.github.mirancz.libreinfo.BuildConfig;
 import io.github.mirancz.libreinfo.R;
 import io.github.mirancz.libreinfo.exception.AppException;
 import io.github.mirancz.libreinfo.exception.RequestException;
@@ -136,6 +137,7 @@ public class RequestHelper {
             URL url = new URL(endpoint.url);
 
             con = (HttpURLConnection) url.openConnection();
+            con.setRequestProperty("User-Agent", getUserAgent());
             con.setConnectTimeout(timeoutMs);
             con.setReadTimeout(timeoutMs);
 
@@ -155,6 +157,14 @@ public class RequestHelper {
             AppLog.e("Failed to reach " + endpoint.url, e);
             throw RequestException.reachError(endpoint);
         }
+    }
+
+    private static String getUserAgent() {
+        if (BuildConfig.DEBUG) {
+            return "LibreInfo-DEBUG";
+        }
+
+        return "LibreInfo-v"+BuildConfig.VERSION_NAME+"-"+BuildConfig.FLAVOR;
     }
 
     /** Reads and discards an error-stream body so the connection can be released, then closes it. */
