@@ -9,6 +9,11 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Low-level generic key/value store over {@link SharedPreferences}.
+ * <p>
+ * For app settings, do NOT call these generic methods directly with raw keys, use {@link AppSettings} instead
+ */
 public class PreferencesHolder {
 
     public static final PreferencesHolder NONE = new PreferencesHolder(new DummySharedPreferences());

@@ -18,20 +18,16 @@ public class AppUpdater {
 
     private static final String WORK_NAME = "app-update";
 
-    private static final String KEY_AUTO_UPDATE = "app_auto_update_enabled";
-    private static final String KEY_LAST_CHECK = "app_update_last_check";
-    private static final String KEY_PROMPT_SHOWN = "app_update_prompt_shown";
-
 
     private AppUpdater() {
     }
 
     public static boolean isAutoUpdateEnabled() {
-        return Settings.get().getBoolean(KEY_AUTO_UPDATE, false);
+        return AppSettings.Updates.getAutoUpdateEnabled();
     }
 
     public static void setAutoUpdateEnabled(Context context, boolean enabled) {
-        Settings.get().putBoolean(KEY_AUTO_UPDATE, enabled).flush();
+        AppSettings.Updates.setAutoUpdateEnabled(enabled);
 
         if (enabled) {
             schedulePeriodic(context);
@@ -41,19 +37,19 @@ public class AppUpdater {
     }
 
     public static long getLastCheckMillis() {
-        return Settings.get().getLong(KEY_LAST_CHECK, 0L);
+        return AppSettings.Updates.getUpdateLastCheck();
     }
 
     public static void recordCheck() {
-        Settings.get().putLong(KEY_LAST_CHECK, System.currentTimeMillis()).flush();
+        AppSettings.Updates.setUpdateLastCheck(System.currentTimeMillis());
     }
 
     public static boolean isFirstRunPromptShown() {
-        return Settings.get().getBoolean(KEY_PROMPT_SHOWN, false);
+        return AppSettings.Updates.getUpdatePromptShown();
     }
 
     public static void markFirstRunPromptShown() {
-        Settings.get().putBoolean(KEY_PROMPT_SHOWN, true).flush();
+        AppSettings.Updates.setUpdatePromptShown(true);
     }
 
     public static void schedulePeriodic(Context context) {

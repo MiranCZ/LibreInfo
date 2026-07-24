@@ -17,13 +17,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.util.Settings
+import kotlin.reflect.KMutableProperty0
 
 @Composable
-fun SettingSwitch(label: String, settingKey: String, onChange: (Boolean)->Unit = {}) {
-    val settings = Settings.get()
-
-    var checked by remember { mutableStateOf(settings.getBoolean(settingKey, false)) }
+fun SettingSwitch(label: String, state: KMutableProperty0<Boolean>, onChange: (Boolean)->Unit = {}) {
+    var checked by remember { mutableStateOf(state.get()) }
 
     Row(
         modifier = Modifier
@@ -35,7 +33,8 @@ fun SettingSwitch(label: String, settingKey: String, onChange: (Boolean)->Unit =
         Text(label, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = colorResource(R.color.secondaryColor))
         AppSwitch(checked = checked, onCheckedChange = {
             checked = it
-            settings.putBoolean(settingKey, it).flush()
+            state.set(it)
+            onChange(it)
         })
     }
 }

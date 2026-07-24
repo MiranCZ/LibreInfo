@@ -32,18 +32,14 @@ import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.component.AppSwitch
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.component.SettingSwitch
+import io.github.mirancz.libreinfo.util.AppSettings
 import io.github.mirancz.libreinfo.util.PermissionHelper
-import io.github.mirancz.libreinfo.util.Settings
 
 
 class LocationSettingsActivity : KBaseActivity(R.string.location) {
 
     companion object {
-        private const val DISTANCE_SORT_KEY: String = "LOCATION_SORT_STOPS"
-
-        fun shouldSortByDistance() =
-            Settings.get().getBoolean(DISTANCE_SORT_KEY, false)
-
+        fun shouldSortByDistance() = AppSettings.Location.distanceSort
     }
 
     @Composable
@@ -60,10 +56,9 @@ class LocationSettingsActivity : KBaseActivity(R.string.location) {
             locationEnabled = results.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) ||
                     results.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)
 
-            val settings = Settings.get()
-            val requestedBefore = settings.getBoolean("location_permissions_requested", false)
+            val requestedBefore = AppSettings.Location.locationPermissionsRequested
 
-            Settings.get().putBoolean("location_permissions_requested", true).flush()
+            AppSettings.Location.locationPermissionsRequested = true
 
             if (!locationEnabled) {
                 val showRationale = ActivityCompat.shouldShowRequestPermissionRationale(
@@ -125,7 +120,7 @@ class LocationSettingsActivity : KBaseActivity(R.string.location) {
     @Composable
     private fun SettingsCard() {
         Row {
-            SettingSwitch(stringResource(R.string.sort_stops_by_distance), DISTANCE_SORT_KEY)
+            SettingSwitch(stringResource(R.string.sort_stops_by_distance), AppSettings.Location::distanceSort)
             Divider()
         }
     }

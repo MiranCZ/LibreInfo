@@ -62,7 +62,7 @@ import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.component.AppSwitch
-import io.github.mirancz.libreinfo.util.Settings
+import io.github.mirancz.libreinfo.util.AppSettings
 import kotlin.random.Random
 
 class DiversionsActivity : KBaseActivity(R.string.diversions) {
@@ -113,14 +113,14 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
             val diversionList = res.second
 
             if (!vm.filtersLoaded) {
-                val savedFilters = Settings.get().getIntList("diversion_filters", emptyList<Int>())
+                val savedFilters = AppSettings.Diversions.diversionFilters
 
                 val filters = HashSet<LineAlias>()
                 for (filter in savedFilters) {
                     filters.add(storage.lineStorage.getAlias(filter))
                 }
                 vm.filters = filters
-                vm.applyFilters = Settings.get().getBoolean("apply_filters", false)
+                vm.applyFilters = AppSettings.Diversions.applyFilters
 
                 vm.filtersLoaded = true
             }
@@ -231,7 +231,7 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
 
         val onApply: () -> Unit = {
             vm.filters = HashSet(filters)
-            Settings.get().putIntList("diversion_filters", filters.map { it.id }).flush()
+            AppSettings.Diversions.diversionFilters = filters.map { it.id }
 
             scope.launch { sheetState.hide() }
                 .invokeOnCompletion {
@@ -270,7 +270,7 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
                         checked = it
                         vm.applyFilters = it
 
-                        Settings.get().putBoolean("apply_filters", it).flush()
+                        AppSettings.Diversions.applyFilters = it
                     })
                 }
 
