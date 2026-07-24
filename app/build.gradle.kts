@@ -45,9 +45,11 @@ android {
     }
 
     // Two editions selected at build time:
-    //  - direct: distributed outside an app store (e.g. GitHub) — the in-app auto-updater is ON.
-    //  - store : distributed via a store that handles updates (Play / F-Droid) — updater OFF, and
-    //            src/store/AndroidManifest.xml strips REQUEST_INSTALL_PACKAGES + the installation receiver.
+    //  - direct: distributed outside a store (e.g. GitHub) — in-app auto-updater ON, bundles
+    //            Google Play Services (src/direct provides the GMS-backed location provider).
+    //  - foss:   GMS-free edition (e.g. for F-Droid) — updater OFF (src/foss/AndroidManifest.xml
+    //            strips REQUEST_INSTALL_PACKAGES + the install receiver) and no play-services
+    //            dependency; src/foss provides the AOSP-only location provider.
     flavorDimensions += "distribution"
 
     productFlavors {
@@ -55,7 +57,7 @@ android {
             dimension = "distribution"
             buildConfigField("boolean", "AUTO_UPDATE_ENABLED", "true")
         }
-        create("store") {
+        create("foss") {
             dimension = "distribution"
             buildConfigField("boolean", "AUTO_UPDATE_ENABLED", "false")
         }
@@ -214,8 +216,9 @@ dependencies {
     implementation(libs.ui.tooling.preview)
     debugImplementation(libs.ui.tooling)
 
-    implementation(libs.play.services.location)
-    implementation(libs.kotlinx.coroutines.play.services)
+    // Google Play Services
+    "directImplementation"(libs.play.services.location)
+    "directImplementation"(libs.kotlinx.coroutines.play.services)
 
     implementation(libs.appcompat)
     implementation(libs.material)

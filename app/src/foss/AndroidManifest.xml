@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!--
-        Store edition (auto-updater disabled): strip the self-update install permission and
+        FOSS edition (auto-updater disabled): strip the self-update install permission and
         the PackageInstaller result receiver that the main manifest declares.
     -->
     <uses-permission
