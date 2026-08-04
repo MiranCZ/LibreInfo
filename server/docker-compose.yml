@@ -90,6 +90,9 @@ services:
   gtfs-rt:
     build: ./gtfs-rt
     restart: unless-stopped
+    secrets:
+      - kordis_token
+      - kordis_url
     networks:
       - internal
 
@@ -146,3 +149,9 @@ volumes:
 networks:
   public:
   internal:
+
+secrets:
+  kordis_url:
+    file: ./secrets/kordis_url
+  kordis_token:
+    file: ./secrets/kordis_token

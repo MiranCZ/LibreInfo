@@ -4,6 +4,7 @@ package me.miran;
 import me.miran.parsing.*;
 import me.miran.util.CheckedOutputStream;
 import me.miran.util.IdStorage;
+import me.miran.util.PostsSource;
 import org.tukaani.xz.LZMA2Options;
 import org.tukaani.xz.XZOutputStream;
 
@@ -37,6 +38,9 @@ public class Main {
 
         createOutputDir();
 
+        // resolved up front so a hard failure aborts before any output is written
+        List<PostMapper.Post> posts = PostsSource.resolve();
+
         XZOutputStream compressedOutput = new XZOutputStream(new FileOutputStream(getDataFile()), new LZMA2Options());
         DataOutputStream output = new DataOutputStream(compressedOutput);
 
@@ -61,7 +65,7 @@ public class Main {
         }
 
         writeStopIdMaps(outputProvider);
-        writePosts(outputProvider);
+        writePosts(outputProvider, posts);
 
         output.writeBoolean(false);
         output.close();
@@ -75,10 +79,10 @@ public class Main {
         Files.createDirectories(STATE_DIR);
     }
 
-    private static void writePosts(Function<String, CheckedOutputStream> outputProvider) throws IOException {
+    private static void writePosts(Function<String, CheckedOutputStream> outputProvider, List<PostMapper.Post> posts) throws IOException {
         CheckedOutputStream os = outputProvider.apply("posts");
 
-        os.write(Files.readAllBytes(getPostsFile().toPath()));
+        PostMapper.write(posts, os);
 
         os.close();
     }

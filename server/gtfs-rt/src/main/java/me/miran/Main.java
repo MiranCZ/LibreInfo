@@ -1,39 +1,59 @@
 package me.miran;
 
-import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import me.miran.poll.Poller;
+import me.miran.request.RequestHelper;
+import me.miran.transform.DiversionMapper;
+import me.miran.transform.EventMapper;
+
+import java.time.Duration;
 
 import static spark.Spark.*;
 
 public class Main {
+
+    public static Poller<String> diversionPoller = new Poller<>(
+            "diversions",
+            () -> "{\"diversions\":" + new Gson().toJson(DiversionMapper.mapDiversions(RequestHelper.getDiversions())) + "}",
+            Duration.ofMinutes(5)
+    );
+
+    public static Poller<String> eventPoller = new Poller<>(
+            "events",
+            () -> "{\"events\":" + new Gson().toJson(EventMapper.mapEvents(RequestHelper.getEvents())) + "}",
+            Duration.ofSeconds(45)
+    );
 
     public static void main(String[] args) {
         ipAddress("0.0.0.0");
         port(8080);
 
         Gson gson = new GsonBuilder()
-                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .create();
 
-        VehicleStore store = new VehicleStore();
-        store.start();
 
-        VehicleSocket socket = new VehicleSocket(store, gson);
+        diversionPoller.start();
+        eventPoller.start();
+
+        VehicleSocket socket = new VehicleSocket(gson);
         webSocket("/stream", socket);
 
-        KordisStream stream = new KordisStream(v -> {
-            store.record(v);
-            socket.broadcast(v);
-        });
-        stream.start();
+        var stream = new VehicleStore(gson, socket);
 
-        Endpoints endpoints = new Endpoints(store, gson);
+        var vehiclesPoller = new Poller<>("vehicles", RequestHelper::getVehicles, stream::onData, Duration.ofSeconds(5));
+        vehiclesPoller.start();
+
+        Endpoints endpoints = new Endpoints(stream, gson);
 
         get("/vehicles", endpoints::handleVehicles);
-        get("/vehicleinfo", endpoints::handleVehicleInfo);
-        get("/stopdelays", endpoints::handleStopDelays);
-        get("/routedelays", endpoints::handleRouteDelays);
+        get("/vehicleInfo", endpoints::handleVehicleInfo);
+        get("/stopDelays", endpoints::handleStopDelays);
+        get("/routeDelays", endpoints::handleRouteDelays);
+
+        get("/diversions", endpoints::handleDiversions);
+        get("/events", endpoints::handleEvents);
+        get("/posts", endpoints::handlePosts);
     }
 
 }

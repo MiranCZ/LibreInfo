@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import time
+from datetime import datetime, timezone
 
 DB_PATH = os.environ.get("DB_PATH", "/data/news.db")
 
@@ -68,7 +69,15 @@ def get_emails(limit: int, offset: int) -> list:
             "SELECT date, title, url, content_html FROM emails ORDER BY date DESC LIMIT ? OFFSET ?",
             (limit, offset),
         ).fetchall()
-    return [dict(r) for r in rows]
+    return [
+        {
+            "published": datetime.fromtimestamp(r["date"], timezone.utc).isoformat(),
+            "title": r["title"],
+            "url": r["url"],
+            "content": r["content_html"],
+        }
+        for r in rows
+    ]
 
 
 def get_total() -> int:

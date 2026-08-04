@@ -29,13 +29,13 @@ motis = requests.Session()
 
 @api.route('/diversions', methods=['GET'])
 def get_diversions():
-    resp = scraper.get(f"{SCRAPER_URL}/diversions")
+    resp = gtfs_rt.get(f"{GTFS_RT_URL}/diversions")
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 
 @api.route('/events', methods=['GET'])
 def get_events():
-    resp = scraper.get(f"{SCRAPER_URL}/events")
+    resp = gtfs_rt.get(f"{GTFS_RT_URL}/events")
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 @api.route('/shapes', methods=['GET'])
@@ -54,21 +54,21 @@ def get_vehicles():
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 
-@api.route("/vehicleinfo", methods=["GET"])
+@api.route("/vehicleInfo", methods=["GET"])
 def get_vehicle_info():
-    resp = gtfs_rt.get(f"{GTFS_RT_URL}/vehicleinfo", params=request.args)
+    resp = gtfs_rt.get(f"{GTFS_RT_URL}/vehicleInfo", params=request.args)
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 
-@api.route("/stopdelays", methods=["GET"])
+@api.route("/stopDelays", methods=["GET"])
 def get_stop_delays():
-    resp = gtfs_rt.get(f"{GTFS_RT_URL}/stopdelays", params=request.args)
+    resp = gtfs_rt.get(f"{GTFS_RT_URL}/stopDelays", params=request.args)
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 
-@api.route("/routedelays", methods=["GET"])
+@api.route("/routeDelays", methods=["GET"])
 def get_route_delays():
-    resp = gtfs_rt.get(f"{GTFS_RT_URL}/routedelays")
+    resp = gtfs_rt.get(f"{GTFS_RT_URL}/routeDelays")
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 

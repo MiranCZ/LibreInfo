@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import me.miran.model.StopDelay;
 import me.miran.model.VehicleInfo;
+import me.miran.request.RequestHelper;
 import spark.Request;
 import spark.Response;
 
@@ -14,54 +15,49 @@ public class Endpoints {
 
     private static final String JSON = "application/json";
 
-    private final VehicleQuery query;
+    private final VehicleStore query;
     private final Gson gson;
 
-    public Endpoints(VehicleQuery query, Gson gson) {
+    public Endpoints(VehicleStore query, Gson gson) {
         this.query = query;
         this.gson = gson;
     }
 
     public String handleVehicles(Request request, Response response) {
         response.type(JSON);
-        return gson.toJson(query.getVehicles());
+        return "{\"vehicles\":" + query.getVehiclesJson() + "}";
     }
 
     public String handleVehicleInfo(Request request, Response response) {
         final String notFound = error("Trip with the specified parameters was not found.");
 
         response.type(JSON);
-        String lineIdStr = request.queryParams("lineid");
-        String routeIdStr = request.queryParams("routeid");
+        String lineIdStr = request.queryParams("lineId");
+        String routeIdStr = request.queryParams("routeId");
 
-        if (lineIdStr == null && routeIdStr == null) {
-            return gson.toJson(query.getVehicleInfos());
-        }
-        if (lineIdStr == null) {
-            return error("'lineid' cannot be null when 'routeid' is provided");
+        if (lineIdStr == null || routeIdStr == null) {
+            return error("'lineId' and 'routeId' parameters are required");
         }
 
         int lineId;
+        int routeId;
+
         try {
             lineId = Integer.parseInt(lineIdStr);
-            if (routeIdStr != null) {
-                int routeId = Integer.parseInt(routeIdStr);
-                VehicleInfo trip = query.getTrip(lineId, routeId);
-                return trip == null ? notFound : gson.toJson(trip);
-            }
+            routeId = Integer.parseInt(routeIdStr);
         } catch (NumberFormatException ignored) {
             return error("Invalid parameters");
         }
 
-        Map<Integer, VehicleInfo> line = query.getLine(lineId);
-        return line == null ? notFound : gson.toJson(line);
+        VehicleInfo trip = query.getTrip(lineId, routeId);
+        return trip == null ? notFound : trip.getJson(gson);
     }
 
     public String handleStopDelays(Request request, Response response) {
         response.type(JSON);
-        String stopIdStr = request.queryParams("stopid");
+        String stopIdStr = request.queryParams("stopId");
         if (stopIdStr == null) {
-            return error("Parameter 'stopid' needs to be supplied!");
+            return error("Parameter 'stopId' needs to be supplied!");
         }
 
         int stopId;
@@ -75,14 +71,14 @@ public class Endpoints {
         query.getVehicleInfos().forEach((lineId, lineMap) ->
                 lineMap.forEach((routeId, info) -> {
                     for (StopDelay stop : info.getPreviousStops()) {
-                        if (stop.id() == stopId) {
+                        if (stop.getId() == stopId) {
                             result.computeIfAbsent(lineId, k -> new LinkedHashMap<>())
-                                    .put(routeId, new StopDelayView(stop.delay(), info.getChangedAt()));
+                                    .put(routeId, new StopDelayView(stop.getDelay(), info.getChangedAt()));
                             break;
                         }
                     }
                 }));
-        return gson.toJson(result);
+        return "{\"stopDelays\":" + gson.toJson(result) + "}";
     }
 
     public String handleRouteDelays(Request request, Response response) {
@@ -93,7 +89,43 @@ public class Endpoints {
                         result.computeIfAbsent(lineId, k -> new LinkedHashMap<>())
                                 .put(routeId, new RouteDelayView(
                                         info.getDelay(), info.getCarId(), info.getChangedAt()))));
-        return gson.toJson(result);
+
+        return "{\"routeDelays\":" + gson.toJson(result) + "}";
+    }
+
+
+    public String handleDiversions(Request request, Response response) {
+        response.type(JSON);
+
+        var value = Main.diversionPoller.latestValue();
+        if (value == null) {
+            return "{}";
+        }
+        return value;
+    }
+
+
+    public String handleEvents(Request request, Response response) {
+        response.type(JSON);
+
+        var value = Main.eventPoller.latestValue();
+        if (value == null) {
+            return "{}";
+        }
+        return value;
+    }
+
+    public String handlePosts(Request request, Response response) {
+        response.type(JSON);
+
+        try {
+            return RequestHelper.getPosts();
+        } catch (RuntimeException e) {
+            // Unlike the other handlers, failures must not be a 200 — the caller bakes this
+            // response into the static bundle and cannot tell an error body from real data.
+            response.status(502);
+            return error("Upstream posts request failed: " + e.getMessage());
+        }
     }
 
     private String error(String reason) {
@@ -102,9 +134,9 @@ public class Endpoints {
         return json.toString();
     }
 
-    private record StopDelayView(int delay, long changedAt) {
+    private record StopDelayView(int delay, long lastUpdated) {
     }
 
-    private record RouteDelayView(int delay, String carId, long changedAt) {
+    private record RouteDelayView(int delay, int vehicleId, long lastUpdated) {
     }
 }

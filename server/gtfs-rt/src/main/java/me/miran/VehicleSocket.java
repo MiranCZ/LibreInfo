@@ -1,8 +1,6 @@
 package me.miran;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import me.miran.model.Vehicle;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.StatusCode;
@@ -14,7 +12,6 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -27,7 +24,6 @@ public class VehicleSocket {
 
     private static final int MAX_CONNECTIONS = 10_000;
 
-    private final VehicleQuery store;
     private final Gson gson;
 
     private final Set<Session> sessions = ConcurrentHashMap.newKeySet();
@@ -39,8 +35,7 @@ public class VehicleSocket {
                 return t;
             });
 
-    public VehicleSocket(VehicleQuery store, Gson gson) {
-        this.store = store;
+    public VehicleSocket(Gson gson) {
         this.gson = gson;
     }
 
@@ -54,7 +49,6 @@ public class VehicleSocket {
 
         sessions.add(session);
         log.info("Client connected ({} total)", sessions.size());
-        send(session, snapshotJson(store.getVehicles(), gson));
     }
 
     @OnWebSocketClose
@@ -73,7 +67,7 @@ public class VehicleSocket {
         if (sessions.isEmpty()) {
             return;
         }
-        String frame = updateJson(vehicle.raw(), gson);
+        String frame = gson.toJson(vehicle);
 
         broadcaster.execute(() -> {
             for (Session session : sessions) {
@@ -110,25 +104,4 @@ public class VehicleSocket {
         });
     }
 
-    private static String snapshotJson(Collection<JsonObject> vehicles, Gson gson) {
-        JsonArray array = new JsonArray();
-        for (JsonObject vehicle : vehicles) {
-            array.add(vehicle);
-        }
-
-        JsonObject frame = new JsonObject();
-
-        frame.addProperty("type", "snapshot");
-        frame.add("vehicles", array);
-        return gson.toJson(frame);
-    }
-
-    private static String updateJson(JsonObject raw, Gson gson) {
-        JsonObject frame = new JsonObject();
-
-        frame.addProperty("type", "update");
-        frame.add("vehicle", raw);
-
-        return gson.toJson(frame);
-    }
 }

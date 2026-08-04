@@ -54,6 +54,15 @@ public class IdStorage {
             return idToIndex.computeIfAbsent(original, k -> ID++);
         }
 
+        /**
+         * Looks up an already-assigned id, returning -1 when there is none. Unlike
+         * {@link #getId(int)} this never assigns, so it is safe to call after the
+         * mapping has been written.
+         */
+        public int getExistingId(int original) {
+            return idToIndex.getOrDefault(original, -1);
+        }
+
         public void write(CheckedOutputStream os) throws IOException {
             os.writeInt(idToIndex.size());
 

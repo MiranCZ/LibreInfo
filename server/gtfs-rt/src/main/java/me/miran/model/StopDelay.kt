@@ -7,5 +7,4 @@ package me.miran.model;
  * @param id    the stop id ({@code LastStopID} from the Kordis stream)
  * @param delay the delay in seconds at that stop ({@code Delay})
  */
-public record StopDelay(int id, int delay) {
-}
+data class StopDelay(val id: Int, val delay: Int)

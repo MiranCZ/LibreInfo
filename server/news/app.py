@@ -48,5 +48,5 @@ def get_news():
 
     emails = get_emails(limit, offset)
     total = get_total()
-    return jsonify({"emails": emails, "total": total, "limit": limit, "offset": offset})
+    return jsonify({"news": emails, "total": total, "limit": limit, "offset": offset})
 

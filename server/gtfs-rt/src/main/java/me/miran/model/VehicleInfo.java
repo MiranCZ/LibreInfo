@@ -1,5 +1,9 @@
 package me.miran.model;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -13,14 +17,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class VehicleInfo {
 
-    private volatile String carId;
+    private volatile int carId;
     private volatile int lastStop;
     private volatile long changedAt;
     private volatile int delay;
     private transient volatile long lastSeen;
     private final List<StopDelay> previousStops = new CopyOnWriteArrayList<>();
 
-    public VehicleInfo(String carId, int lastStop, long changedAt, int delay) {
+    public VehicleInfo(int carId, int lastStop, long changedAt, int delay) {
         this.carId = carId;
         this.lastStop = lastStop;
         this.changedAt = changedAt;
@@ -28,11 +32,11 @@ public class VehicleInfo {
         this.lastSeen = changedAt;
     }
 
-    public String getCarId() {
+    public int getCarId() {
         return carId;
     }
 
-    public void setCarId(String carId) {
+    public void setCarId(int carId) {
         this.carId = carId;
     }
 
@@ -71,4 +75,17 @@ public class VehicleInfo {
     public List<StopDelay> getPreviousStops() {
         return previousStops;
     }
+
+    public String getJson(Gson gson) {
+        var obj = new JsonObject();
+
+        obj.addProperty("vehicleId", carId);
+        obj.addProperty("delay", delay);
+        obj.addProperty("lastStopId", lastStop);
+        obj.addProperty("lastUpdated", lastSeen);
+        obj.add("previousStops", gson.toJsonTree(previousStops, new TypeToken<List<StopDelay>>(){}.getType()));
+
+        return obj.toString();
+    }
+
 }
