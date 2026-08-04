@@ -47,6 +47,10 @@ public class RequestHelper {
         return get("posts");
     }
 
+    public static String getDepartures(String stopId) {
+        return get("departures", Map.of("stopid", stopId));
+    }
+
 
     private static String get(String path) {
         return get(path, Map.of());

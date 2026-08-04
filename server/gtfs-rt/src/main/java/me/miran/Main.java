@@ -50,6 +50,7 @@ public class Main {
         get("/vehicleInfo", endpoints::handleVehicleInfo);
         get("/stopDelays", endpoints::handleStopDelays);
         get("/routeDelays", endpoints::handleRouteDelays);
+        get("/departures", endpoints::handleDepartures);
 
         get("/diversions", endpoints::handleDiversions);
         get("/events", endpoints::handleEvents);

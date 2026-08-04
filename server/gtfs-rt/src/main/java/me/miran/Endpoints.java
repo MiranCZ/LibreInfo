@@ -128,6 +128,22 @@ public class Endpoints {
         }
     }
 
+    public String handleDepartures(Request request, Response response) {
+        response.type(JSON);
+
+        String stopId = request.queryParams("stopId");
+        if (stopId == null || stopId.isBlank()) {
+            return error("Parameter 'stopId' needs to be supplied!");
+        }
+
+        try {
+            return RequestHelper.getDepartures(stopId);
+        } catch (RuntimeException e) {
+            response.status(502);
+            return error("Upstream departures request failed: " + e.getMessage());
+        }
+    }
+
     private String error(String reason) {
         var json = new JsonObject();
         json.addProperty("error", reason);
