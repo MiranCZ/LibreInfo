@@ -1,6 +1,4 @@
 from flask import Flask, request, jsonify
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 import requests
 
 from motis_bridge import translate_plan
@@ -13,13 +11,6 @@ MOTIS_URL = "http://motis:8080"
 MOTIS_PLAN_PATH = "/api/v6/plan"
 
 api = Flask(__name__)
-# TODO figure out what limits make sense here
-limiter = Limiter(
-    get_remote_address,
-    app=api,
-    default_limits=["500 per hour", "40 per minute"],
-    storage_uri="memory://",
-)
 
 scraper = requests.Session()
 gtfs_static = requests.Session()

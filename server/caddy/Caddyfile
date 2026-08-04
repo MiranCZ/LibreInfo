@@ -1,55 +1,39 @@
 {
-	order rate_limit before reverse_proxy
+    order rate_limit first
 }
 
 localhost {
+    @api not path /stream /stream/* /static/*
+    rate_limit @api {
+        zone api_burst {
+            key {remote_host}
+            events 40
+            window 1m
+        }
+        zone api_hourly {
+            key {remote_host}
+            events 500
+            window 1h
+        }
+    }
+
     @bad_token not header X-App-Token "1234"
-	handle @bad_token {
-		respond 403
-	}
+    handle @bad_token {
+        respond 403
+    }
 
-	@stream path /stream /stream/*
+    handle /departures {
+            rate_limit {
+                zone departures {
+                    key {remote_host}
+                    events 1
+                    window 5s
+            }
+        }
+        reverse_proxy api:8080
+    }
 
-	handle @stream {
-		rate_limit {
-			zone ws_stream {
-				key {remote_host}
-				events 10
-				window 1m
-			}
-		}
-		reverse_proxy gtfs-rt:8080
-	}
-
-	handle /static/data {
-		rate_limit {
-			zone static_data {
-				key {remote_host}
-				events 5
-				window 1m
-			}
-		}
-		root * /srv/gtfs
-		rewrite * /data
-		header Content-Type application/octet-stream
-		file_server
-	}
-
-	handle /static/info {
-		rate_limit {
-			zone static_info {
-				key {remote_host}
-				events 30
-				window 1m
-			}
-		}
-		root * /srv/gtfs
-		rewrite * /info
-		header Content-Type application/json
-		file_server
-	}
-
-	handle {
-		reverse_proxy api:8080
-	}
+    handle {
+        reverse_proxy api:8080
+    }
 }
