@@ -5,7 +5,7 @@ import io.github.mirancz.libreinfo.parsing.types.DateTime
 import io.github.mirancz.libreinfo.parsing.types.LineAlias
 import io.github.mirancz.libreinfo.parsing.types.Trip
 import io.github.mirancz.libreinfo.parsing.types.connection.Connection
-import io.github.mirancz.libreinfo.parsing.types.connection.ConnectionPart
+import io.github.mirancz.libreinfo.parsing.types.connection.ConnectionLeg
 import java.time.temporal.ChronoUnit
 
 internal enum class WalkKind { TO_STOP, TRANSFER, TO_DESTINATION }
@@ -39,7 +39,7 @@ internal data class ConnectionUi(
 )
 
 internal fun buildConnectionUi(connection: Connection, storage: IdStorage, now: DateTime): ConnectionUi {
-    val parts = connection.parts
+    val parts = connection.legs
     val legs = parts.mapIndexed { i, part -> buildLeg(part, i, parts, storage) }
 
     return ConnectionUi(
@@ -51,8 +51,8 @@ internal fun buildConnectionUi(connection: Connection, storage: IdStorage, now: 
     )
 }
 
-private fun buildLeg(part: ConnectionPart, index: Int, parts: List<ConnectionPart>, storage: IdStorage): LegUi {
-    val transport = part.transport
+private fun buildLeg(part: ConnectionLeg, index: Int, parts: List<ConnectionLeg>, storage: IdStorage): LegUi {
+    val transport = part.transportMode
     if (transport.isVehicle) {
         val tripId = transport.tripId
         val lineId = storage.apiStorage.getLineIdAndRoute(tripId).left

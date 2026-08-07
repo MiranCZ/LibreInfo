@@ -5,7 +5,6 @@ import android.os.Build;
 
 import androidx.annotation.NonNull;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.FileNotFoundException;
@@ -18,10 +17,15 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 
 import io.github.mirancz.libreinfo.BuildConfig;
 import io.github.mirancz.libreinfo.exception.AppException;
 import io.github.mirancz.libreinfo.exception.RequestException;
+import io.github.mirancz.libreinfo.parsing.types.dto.AssetEntry;
+import io.github.mirancz.libreinfo.parsing.types.dto.ReleaseInfoResponse;
+import io.github.mirancz.libreinfo.parsing.types.response.ApkInfo;
+import io.github.mirancz.libreinfo.parsing.types.response.VersionInfoResponse;
 import io.github.mirancz.libreinfo.util.request.RequestHelper;
 
 
@@ -43,10 +47,10 @@ public class UpdateDownloader {
     public static class CheckResult {
         public final CheckStatus status;
         public final String versionName;
-        private final JsonObject releaseInfo;
-        private final JsonObject versionInfo;
+        private final ReleaseInfoResponse releaseInfo;
+        private final VersionInfoResponse versionInfo;
 
-        private CheckResult(CheckStatus status, String versionName, JsonObject releaseInfo, JsonObject versionInfo) {
+        private CheckResult(CheckStatus status, String versionName, ReleaseInfoResponse releaseInfo, VersionInfoResponse versionInfo) {
             this.status = status;
             this.versionName = versionName;
             this.releaseInfo = releaseInfo;
@@ -54,7 +58,7 @@ public class UpdateDownloader {
         }
 
         static CheckResult of(CheckStatus status) {
-            return new CheckResult(status, "", new JsonObject(), new JsonObject());
+            return new CheckResult(status, "", null, null);
         }
     }
 
@@ -72,18 +76,18 @@ public class UpdateDownloader {
 
     public static CheckResult checkForUpdate(Context context) {
         try {
-            JsonObject releaseInfo = RequestHelper.getLatestReleaseInfo(context);
+            ReleaseInfoResponse releaseInfo = RequestHelper.getLatestReleaseInfo(context);
 
             String versionUrl = findAssetDownload(releaseInfo, "version.json");
-            JsonObject versionInfo = RequestHelper.readJsonUrl(context, versionUrl, "Release version meta", JsonObject.class);
+            VersionInfoResponse versionInfo = RequestHelper.getVersionInfo(context, versionUrl);
 
-            int releaseVersionCode = versionInfo.get("versionCode").getAsInt();
+            int releaseVersionCode = versionInfo.getVersionCode();
 
             AppUpdater.recordCheck();
 
             // we should update
             if (BuildConfig.VERSION_CODE < releaseVersionCode) {
-                String versionName = versionInfo.get("versionName").getAsString();
+                String versionName = versionInfo.getVersionName();
 
                 return new CheckResult(CheckStatus.UPDATE_AVAILABLE, versionName, releaseInfo, versionInfo);
             }
@@ -107,16 +111,16 @@ public class UpdateDownloader {
 
 
 
-    private static UpdateResult downloadApk(Context context, JsonObject releaseInfo, JsonObject versionInfo) {
-        JsonObject apksInfo = versionInfo.getAsJsonObject("apks");
+    private static UpdateResult downloadApk(Context context, ReleaseInfoResponse releaseInfo, VersionInfoResponse versionInfo) {
+        Map<String, ApkInfo> apksInfo = versionInfo.getApks();
 
         String buildAbi = getBuildABI();
 
-        JsonObject apkEntry;
-        if (apksInfo.has(buildAbi)) {
-            apkEntry = apksInfo.getAsJsonObject(buildAbi);
+        ApkInfo apkEntry;
+        if (apksInfo.containsKey(buildAbi)) {
+            apkEntry = apksInfo.get(buildAbi);
         } else {
-            apkEntry = apksInfo.getAsJsonObject("universal");
+            apkEntry = apksInfo.get("universal");
         }
 
         if (apkEntry == null) {
@@ -124,8 +128,8 @@ public class UpdateDownloader {
             return UpdateResult.ERROR;
         }
 
-        String fetchApkName = apkEntry.get("name").getAsString();
-        String expectedHash = apkEntry.get("hash").getAsString();
+        String fetchApkName = apkEntry.getName();
+        String expectedHash = apkEntry.getHash();
 
         String downloadUrl;
         try {
@@ -165,7 +169,7 @@ public class UpdateDownloader {
 
 
             var meta = new JsonObject();
-            meta.addProperty("versionCode", versionInfo.get("versionCode").getAsInt());
+            meta.addProperty("versionCode", versionInfo.getVersionCode());
             meta.addProperty("hash", actualHash);
 
             //noinspection ReadWriteStringCanBeUsed - can't because of older android versions
@@ -189,12 +193,10 @@ public class UpdateDownloader {
     }
 
     @NonNull
-    private static String findAssetDownload(JsonObject releaseInfo, String assetName) throws FileNotFoundException {
-        for (JsonElement assetEl : releaseInfo.getAsJsonArray("assets")) {
-            var asset = assetEl.getAsJsonObject();
-
-            if (asset.get("name").getAsString().equals(assetName)) {
-                return asset.get("browser_download_url").getAsString();
+    private static String findAssetDownload(ReleaseInfoResponse releaseInfo, String assetName) throws FileNotFoundException {
+        for (AssetEntry asset : releaseInfo.getAssets()) {
+            if (asset.getName().equals(assetName)) {
+                return asset.getBrowserDownloadUrl();
             }
         }
 

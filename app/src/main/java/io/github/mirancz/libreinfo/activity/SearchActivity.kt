@@ -50,10 +50,13 @@ import com.google.gson.JsonObject
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.data.DelaysDataHolder
+import io.github.mirancz.libreinfo.activity.settings.DepartureSource
 import io.github.mirancz.libreinfo.activity.settings.LocationSettingsActivity
+import io.github.mirancz.libreinfo.util.AppSettings
 import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.parsing.storage.StopStorage
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
+import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.location.LocationProviderFactory
@@ -85,7 +88,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
 
         // FIXME remove use of thread
         Thread(Runnable {
-            val delays: JsonObject?
+            val delays: RouteDelaysResponse?
             try {
                 delays = RequestHelper.getRouteDelays(this)
             } catch (e: RequestException) {
@@ -253,7 +256,12 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                                         Intent().apply { putExtra(EXTRA_RESULT_STOP, item) })
                                     finish()
                                 } else {
-                                    startActivity(DeparturesActivity::class) { i ->
+                                    // read on click so a source change mid-session applies right away
+                                    val target =
+                                        if (AppSettings.Departures.source == DepartureSource.SERVER) ServerDeparturesActivity::class
+                                        else DeparturesActivity::class
+
+                                    startActivity(target) { i ->
                                         i.putExtra(
                                             "stop",
                                             item

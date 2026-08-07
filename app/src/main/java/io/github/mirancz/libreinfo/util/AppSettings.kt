@@ -1,6 +1,7 @@
 package io.github.mirancz.libreinfo.util
 
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
+import io.github.mirancz.libreinfo.activity.settings.DepartureSource
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -17,6 +18,7 @@ object AppSettings {
     }
 
     object Departures {
+        var source by enumPref("dep_source", DepartureSource::class.java, DepartureSource.DEFAULT)
         var delayRender by enumPref("dep_delay_render", DelayRenderType::class.java, DelayRenderType.DEFAULT)
         var showLowFloor by boolPref("dep_show_low_floor", true)
         var maxEntries by intPref("dep_max_entries", 5)

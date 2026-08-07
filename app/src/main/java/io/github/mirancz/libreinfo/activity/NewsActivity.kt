@@ -20,11 +20,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.valentinilk.shimmer.Shimmer
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
-import io.github.mirancz.libreinfo.parsing.types.News
 import io.github.mirancz.libreinfo.ui.theme.AppTypography
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.parsing.types.NewsEntry
 
 // TODO pagination
 class NewsActivity : KBaseActivity(R.string.news) {
@@ -34,10 +34,11 @@ class NewsActivity : KBaseActivity(R.string.news) {
         val context = LocalContext.current
 
         val news = rememberLoad {
-            News.parseNewsList(RequestHelper.getNews(context).getAsJsonArray("emails"))
+            RequestHelper.getNews(context)
         }
 
-        AsyncContent(news, loading = { NewsListShimmer() }) { newsList ->
+        AsyncContent(news, loading = { NewsListShimmer() }) { news ->
+            val newsList = news.news
             if (newsList.isEmpty()) {
                 NothingHere()
             } else {
@@ -51,7 +52,7 @@ class NewsActivity : KBaseActivity(R.string.news) {
     }
 
     @Composable
-    fun NewsEntry(news: News) {
+    fun NewsEntry(news: NewsEntry) {
         Container(
             onClick = {
                 startActivity(NewsDetailActivity::class) {
@@ -68,14 +69,14 @@ class NewsActivity : KBaseActivity(R.string.news) {
                 )
 
                 Text(
-                    news.date.toString(),
+                    news.published.toString(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Normal,
                     modifier = Modifier.padding(top = 8.dp),
                 )
 
                 Text(
-                    news.plaintext,
+                    news.getPlaintext(),
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = FontWeight.Normal,

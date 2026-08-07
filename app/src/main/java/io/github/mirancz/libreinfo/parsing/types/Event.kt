@@ -1,46 +1,19 @@
-package io.github.mirancz.libreinfo.parsing.types;
+package io.github.mirancz.libreinfo.parsing.types
 
-import io.github.mirancz.libreinfo.parsing.storage.LineStorage;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public record Event(DateTime from, DateTime to,
-                    String title, String delay, String text,
-                    List<LineAlias> lines) {
-
-    public static List<Event> parseEvents(JsonArray array, LineStorage storage) {
-        return TypeHelper.parseList(array, (o) -> parse(o, storage));
-    }
-
-    public static Event parse(JsonObject obj, LineStorage storage) {
-        if (obj == null) return null;
-
-        String title = obj.get("title").getAsString();
-
-        DateTime from = DateTime.parse(obj.get("from").getAsString());
-        DateTime to = DateTime.parse(obj.get("to").getAsString());
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
 
-//        String place = obj.get("Place").getAsString();
-//        String cause = obj.get("Cause").getAsString();
-
-        String delay = obj.get("delay").getAsString();
-
-
-        String text = obj.get("content").getAsString();
-
-        List<LineAlias> lines = new ArrayList<>();
-
-        for (JsonElement element : obj.get("lines").getAsJsonArray()) {
-            lines.add(LineAlias.parse(element.getAsString(), storage));
-        }
-
-
-        return new Event(from, to, title, delay, text, lines);
-    }
-
-}
+/**
+ * This class is not [Serializable], see [io.github.mirancz.libreinfo.parsing.types.dto.EventDTO] instead
+ */
+@Parcelize
+data class Event(
+    val id: Int?,
+    val title: String,
+    val content: String,
+    val from: DateTime,
+    val to: DateTime,
+    val delay: Int?,
+    val lines: List<LineAlias>?
+) : Parcelable

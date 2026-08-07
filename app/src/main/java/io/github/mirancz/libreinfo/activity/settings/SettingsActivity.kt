@@ -10,7 +10,7 @@ class SettingsActivity : NavigationActivity(R.string.settings) {
 
     @Composable
     override fun CreateNavigation() {
-        NavigationItem(R.drawable.palette, R.string.departures_theming, DeparturesThemingActivity::class)
+        NavigationItem(R.drawable.palette, R.string.departures_settings, DeparturesSettingsActivity::class)
 
         NavigationItem(R.drawable.location_dot, R.string.location, LocationSettingsActivity::class)
 

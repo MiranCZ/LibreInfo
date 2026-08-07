@@ -1,27 +1,12 @@
-package io.github.mirancz.libreinfo.parsing.types.connection;
+package io.github.mirancz.libreinfo.parsing.types.connection
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import io.github.mirancz.libreinfo.parsing.types.DateTime
 
-import java.util.ArrayList;
-import java.util.List;
 
-import io.github.mirancz.libreinfo.parsing.storage.StopStorage;
-import io.github.mirancz.libreinfo.parsing.types.DateTime;
-
-public record Connection(DateTime departure, DateTime arrival, List<ConnectionPart> parts) {
-
-    public static Connection parse(JsonObject obj, StopStorage stopStorage) {
-        DateTime departure = DateTime.parseISO8601(obj.get("departure").getAsString());
-        DateTime arrival = DateTime.parseISO8601(obj.get("arrival").getAsString());
-
-        List<ConnectionPart> parts = new ArrayList<>();
-
-        for (JsonElement leg : obj.getAsJsonArray("legs")) {
-            parts.add(ConnectionPart.parse(leg.getAsJsonObject(), stopStorage));
-        }
-
-        return new Connection(departure, arrival, parts);
-    }
-
-}
+data class Connection(
+    val departure: DateTime,
+    val arrival: DateTime,
+    val duration: Int,
+    val transfers: Int,
+    val legs: List<ConnectionLeg>
+)

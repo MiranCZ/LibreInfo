@@ -40,7 +40,7 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
 
         val vehicles = rememberLoad {
             val storage = AppContainer.storageProvider.getInstance()
-            Vehicle.parseVehicles(RequestHelper.getVehicles(context), storage)
+            RequestHelper.getVehicles(context).vehicles.map { it.map(storage) }
                 .sortedBy { vehicle -> vehicle.line.id }
         }
 
@@ -101,20 +101,28 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
             Column() {
                 Row(Modifier.fillMaxWidth()) {
                     Row(Modifier.weight(1f)) {
-                        Text(item.vehicleNumbersString, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text(item.getVehicleNumbersString(), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
                     Row(Modifier.weight(2f)) {
-                        Text(item.serviceId, fontSize = 14.sp, fontWeight = FontWeight.Light)
+                        if (item.course != null) {
+                            Text(item.course, fontSize = 14.sp, fontWeight = FontWeight.Light)
+                        }
                     }
 
-                    Text(DelayUtil.getDelayText(context, item.delay), fontSize = 14.sp, color = Color(DelayUtil.getDelayColor(item.delay)))
+                    if (item.delay != null) {
+                        Text(
+                            DelayUtil.getDelayText(context, item.delay),
+                            fontSize = 14.sp,
+                            color = Color(DelayUtil.getDelayColor(item.delay))
+                        )
+                    }
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth()) {
                     Row(Modifier.weight(1f)) {
                         LineIcon(line = item.line, padding = 0.dp)
                         Text(
-                            item.finalStopText,
+                            item.getFinalStopText(),
                             fontSize = 20.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,

@@ -105,7 +105,7 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
 
         val loadResult = rememberLoad {
             val storage = AppContainer.storageProvider.getInstance()
-            Pair(storage, Diversion.parseDiversions(RequestHelper.getDiversions(context), storage.lineStorage))
+            Pair(storage, RequestHelper.getDiversions(context).diversions.map { it.map(storage) })
         }
 
         AsyncContent(loadResult, loading = { DiversionListShimmer() }) { res ->
@@ -130,7 +130,9 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
                 val lines = HashSet(storage.lineStorage.allAliases)
 
                 for (diversion in diversionList) {
-                    lines.addAll(diversion.lines)
+                    if (diversion.lines != null) {
+                        lines.addAll(diversion.lines)
+                    }
                 }
 
 
@@ -162,6 +164,8 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
 
     private fun shouldShowDiversion(diversion: Diversion, filters: Set<LineAlias>): Boolean {
         if (filters.isEmpty()) return true
+        // API has not returned lines so we can't filter...
+        if (diversion.lines == null) return true
 
         for (alias in diversion.lines) {
             if (filters.contains(alias)) return true

@@ -2,6 +2,7 @@ package io.github.mirancz.libreinfo.util;
 
 import io.github.mirancz.libreinfo.parsing.storage.CalendarStorage;
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage;
+import io.github.mirancz.libreinfo.parsing.types.RouteDelayEntry;
 import io.github.mirancz.libreinfo.parsing.types.RouteStop;
 import io.github.mirancz.libreinfo.parsing.types.Time;
 import io.github.mirancz.libreinfo.parsing.types.TimeMark;
@@ -9,6 +10,8 @@ import io.github.mirancz.libreinfo.parsing.types.Trip;
 import io.github.mirancz.libreinfo.parsing.types.departure.Departure;
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureEntry;
 import io.github.mirancz.libreinfo.parsing.types.departure.VehicleInfo;
+import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse;
+
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
@@ -25,7 +28,7 @@ public class OfflineDepartures {
         return getOffline(storage, stopId, 5, Time.now());
     }
 
-    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, JsonObject delays) {
+    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, RouteDelaysResponse delays) {
         return getOffline(storage, stopId, maxSize, Time.now(), delays);
     }
 
@@ -37,8 +40,13 @@ public class OfflineDepartures {
         return getOffline(storage, stopId, maxSize, fromTime, null);
     }
 
-    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, Time fromTime, JsonObject delays) {
+    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, Time fromTime, RouteDelaysResponse delaysResponse) {
         RouteStop[] stops = storage.routeStopStorage().getRouteStopsParsed(stopId);
+        Map<Integer, Map<Integer, RouteDelayEntry>> delays = null;
+
+        if (delaysResponse != null) {
+            delays = delaysResponse.getRouteDelays();
+        }
 
         CalendarStorage calendarStorage = storage.calendarStorage();
 
@@ -54,20 +62,19 @@ public class OfflineDepartures {
             if (delays != null) {
                 Pair<Integer, Integer> lineRoute = storage.apiStorage().getLineIdAndRoute(stop.tripId());
 
-                String lineId = lineRoute.left().toString();
-                String routeId = lineRoute.right().toString();
+                int lineId = lineRoute.left();
+                int routeId = lineRoute.right();
 
-                if (delays.has(lineId)) {
-                    JsonObject delaysList = delays.getAsJsonObject(lineId);
-
-                    if (delaysList.has(routeId)) {
-                        JsonObject entry = delaysList.getAsJsonObject(routeId);
-                        int delay = entry.get("delay").getAsInt();
+                var delaysList = delays.get(lineId);
+                if (delaysList != null) {
+                    var entry = delaysList.get(routeId);
+                    if (entry != null) {
+                        int delay = entry.getDelay();
 
                         stop.setDelay(delay);
                         delaySet = true;
 
-                        info = new VehicleInfo(entry.get("car_id").getAsInt(), delay);
+                        info = new VehicleInfo(entry.getVehicleId(), delay);
                     }
                 }
             }
@@ -152,8 +159,13 @@ public class OfflineDepartures {
         return result;
     }
 
-    public static List<Departure> getOfflineForPost(IdStorage storage, int stopId, int postId, int maxSize, Time fromTime, JsonObject delays) {
+    public static List<Departure> getOfflineForPost(IdStorage storage, int stopId, int postId, int maxSize, Time fromTime, RouteDelaysResponse delaysResponse) {
         RouteStop[] stops = storage.routeStopStorage().getRouteStopsParsed(stopId);
+        Map<Integer, Map<Integer, RouteDelayEntry>> delays = null;
+
+        if (delaysResponse != null) {
+            delays = delaysResponse.getRouteDelays();
+        }
 
         CalendarStorage calendarStorage = storage.calendarStorage();
 
@@ -170,20 +182,19 @@ public class OfflineDepartures {
             if (delays != null) {
                 Pair<Integer, Integer> lineRoute = storage.apiStorage().getLineIdAndRoute(stop.tripId());
 
-                String lineId = lineRoute.left().toString();
-                String routeId = lineRoute.right().toString();
+                int lineId = lineRoute.left();
+                int routeId = lineRoute.right();
 
-                if (delays.has(lineId)) {
-                    JsonObject delaysList = delays.getAsJsonObject(lineId);
-
-                    if (delaysList.has(routeId)) {
-                        JsonObject entry = delaysList.getAsJsonObject(routeId);
-                        int delay = entry.get("delay").getAsInt();
+                var delaysList = delays.get(lineId);
+                if (delaysList != null) {
+                    var entry = delaysList.get(routeId);
+                    if (entry != null) {
+                        int delay = entry.getDelay();
 
                         stop.setDelay(delay);
                         delaySet = true;
 
-                        info = new VehicleInfo(entry.get("car_id").getAsInt(), delay);
+                        info = new VehicleInfo(entry.getVehicleId(), delay);
                     }
                 }
             }

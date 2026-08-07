@@ -53,8 +53,8 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
             val storage = AppContainer.storageProvider.getInstance()
             val obj = RequestHelper.findConnections(context, fromStop, toStop, departureTime)
             val now = DateTime.now()
-            obj.getAsJsonArray("connections").map { element ->
-                buildConnectionUi(Connection.parse(element.asJsonObject, storage.stopStorage), storage, now)
+            obj.connections.map { element ->
+                buildConnectionUi(element.map(storage), storage, now)
             }
         }
 

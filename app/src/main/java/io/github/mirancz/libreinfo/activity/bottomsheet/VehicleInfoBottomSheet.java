@@ -1,8 +1,6 @@
 package io.github.mirancz.libreinfo.activity.bottomsheet;
 
 import android.os.Bundle;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,15 +13,14 @@ import androidx.fragment.app.Fragment;
 
 import io.github.mirancz.libreinfo.R;
 import io.github.mirancz.libreinfo.activity.base.BaseActivity;
-import io.github.mirancz.libreinfo.parsing.types.MapVehicle;
-import io.github.mirancz.libreinfo.util.DelayUtil;
+import io.github.mirancz.libreinfo.parsing.types.Vehicle;
 
 public class VehicleInfoBottomSheet extends Fragment {
 
-    private final MapVehicle vehicle;
+    private final Vehicle vehicle;
     private final BaseActivity parent;
 
-    public VehicleInfoBottomSheet(MapVehicle vehicle, BaseActivity parent) {
+    public VehicleInfoBottomSheet(Vehicle vehicle, BaseActivity parent) {
         this.vehicle = vehicle;
         this.parent = parent;
     }
@@ -43,7 +40,7 @@ public class VehicleInfoBottomSheet extends Fragment {
         TextView vehicleHeading = view.findViewById(R.id.vehicle_heading);
 
         View wheelchairIcon = view.findViewById(R.id.vehicle_wheelchair_icon);
-        if (false) { //TODO
+        if (Boolean.TRUE.equals(vehicle.getLowFloor())) {
             wheelchairIcon.setVisibility(View.VISIBLE);
         } else {
             wheelchairIcon.setVisibility(View.INVISIBLE);
@@ -51,21 +48,22 @@ public class VehicleInfoBottomSheet extends Fragment {
 
         // TODO maybe cache this
         vehicleLineIcon.removeAllViews();
-        vehicleLineIcon.addView(vehicle.line().createLineIconView(vehicleLineIcon, parent));
+        vehicleLineIcon.addView(vehicle.getLine().createLineIconView(vehicleLineIcon, parent));
 
-        vehicleHeading.setText(vehicle.finalStop().name);
+        vehicleHeading.setText(vehicle.getFinalStopText());
 
         TextView nextStop = view.findViewById(R.id.vehicle_next_stop);
 
-        nextStop.setText(vehicle.prevStop().name);
+        nextStop.setText(vehicle.getLastStop().name);
 
         TextView delayText = view.findViewById(R.id.vehicle_delay);
 
-        int delay = vehicle.delay();
+        if (vehicle.getDelay() == null) {
+            delayText.setVisibility(View.GONE);
+            return;
+        }
 
-        SpannableString span = new SpannableString(DelayUtil.getDelayText(parent, delay));
-        span.setSpan(new ForegroundColorSpan(DelayUtil.getDelayColor(delay)), 0, span.length(), 0);
-
-        delayText.setText(span);
+        delayText.setVisibility(View.VISIBLE);
+        delayText.setText(vehicle.getDelaySpan(parent));
     }
 }

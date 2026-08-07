@@ -56,13 +56,13 @@ import io.github.mirancz.libreinfo.parsing.types.RouteStop
 import io.github.mirancz.libreinfo.parsing.types.StopTime
 import io.github.mirancz.libreinfo.parsing.types.Time
 import io.github.mirancz.libreinfo.parsing.types.Trip
-import io.github.mirancz.libreinfo.parsing.types.VehicleTripInfo
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import com.valentinilk.shimmer.Shimmer
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
+import io.github.mirancz.libreinfo.parsing.types.VehicleInfo
 import io.github.mirancz.libreinfo.util.DelayUtil.getDelayColor
 import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
@@ -95,12 +95,10 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
                 val storage = provider.getInstance()
                 val res = storage.apiStorage.getLineIdAndRoute(tripId)
 
-                var vehicleInfo = VehicleTripInfo.NONE
+                var vehicleInfo = VehicleInfo.NONE
                 try {
-                    vehicleInfo = VehicleTripInfo.parse(
-                        storage.stopMapper,
-                        RequestHelper.getVehicleInfo(context, res.left!!, res.right!!)
-                    )
+                    vehicleInfo = RequestHelper.getVehicleInfo(context, res.left!!, res.right!!).map(storage)
+
                 } catch (e: RequestException) {
                     showErrorSnackBar(e)
                 }
@@ -199,7 +197,9 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     ShimmerLineIcon(shimmer)
-                    Box(Modifier.weight(1f).padding(start = 8.dp)) {
+                    Box(Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp)) {
                         ShimmerText(shimmer, widthFraction = 0.6f, variance = 0.15f, height = 20.dp)
                     }
                 }
@@ -226,10 +226,14 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ShimmerBox(Modifier.size(20.dp), shimmer, shape = CircleShape)
-            Box(Modifier.weight(1f).padding(start = 8.dp, end = 4.dp)) {
+            Box(Modifier
+                .weight(1f)
+                .padding(start = 8.dp, end = 4.dp)) {
                 ShimmerText(shimmer, widthFraction = 0.7f, variance = 0.2f)
             }
-            ShimmerBox(Modifier.width(50.dp).height(14.dp), shimmer)
+            ShimmerBox(Modifier
+                .width(50.dp)
+                .height(14.dp), shimmer)
         }
     }
 
@@ -303,19 +307,20 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
         return data.stops.mapIndexed { i, stop ->
             val stopId = stop.stopId.toInt()
 
-            if (vehicleInfo == VehicleTripInfo.NONE && !stop.departure().isBefore(Time.now())) {
+            if (vehicleInfo == VehicleInfo.NONE && !stop.departure().isBefore(Time.now())) {
                 alreadyMet = false
             }
 
             val leavingStop =
-                stopId == vehicleInfo.lastStopId && (nowMs - vehicleInfo.lastUpdate) < leavingStopWindowMs
+                stop.equals(vehicleInfo.lastStop) && (nowMs - vehicleInfo.lastUpdated) < leavingStopWindowMs
 
             val isTransitionStop =
-                i != 0 && vehicleInfo.lastStopId == data.stops[i - 1].stopId.toInt() && !leavingStop
+                i != 0 && data.stops[i - 1].equals(vehicleInfo.lastStop) && !leavingStop
 
             val currentDelay = if (alreadyMet) {
                 // TODO fix vehicles waiting at stops in the API
-                vehicleInfo.previousStopDelays.getOrDefault(stop.stopId, -1)
+                // FIXME multiple stops
+                vehicleInfo.previousStops.firstOrNull { stop.equals(it.stop) }?.delay ?: -1
             } else {
                 delay
             }
@@ -335,7 +340,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
             if (currentDelay > 0 && !alreadyMet) {
                 delay = stop.stopTime.getLoweredDelay()
             }
-            if (vehicleInfo.lastStopId == stopId) {
+            if (stop.equals(vehicleInfo.lastStop)) {
                 alreadyMet = false
             }
 
@@ -580,7 +585,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
         val lineId: Int,
         val routeId: Int,
         val vehicleId: Int,
-        val vehicleInfo: VehicleTripInfo,
+        val vehicleInfo: VehicleInfo,
         val headsign: String,
         val routeInfoText: String,
         val stops: Array<RouteStop>

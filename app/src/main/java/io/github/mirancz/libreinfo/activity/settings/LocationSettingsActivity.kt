@@ -86,7 +86,7 @@ class LocationSettingsActivity : KBaseActivity(R.string.location) {
 
         Column {
             if (!locationEnabled) {
-                Container {
+                Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     Column {
                         Text(
                             stringResource(R.string.allow_location_text),

@@ -94,7 +94,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.viewinterop.NoOpUpdate
 import androidx.lifecycle.lifecycleScope
-import com.google.gson.JsonObject
 import com.valentinilk.shimmer.Shimmer
 import com.valentinilk.shimmer.ShimmerBounds
 import com.valentinilk.shimmer.rememberShimmer
@@ -125,6 +124,7 @@ import io.github.mirancz.libreinfo.util.load.LoadState
 import io.github.mirancz.libreinfo.util.load.rememberDelayedLoadState
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
 import java.util.function.Consumer
 import kotlin.random.Random
 import kotlin.reflect.KClass
@@ -479,7 +479,9 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                 }
             }
 
-            LineList(item.lines, Modifier.padding(top = 8.dp))
+            if (item.lines != null) {
+                LineList(item.lines, Modifier.padding(top = 8.dp))
+            }
 
             content()
         }
@@ -699,8 +701,9 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
     }
 
     @Composable
-    fun DepartureDetail(departure: Departure, apiStorage: ApiStorage, stopDelays: JsonObject) {
+    fun DepartureDetail(departure: Departure, apiStorage: ApiStorage, stopDelays: StopDelaysResponse) {
         val color = colorResource(R.color.widget_background)
+        val stopDelays = stopDelays.stopDelays
 
         fun alreadyLeft(entry: DepartureEntry): Boolean {
             return entry.timeMark.time().isBefore(Time.now()) && !entry.timeMark.leaving
@@ -729,17 +732,19 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                     }
                     val lineRoute = apiStorage.getLineIdAndRoute(entry.tripId)
 
-                    val lineId = lineRoute.left.toString()
-                    val routeId = lineRoute.right.toString()
+                    val lineId = lineRoute.left
+                    val routeId = lineRoute.right
 
                     var showDelay = !alreadyLeft
                     if (alreadyLeft) {
                         var delay = -1
-                        if (stopDelays.has(lineId)) {
-                            val delays: JsonObject = stopDelays.getAsJsonObject(lineId)
 
-                            if (delays.has(routeId)) {
-                                delay = delays.getAsJsonObject(routeId).get("delay").asInt
+                        val delays = stopDelays[lineId]
+                        if (delays != null) {
+                            val delayEntry = delays[routeId]
+
+                            if (delayEntry != null) {
+                                delay = delayEntry.delay
                             }
                         }
                         entry.vehicleInfo.setDelay(delay)
@@ -837,12 +842,10 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
 
                         Spacer(Modifier.weight(1f))
 
-                        var delayStr = ""
-
                         if (delay > 0) {
                             when (depSettings.delayRender) {
                                 DelayRenderType.PARENTHESES -> {
-                                    delayStr = " ($delay) "
+                                    Text(" ($delay) ", color = Color(color), fontSize = 14.sp)
                                 }
                                 DelayRenderType.BOX -> {
                                     Surface(
@@ -858,7 +861,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                         }
 
                         Text(
-                            delayStr + arrivalText,
+                            arrivalText,
                             color = Color(color),
                             fontSize = 14.sp
                         )

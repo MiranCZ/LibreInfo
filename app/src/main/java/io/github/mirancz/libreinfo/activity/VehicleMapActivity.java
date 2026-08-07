@@ -30,14 +30,17 @@ import io.github.mirancz.libreinfo.BuildConfig;
 import io.github.mirancz.libreinfo.R;
 import io.github.mirancz.libreinfo.activity.base.BaseActivity;
 import io.github.mirancz.libreinfo.activity.bottomsheet.VehicleInfoBottomSheet;
+import io.github.mirancz.libreinfo.exception.AppException;
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer;
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage;
-import io.github.mirancz.libreinfo.parsing.types.MapVehicle;
 import io.github.mirancz.libreinfo.parsing.types.Post;
+import io.github.mirancz.libreinfo.parsing.types.Vehicle;
+import io.github.mirancz.libreinfo.parsing.types.dto.VehicleDTO;
+import io.github.mirancz.libreinfo.util.AppJsonKt;
+import io.github.mirancz.libreinfo.util.AppLog;
+import io.github.mirancz.libreinfo.util.request.RequestHelper;
 import io.github.mirancz.libreinfo.util.request.VehicleWebsocket;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 
 import org.maplibre.android.MapLibre;
@@ -60,14 +63,13 @@ import org.maplibre.geojson.Feature;
 import org.maplibre.geojson.FeatureCollection;
 import org.maplibre.geojson.Point;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -112,19 +114,30 @@ public class VehicleMapActivity extends BaseActivity {
         new Thread(() -> {
             storage = AppContainer.INSTANCE.getStorageProvider().getBlocking(IdStorage.class);
 
-            final CountDownLatch latch = new CountDownLatch(1);
+            runOnUiThread(() -> setupMap(storage, this::startVehicleUpdates));
+        }).start();
+    }
 
-            runOnUiThread(() -> setupMap(storage, (geoJson, map) -> {
-                new Thread(() -> {
-                    try {
-                        latch.await();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).start();
-            }));
+    private void startVehicleUpdates(GeoJsonSource source, MapLibreMap map) {
+        new Thread(() -> {
+            try {
+                List<Vehicle> vehicles = RequestHelper.getVehicles(this).getVehicles().stream()
+                        .map(dto -> dto.map(storage))
+                        .collect(Collectors.toList());
 
-            latch.countDown();
+                updateGeoJson(source, map, vehicles);
+            } catch (AppException e) {
+                // not fatal, the socket fills the map in as vehicles report their positions
+                AppLog.e("Failed to load vehicle snapshot", e);
+            }
+
+            VehicleWebsocket.subscribe(VehicleMapActivity.class, message -> {
+                Vehicle vehicle = AppJsonKt.json
+                        .decodeFromString(VehicleDTO.Companion.serializer(), message)
+                        .map(storage);
+
+                updateGeoJson(source, map, vehicle);
+            });
         }).start();
     }
 
@@ -202,40 +215,23 @@ public class VehicleMapActivity extends BaseActivity {
                         return false;
                     }
 
-                    List<MapVehicle> vehicles = features.stream()
-                            .map(feature -> idToVehMap.get((int) ((double) Double.valueOf(feature.getNumberProperty("id")+""))))
+                    List<Vehicle> vehicles = features.stream()
+                            .map(feature -> idToVehMap.get(feature.getNumberProperty("id").intValue()))
+                            .filter(Objects::nonNull)
                             .collect(Collectors.toList());
+
+                    if (vehicles.isEmpty()) {
+                        selectedContext.setSelected(-1);
+                        return false;
+                    }
 
                     if (vehicles.size() > 1) {
                         showVehicleSelectionDialog(vehicles);
                     } else {
-                        selectedContext.setSelected(vehicles.get(0).id());
+                        selectedContext.setSelected(vehicles.get(0).getId());
                     }
                     return true;
                 });
-
-                VehicleWebsocket.subscribe(VehicleMapActivity.class, message -> {
-                    JsonObject input = new Gson().fromJson(message, JsonObject.class);
-
-                    if (input.get("type").getAsString().equals("snapshot")) {
-                        var array = input.getAsJsonArray("vehicles");
-
-                        List<MapVehicle> vehicles = new ArrayList<>();
-                        for (var el : array) {
-                            vehicles.add(MapVehicle.parse(el.getAsJsonObject(), storage));
-                        }
-
-                        updateGeoJson(source, map, vehicles);
-                    } else {
-                        var vehicleJson = input.getAsJsonObject("vehicle");
-
-                        MapVehicle vehicle = MapVehicle.parse(vehicleJson, storage);
-
-                        updateGeoJson(source, map, vehicle);
-                    }
-                });
-
-
 
                 SymbolOptions def = new SymbolOptions().withIconImage("stop_icon").withIconSize(1f).withIconAnchor("bottom");
                 for (Post post : storage.postStorage().getAllPosts()) {
@@ -247,62 +243,65 @@ public class VehicleMapActivity extends BaseActivity {
         });
     }
 
-    private void showVehicleSelectionDialog(List<MapVehicle> vehicles) {
+    private void showVehicleSelectionDialog(List<Vehicle> vehicles) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.select_poi);
 
         String[] vehicleNames = vehicles.stream()
-                .map(vehicle -> vehicle.line().lineDisplayName() + " -> " + vehicle.finalStop().name)
+                .map(vehicle -> vehicle.getLine().lineDisplayName() + " -> " + vehicle.getFinalStopText())
                 .toArray(String[]::new);
 
         builder.setItems(vehicleNames, (dialog, which) -> {
-            selectedContext.setSelected(vehicles.get(which).id());
+            selectedContext.setSelected(vehicles.get(which).getId());
         });
 
         builder.create().show();
     }
 
-    private void updateGeoJson(GeoJsonSource source, MapLibreMap map, List<MapVehicle> vehicles) {
-        updateGeoJson(source, map, vehicles.toArray(new MapVehicle[0]));
+    private void updateGeoJson(GeoJsonSource source, MapLibreMap map, List<Vehicle> vehicles) {
+        updateGeoJson(source, map, vehicles.toArray(new Vehicle[0]));
     }
 
     // TODO add dynamic timer so that when a lot of elements is updated the map is redrawn prematurely
     HashMap<Integer, Integer> idMap = new HashMap<>();
-    HashMap<Integer, MapVehicle> idToVehMap = new HashMap<>();
+    HashMap<Integer, Vehicle> idToVehMap = new HashMap<>();
     int id = 0;
-    private void updateGeoJson(GeoJsonSource source, MapLibreMap map, MapVehicle... vehicles) {
+    private void updateGeoJson(GeoJsonSource source, MapLibreMap map, Vehicle... vehicles) {
         if (timer == null) setupCountdown(source);
 
 
         int id = 0;
-        for (MapVehicle vehicle : vehicles) {
-            Feature feature = Feature.fromGeometry(Point.fromLngLat(vehicle.location().longitude(), vehicle.location().latitude()));
-            feature.addStringProperty("color", vehicle.line().backgroundColorStr());
-            feature.addStringProperty("textColor", vehicle.line().textColorStr());
-            feature.addStringProperty("name", vehicle.line().lineDisplayName());
-            feature.addNumberProperty("bearing", vehicle.bearing());
-            feature.addNumberProperty("id", vehicle.id());
+        for (Vehicle vehicle : vehicles) {
+            LatLng position = toLatLng(vehicle);
+            if (position == null) continue;
 
-            if (!idMap.containsKey(vehicle.id())) {
-                idMap.put(vehicle.id(), id++);
+            Feature feature = Feature.fromGeometry(Point.fromLngLat(position.getLongitude(), position.getLatitude()));
+            feature.addStringProperty("color", vehicle.getLine().backgroundColorStr());
+            feature.addStringProperty("textColor", vehicle.getLine().textColorStr());
+            feature.addStringProperty("name", vehicle.getLine().lineDisplayName());
+            feature.addNumberProperty("bearing", vehicle.getBearing() == null ? 0 : vehicle.getBearing());
+            feature.addNumberProperty("id", vehicle.getId());
+
+            if (!idMap.containsKey(vehicle.getId())) {
+                idMap.put(vehicle.getId(), id++);
             }
-            idToVehMap.put(vehicle.id(), vehicle);
+            idToVehMap.put(vehicle.getId(), vehicle);
             // FIXME this is still not the best
-            feature.addNumberProperty("sort", idMap.get(vehicle.id()) % 100);
+            feature.addNumberProperty("sort", idMap.get(vehicle.getId()) % 100);
 
-            vehicleFeatureMap.put(vehicle.id(), feature);
+            vehicleFeatureMap.put(vehicle.getId(), feature);
 
-            if (selectedContext.following && selectedContext.selected == vehicle.id()) {
-                runOnUiThread(() -> map.setCameraPosition(new CameraPosition.Builder().target(vehicle.location().toLatLng()).build()));
+            if (selectedContext.following && selectedContext.selected == vehicle.getId()) {
+                runOnUiThread(() -> map.setCameraPosition(new CameraPosition.Builder().target(position).build()));
             }
-            if (!selectedContext.fetchedLine && selectedContext.selected == vehicle.id()) {
+            if (!selectedContext.fetchedLine && selectedContext.selected == vehicle.getId()) {
                 selectedContext.fetchedLine = true;
                 // TODO implement trip shapes
 //                new Thread(() -> {
 //                    runOnUiThread(() -> {
 //                        routeSource.setGeoJson(pair.routesGeoJson);
 //                        routeLayer.setProperties(
-//                                PropertyFactory.lineColor(vehicle.line().backgroundColorStr())
+//                                PropertyFactory.lineColor(vehicle.getLine().backgroundColorStr())
 //                        );
 //                    });
 //                }).start();
@@ -324,6 +323,13 @@ public class VehicleMapActivity extends BaseActivity {
                 runOnUiThread(() -> source.setGeoJson(FeatureCollection.fromFeatures(vehicleFeatureMap.values().toArray(new Feature[0]))));
             }
         },0, 2_000);
+    }
+
+    @Nullable
+    private static LatLng toLatLng(Vehicle vehicle) {
+        if (vehicle.getLatitude() == null || vehicle.getLongitude() == null) return null;
+
+        return new LatLng(vehicle.getLatitude(), vehicle.getLongitude());
     }
 
     @NonNull
@@ -444,11 +450,13 @@ public class VehicleMapActivity extends BaseActivity {
             changed = true;
 
             if (selected != -1) {
-                MapVehicle vehicle = idToVehMap.get(selected);
+                Vehicle vehicle = idToVehMap.get(selected);
                 if (vehicle == null) {
                     this.selected = -1;
                     return;
                 }
+
+                LatLng position = toLatLng(vehicle);
 
                 VehicleInfoBottomSheet fragment = new VehicleInfoBottomSheet(vehicle, parent);
                 getSupportFragmentManager().beginTransaction()
@@ -458,20 +466,22 @@ public class VehicleMapActivity extends BaseActivity {
                     behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 }
 
-                mapView.getMapAsync(mapLibreMap ->
-                        mapLibreMap.animateCamera(
-                                new CameraUpdateFactory.CameraPositionUpdate(
-                                        0,
-                                        vehicle.location().toLatLng(),
-                                        0,
-                                        16.5,
-                                        0,
-                                        0,
-                                        16,
-                                        new double[4]
-                                )
-                        )
-                );
+                if (position != null) {
+                    mapView.getMapAsync(mapLibreMap ->
+                            mapLibreMap.animateCamera(
+                                    new CameraUpdateFactory.CameraPositionUpdate(
+                                            0,
+                                            position,
+                                            0,
+                                            16.5,
+                                            0,
+                                            0,
+                                            16,
+                                            new double[4]
+                                    )
+                            )
+                    );
+                }
             } else {
                 if (behavior != null) {
                     behavior.setState(BottomSheetBehavior.STATE_HIDDEN);

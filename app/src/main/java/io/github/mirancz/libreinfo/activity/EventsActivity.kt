@@ -36,7 +36,7 @@ class EventsActivity : KBaseActivity(R.string.events) {
 
         val events = rememberLoad {
             val storage = AppContainer.storageProvider.getInstance()
-            Event.parseEvents(RequestHelper.getEvents(context), storage.lineStorage())
+            RequestHelper.getEvents(context).events.map { it.map(storage) }
         }
 
         AsyncContent(events, loading = { EventListShimmer() }) { eventList ->
@@ -110,15 +110,28 @@ class EventsActivity : KBaseActivity(R.string.events) {
                     }
                 }
 
-                Row(Modifier.padding(bottom = 8.dp)) {
-                    Text(stringResource(R.string.vehicle_delay) +" ", fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                    Text(item.delay + " min", fontWeight = FontWeight.Bold, color = Color.Red, fontSize = 15.sp)
+                if (item.delay != null) {
+                    Row(Modifier.padding(bottom = 8.dp)) {
+                        Text(
+                            stringResource(R.string.vehicle_delay) + " ",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
+                        )
+                        Text(
+                            "${item.delay} min",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Red,
+                            fontSize = 15.sp
+                        )
+                    }
                 }
 
-                LineList(item.lines)
+                if (item.lines != null) {
+                    LineList(item.lines)
+                }
 
-                if (!item.text.isBlank()) {
-                    HTML(item.text, Modifier.padding(top=12.dp))
+                if (!item.content.isBlank()) {
+                    HTML(item.content, Modifier.padding(top=12.dp))
                 }
             }
         }

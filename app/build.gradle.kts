@@ -17,6 +17,8 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.kotlin.serizalization)
     alias(libs.plugins.secrets.gradle.plugin)
 }
 
@@ -44,12 +46,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // Two editions selected at build time:
+    // Three editions selected at build time:
     //  - direct: distributed outside a store (e.g. GitHub) — in-app auto-updater ON, bundles
     //            Google Play Services (src/direct provides the GMS-backed location provider).
     //  - foss:   GMS-free edition (e.g. for F-Droid) — updater OFF (src/foss/AndroidManifest.xml
     //            strips REQUEST_INSTALL_PACKAGES + the install receiver) and no play-services
     //            dependency; src/foss provides the AOSP-only location provider.
+    //  - play:   store edition — updater OFF because stores ship their own update channel and
+    //            forbid self-installing APKs, but Google Play Services ON; reuses src/direct's
+    //            location provider and strips the install permission like foss does.
     flavorDimensions += "distribution"
 
     productFlavors {
@@ -60,6 +65,20 @@ android {
         create("foss") {
             dimension = "distribution"
             buildConfigField("boolean", "AUTO_UPDATE_ENABLED", "false")
+        }
+        create("play") {
+            dimension = "distribution"
+            buildConfigField("boolean", "AUTO_UPDATE_ENABLED", "false")
+        }
+    }
+
+    sourceSets {
+        // the GMS-backed location provider is identical to direct's, so share it instead of copying.
+        // Registered twice because the dir holds both Java and Kotlin sources and each compilation
+        // only sees its own source set.
+        getByName("play") {
+            java.srcDir("src/direct/java")
+            kotlin.srcDir("src/direct/java")
         }
     }
 
@@ -219,6 +238,8 @@ dependencies {
     // Google Play Services
     "directImplementation"(libs.play.services.location)
     "directImplementation"(libs.kotlinx.coroutines.play.services)
+    "playImplementation"(libs.play.services.location)
+    "playImplementation"(libs.kotlinx.coroutines.play.services)
 
     implementation(libs.appcompat)
     implementation(libs.material)
@@ -230,6 +251,7 @@ dependencies {
     implementation(libs.xz)
     implementation(libs.compose.shimmer)
     implementation(libs.core.ktx)
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
 

@@ -1,7 +1,13 @@
 <resources>
     <string name="app_name">LibreInfo</string>
     <string name="departures">Aktuální odjezdy</string>
-    <string name="departures_theming">Vzhled odjezdů</string>
+    <string name="departures_settings">Odjezdy</string>
+    <string name="departure_source">Zdroj dat</string>
+    <string name="departure_source_server">Server (oficiální)</string>
+    <string name="departure_source_local">Zařízení (neoficiální)</string>
+    <string name="departure_source_warning_title">Neoficiální data</string>
+    <string name="departure_source_warning_message">Odjezdy se budou počítat přímo v zařízení z uložených jízdních řádů. Taková data jsou neoficiální a nemusí odpovídat těm ze serveru.</string>
+    <string name="departure_source_warning_confirm">Rozumím</string>
     <string name="delay_render">Vzhled zpoždění</string>
     <string name="show_lowfloor">Zobrazit nízkopodlažnost</string>
     <string name="departure_count_max">Počet zobrazovaných odjezdů</string>
@@ -23,7 +29,7 @@
     <string name="ascending">Vzestupně</string>
     <string name="descending">Sestupně</string>
     <string name="sort_by">Řadit podle</string>
-    <string name="about_text">Neoficiální aplikace pro mhd v Brně.\nData jsou získávána z veřejných zdrojů.\n\nMapa je z mnoho důvodů stále v dost mizerném stavu…\n\nAplikace je stále v aktivním vývoji.</string>
+    <string name="about_text">Neoficiální aplikace pro mhd v Brně.\nData jsou získávána z veřejných zdrojů a z interní API KORDISu.\n\nMapa je z mnoho důvodů stále v dost mizerném stavu…\n\nAplikace je stále v aktivním vývoji.</string>
     <string name="select_poi">Vyberte objekt</string>
     <string name="nothing_here">Zdá se, že tady nic není…</string>
     <string name="vehicle_delay">Zdržení:</string>

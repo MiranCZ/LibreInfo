@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import com.google.gson.JsonObject
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.data.DelaysDataHolder
 import io.github.mirancz.libreinfo.exception.RequestException
@@ -30,6 +29,7 @@ import io.github.mirancz.libreinfo.util.Text
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
 
 class DeparturePostDetailActivity : KBaseActivity("") {
 
@@ -48,7 +48,7 @@ class DeparturePostDetailActivity : KBaseActivity("") {
 
         val context = LocalContext.current
 
-        var stopDelays by remember { mutableStateOf(JsonObject()) }
+        var stopDelays by remember { mutableStateOf(StopDelaysResponse(emptyMap())) }
 
         val delays = DelaysDataHolder.getDelays()
 

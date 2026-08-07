@@ -89,7 +89,7 @@
         </activity>
 
         <activity
-            android:name=".activity.settings.DeparturesThemingActivity"
+            android:name=".activity.settings.DeparturesSettingsActivity"
             android:parentActivityName=".activity.settings.SettingsActivity">
         </activity>
 
@@ -105,6 +105,11 @@
 
         <activity
             android:name=".activity.DeparturesActivity"
+            android:parentActivityName=".activity.SearchActivity">
+        </activity>
+
+        <activity
+            android:name=".activity.ServerDeparturesActivity"
             android:parentActivityName=".activity.SearchActivity">
         </activity>
 

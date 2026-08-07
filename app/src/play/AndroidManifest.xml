@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+        Store edition (auto-updater disabled): strip the self-update install permission and
+        the PackageInstaller result receiver that the main manifest declares. Stores update the
+        app themselves and treat REQUEST_INSTALL_PACKAGES as a policy-sensitive permission.
+    -->
+    <uses-permission
+        android:name="android.permission.REQUEST_INSTALL_PACKAGES"
+        tools:node="remove" />
+
+    <application>
+        <receiver
+            android:name=".util.InstallResultReceiver"
+            tools:node="remove" />
+    </application>
+
+</manifest>

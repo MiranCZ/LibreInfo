@@ -26,7 +26,7 @@ class DiversionInfoActivity : KBaseActivity(R.string.diversions) {
                     .verticalScroll(rememberScrollState())
             ) {
                 EventHeader(diversion) {
-                    HTML(diversion.publicText, Modifier.padding(top = 16.dp)) { tv ->
+                    HTML(diversion.content, Modifier.padding(top = 16.dp)) { tv ->
                         tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
                             tv.setTextColor(ContextCompat.getColor(context, R.color.secondaryColor))
                     }
