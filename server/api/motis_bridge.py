@@ -10,17 +10,34 @@ def _delay_seconds(actual: str | None, scheduled: str | None) -> int:
     except ValueError:
         return 0
 
-def _trim_prefix(stop_id: str | None) -> str | None:
+def _trim_prefix(item: str | None) -> str | None:
+    if item is None:
+        return None
+
+    return item[item.index("jmk_") + 4::]
+
+def _translate_stop(stop_id: str | None) -> int | None:
+    stop_id = _trim_prefix(stop_id)
+
     if stop_id is None:
         return None
 
-    return stop_id[stop_id.index("jmk_")+4::]
+    z_ind = stop_id.find("Z")
+    n_ind = stop_id.find("N")
+
+    ind = max(z_ind, n_ind)
+    if ind == -1:
+        return None
+
+    return int(stop_id[1:ind])
+
+
 
 def _trim_leg(leg: dict) -> dict:
     out = {
         "mode": leg.get("mode"),
-        "fromId": _trim_prefix((leg.get("from") or {}).get("stopId")),
-        "toId": _trim_prefix((leg.get("to") or {}).get("stopId")),
+        "fromId": _translate_stop((leg.get("from") or {}).get("stopId")),
+        "toId": _translate_stop((leg.get("to") or {}).get("stopId")),
         "departure": leg.get("startTime"),
         "arrival": leg.get("endTime"),
         "duration": leg.get("duration"),
@@ -30,8 +47,6 @@ def _trim_leg(leg: dict) -> dict:
         else 0,
         "geometry": (leg.get("legGeometry") or {}).get("points"),
     }
-    if "distance" in leg:
-        out["distance"] = leg["distance"]
     if leg.get("tripId"):
         out["tripId"] = _trim_prefix(leg["tripId"])
     if leg.get("distance"):
