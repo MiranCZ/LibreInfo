@@ -14,6 +14,6 @@ data class Event(
     val content: String,
     val from: DateTime,
     val to: DateTime,
-    val delay: Int?,
+    val delay: String?,
     val lines: List<LineAlias>?
 ) : Parcelable

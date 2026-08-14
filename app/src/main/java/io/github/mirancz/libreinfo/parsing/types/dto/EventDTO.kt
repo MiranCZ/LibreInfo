@@ -19,7 +19,7 @@ data class EventDTO(
     val content: String,
     val from: @Serializable(IsoDateTimeSerializer::class) DateTime = DateTime.NONE,
     val to: @Serializable(IsoDateTimeSerializer::class) DateTime = DateTime.NONE,
-    val delay: Int?,
+    val delay: String?,
     val lines: List<Int>?
 ) {
 
