@@ -1,8 +1,10 @@
 import logging
+import socket
 import sys
 
 import docker
 import httpx
+from docker.models.containers import Container
 
 from config import *
 from util import md5_of_file, stream_to_file
@@ -13,6 +15,46 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 log = logging.getLogger(__name__)
+
+
+class Compose:
+    """Resolves Compose services to their containers by label.
+
+    Lookups are scoped to our own project, so no service needs an explicit
+    `container_name` and several copies of the stack can share a host.
+    """
+
+    def __init__(self, client: docker.DockerClient) -> None:
+        self.client = client
+
+        try:
+            me = client.containers.get(socket.gethostname())
+        except docker.errors.NotFound:
+            raise RuntimeError(
+                "cannot resolve our own container by hostname; "
+                "do not override `hostname:` for this service"
+            ) from None
+
+        project = me.labels.get("com.docker.compose.project")
+        if not project:
+            raise RuntimeError("not running under Docker Compose: no project label")
+
+        self.project = project
+        log.info(f"Compose project: {project}")
+
+    def get(self, service: str) -> Container:
+        containers = self.client.containers.list(
+            all=True,
+            filters={
+                "label": [
+                    f"com.docker.compose.project={self.project}",
+                    f"com.docker.compose.service={service}",
+                ]
+            },
+        )
+        if not containers:
+            raise RuntimeError(f"no container for service '{service}' in project '{self.project}'")
+        return containers[0]
 
 
 def check_and_download_gtfs() -> bool:
@@ -84,12 +126,12 @@ def check_and_download_osm() -> bool:
     return True
 
 
-def run_pfaedle(docker_client: docker.DockerClient) -> None:
+def run_pfaedle(compose: Compose) -> None:
     log.info("Running pfaedle...")
 
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 
-    container = docker_client.containers.get("pfaedle")
+    container = compose.get("pfaedle")
     container.start()
 
     for line in container.logs(stream=True, follow=True):
@@ -102,10 +144,10 @@ def run_pfaedle(docker_client: docker.DockerClient) -> None:
     log.info("pfaedle finished successfully")
 
 
-def run_motis_import(docker_client: docker.DockerClient) -> None:
+def run_motis_import(compose: Compose) -> None:
     log.info("Running MOTIS import...")
 
-    container = docker_client.containers.get("motis-import")
+    container = compose.get("motis-import")
     container.start()
 
     for line in container.logs(stream=True, follow=True):
@@ -118,10 +160,10 @@ def run_motis_import(docker_client: docker.DockerClient) -> None:
     log.info("MOTIS import finished successfully")
 
 
-def run_gtfs_parser(docker_client: docker.DockerClient) -> None:
+def run_gtfs_parser(compose: Compose) -> None:
     log.info("Running gtfs-parser...")
 
-    container = docker_client.containers.get("gtfs-parser")
+    container = compose.get("gtfs-parser")
     container.start()
 
     for line in container.logs(stream=True, follow=True):
@@ -134,26 +176,26 @@ def run_gtfs_parser(docker_client: docker.DockerClient) -> None:
     log.info("gtfs-parser finished successfully")
 
 
-def ensure_running(docker_client: docker.DockerClient, name: str) -> bool:
+def ensure_running(compose: Compose, service: str) -> bool:
     """Start container if not already running. Returns True if it was started."""
-    container = docker_client.containers.get(name)
+    container = compose.get(service)
     if container.status != "running":
-        log.info(f"{name}: not running (status={container.status}), starting...")
+        log.info(f"{service}: not running (status={container.status}), starting...")
         container.start()
-        log.info(f"{name}: started")
+        log.info(f"{service}: started")
         return True
     return False
 
 
-def restart_motis(docker_client: docker.DockerClient) -> None:
+def restart_motis(compose: Compose) -> None:
     log.info("Restarting Motis...")
-    docker_client.containers.get("motis").restart()
+    compose.get("motis").restart()
     log.info("Motis restarted")
 
 
-def restart_static_api(docker_client: docker.DockerClient) -> None:
+def restart_static_api(compose: Compose) -> None:
     log.info("Restarting gtfs-static...")
-    docker_client.containers.get("gtfs-static").restart()
+    compose.get("gtfs-static").restart()
     log.info("gtfs-static restarted")
 
 
@@ -170,21 +212,21 @@ def main() -> None:
         sys.exit(1)
 
     try:
-        docker_client = docker.from_env()
+        compose = Compose(docker.from_env())
 
         if not gtfs_changed and not osm_changed:
             log.info("Nothing changed. Ensuring containers are running...")
-            ensure_running(docker_client, "gtfs-static")
+            ensure_running(compose, "gtfs-static")
             if not MOTIS_IMPORTED_FILE.exists():
                 log.info("MOTIS not imported yet, bootstrapping import...")
-                run_motis_import(docker_client)
+                run_motis_import(compose)
                 MOTIS_IMPORTED_FILE.write_text("ok")
-                restart_motis(docker_client)
+                restart_motis(compose)
             else:
-                ensure_running(docker_client, "motis")
+                ensure_running(compose, "motis")
             if not PARSER_DONE_FILE.exists():
                 log.info("gtfs-parser has not run yet, bootstrapping...")
-                run_gtfs_parser(docker_client)
+                run_gtfs_parser(compose)
                 PARSER_DONE_FILE.write_text("ok")
             log.info("Done")
             return
@@ -197,14 +239,14 @@ def main() -> None:
         log.info(f"Changes detected: {', '.join(reasons)}")
 
         if gtfs_changed:
-            run_gtfs_parser(docker_client)
+            run_gtfs_parser(compose)
             PARSER_DONE_FILE.write_text("ok")
 
-        run_pfaedle(docker_client)
-        run_motis_import(docker_client)
+        run_pfaedle(compose)
+        run_motis_import(compose)
         MOTIS_IMPORTED_FILE.write_text("ok")
-        restart_motis(docker_client)
-        restart_static_api(docker_client)
+        restart_motis(compose)
+        restart_static_api(compose)
     except Exception as e:
         log.error(f"Update failed during processing: {e}")
         sys.exit(1)
