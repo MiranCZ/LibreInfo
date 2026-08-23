@@ -13,8 +13,8 @@ data class Diversion(
     val id: Int?,
     val title: String,
     val content: String,
-    val from: DateTime?,
-    val to: DateTime?,
+    val from: DateTime,
+    val to: DateTime,
     val lines: List<LineAlias>?
 ) : Parcelable {
 

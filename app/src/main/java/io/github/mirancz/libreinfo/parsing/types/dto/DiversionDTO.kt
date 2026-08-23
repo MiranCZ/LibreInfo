@@ -16,8 +16,8 @@ data class DiversionDTO(
     val id: Int?,
     val title: String,
     val content: String,
-    val from: @Serializable(IsoDateTimeSerializer::class) DateTime?,
-    val to: @Serializable(IsoDateTimeSerializer::class) DateTime?,
+    val from: @Serializable(IsoDateTimeSerializer::class) DateTime = DateTime.NONE,
+    val to: @Serializable(IsoDateTimeSerializer::class) DateTime = DateTime.NONE,
     val lines: List<Int>?
 ) {
 
