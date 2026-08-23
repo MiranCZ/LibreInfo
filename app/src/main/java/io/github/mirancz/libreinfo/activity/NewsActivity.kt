@@ -68,12 +68,14 @@ class NewsActivity : KBaseActivity(R.string.news) {
                     style = AppTypography.titleMedium
                 )
 
-                Text(
-                    news.published.toString(),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal,
-                    modifier = Modifier.padding(top = 8.dp),
-                )
+                if (news.published != null) {
+                    Text(
+                        news.published.toString(),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Normal,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
 
                 Text(
                     news.getPlaintext(),
