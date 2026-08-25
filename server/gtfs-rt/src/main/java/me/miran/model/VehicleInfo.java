@@ -82,8 +82,8 @@ public class VehicleInfo {
         obj.addProperty("vehicleId", carId);
         obj.addProperty("delay", delay);
         obj.addProperty("lastStopId", lastStop);
-        obj.addProperty("lastUpdated", changedAt);
-        obj.addProperty("lastSeen", lastSeen);
+        obj.addProperty("lastModifiedAt", changedAt);
+        obj.addProperty("lastObservedAt", lastSeen);
         obj.add("previousStops", gson.toJsonTree(previousStops, new TypeToken<List<StopDelay>>(){}.getType()));
 
         return obj.toString();

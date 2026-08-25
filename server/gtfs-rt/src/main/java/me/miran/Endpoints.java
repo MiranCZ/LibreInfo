@@ -150,9 +150,9 @@ public class Endpoints {
         return json.toString();
     }
 
-    private record StopDelayView(int delay, long lastUpdated) {
+    private record StopDelayView(int delay, long lastModifiedAt) {
     }
 
-    private record RouteDelayView(int delay, int vehicleId, long lastUpdated) {
+    private record RouteDelayView(int delay, int vehicleId, long lastModifiedAt) {
     }
 }
