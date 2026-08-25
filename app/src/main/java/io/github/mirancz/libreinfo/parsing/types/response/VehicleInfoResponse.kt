@@ -12,12 +12,13 @@ data class VehicleInfoResponse(
     val vehicleId: Int,
     val delay: Int,
     val lastStopId: Int,
-    val lastUpdated: Long,
+    val lastObservedAt: Long,
+    val lastModifiedAt: Long,
     val previousStops: List<PreviousStopDTO>
 ) {
 
     fun map(storage: IdStorage): VehicleInfo =
-        VehicleInfo(vehicleId, delay, mapStop(storage, lastStopId), lastUpdated, previousStops.map { it.map(storage) })
+        VehicleInfo(vehicleId, delay, mapStop(storage, lastStopId), lastObservedAt, lastModifiedAt,previousStops.map { it.map(storage) })
 
 
 }

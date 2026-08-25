@@ -7,12 +7,13 @@ data class VehicleInfo(
     val vehicleId: Int,
     val delay: Int,
     val lastStop: Stop,
-    val lastUpdated: Long,
+    val lastObservedAt: Long,
+    val lastModifiedAt: Long,
     val previousStops: List<PreviousStop>
 ) {
 
     companion object {
-        val NONE: VehicleInfo = VehicleInfo(-1, -1, Stop.NONE, -1, emptyList())
+        val NONE: VehicleInfo = VehicleInfo(-1, -1, Stop.NONE, -1, -1, emptyList())
     }
 
 }

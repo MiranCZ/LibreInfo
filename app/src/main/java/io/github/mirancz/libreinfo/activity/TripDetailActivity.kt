@@ -312,7 +312,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
             }
 
             val leavingStop =
-                stop.equals(vehicleInfo.lastStop) && (nowMs - vehicleInfo.lastUpdated) < leavingStopWindowMs
+                stop.equals(vehicleInfo.lastStop) && (nowMs - vehicleInfo.lastModifiedAt) < leavingStopWindowMs
 
             val isTransitionStop =
                 i != 0 && data.stops[i - 1].equals(vehicleInfo.lastStop) && !leavingStop
