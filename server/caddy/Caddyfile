@@ -17,11 +17,6 @@ localhost {
         }
     }
 
-    @bad_token not header X-App-Token "1234"
-    handle @bad_token {
-        respond 403
-    }
-
     @stream path /stream /stream/*
 
 	handle @stream {
