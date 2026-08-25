@@ -40,10 +40,10 @@ public class EventMapper {
                                 return null;
                             }
 
-                            Integer delay = null;
+                            String delay = null;
                             Matcher m = DELAY.matcher(description);
                             if (m.find()) {
-                                delay = Integer.parseInt(m.group(1));
+                                delay = m.group(1);
                                 parts.removeIf(p -> DELAY.matcher(p).find());
                             }
 

@@ -6,6 +6,6 @@ data class Event(
      val content: String,
      val from: String?,
      val to: String?,
-     val delay: Int?,
+     val delay: String?,
      val lines: List<Int>?,
 )
