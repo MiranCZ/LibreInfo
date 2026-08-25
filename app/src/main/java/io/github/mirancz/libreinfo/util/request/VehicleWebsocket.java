@@ -50,7 +50,6 @@ public class VehicleWebsocket {
     private static void createWebsocket() {
         Request request = new Request.Builder()
                 .url(SOCKET_URL)
-                .addHeader("X-App-Token", "HyP4vnqyO1G64") // FIXME remove before commit
                 .build();
 
         socket = client.newWebSocket(request, new WebSocketListener() {

@@ -36,6 +36,15 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
         // TODO click into a dedicated screen with more detailed description or something
         Column(Modifier.verticalScroll(rememberScrollState())) {
             AttributionItem(
+                "IDS JMK",
+                "Integrovaný dopravní systém Jihomoravského kraje",
+                R.drawable.idsjmk_icon,
+                copyright = "KORDIS JMK, a.s.",
+                note = "Data poskytnuta na základě individuální dohody",
+                sourceUrl = "https://www.idsjmk.cz",
+            )
+
+            AttributionItem(
                 "KORDIS JMK, a.s.",
                 "Koordinace dopravní obslužnosti na území Jihomoravského kraje",
                 R.drawable.kordis_icon,
@@ -111,6 +120,7 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
         copyright: String? = null,
         license: String? = null,
         licenseUrl: String? = null,
+        note: String? = null,
         sourceUrl: String? = null,
         modified: Boolean = false,
         licensePrefix: Boolean = true,
@@ -134,8 +144,8 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
                     Text(description, modifier = Modifier.padding(top = 4.dp, end = 8.dp).weight(1f))
                 }
 
-                if (license != null && licenseUrl != null) {
-                    LicenseLine(copyright, license, licenseUrl, sourceUrl, modified, licensePrefix)
+                if (copyright != null || licenseUrl != null || note != null || sourceUrl != null) {
+                    LicenseLine(copyright, license, licenseUrl, note, sourceUrl, modified, licensePrefix)
                 }
             }
         }
@@ -144,8 +154,9 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
     @Composable
     fun LicenseLine(
         copyright: String?,
-        license: String,
-        licenseUrl: String,
+        license: String?,
+        licenseUrl: String?,
+        note: String?,
         sourceUrl: String?,
         modified: Boolean,
         licensePrefix: Boolean,
@@ -160,10 +171,13 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
         Text(
             buildAnnotatedString {
                 copyright?.let { append("© $it · ") }
-                if (licensePrefix) {
-                    append("Licencováno pod ")
+                if (license != null && licenseUrl != null) {
+                    if (licensePrefix) {
+                        append("Licencováno pod ")
+                    }
+                    withLink(LinkAnnotation.Url(licenseUrl, linkStyle)) { append(license) }
                 }
-                withLink(LinkAnnotation.Url(licenseUrl, linkStyle)) { append(license) }
+                note?.let { append(it) }
                 if (modified) {
                     append(" · Upraveno")
                 }
