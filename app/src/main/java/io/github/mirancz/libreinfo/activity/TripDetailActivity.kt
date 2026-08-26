@@ -15,6 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -66,6 +70,7 @@ import io.github.mirancz.libreinfo.parsing.types.VehicleInfo
 import io.github.mirancz.libreinfo.util.DelayUtil.getDelayColor
 import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
+import kotlinx.coroutines.flow.first
 import java.util.function.Function
 
 // TODO periodic updates
@@ -353,8 +358,27 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
         val alias: LineAlias = storage.lineStorage.getAlias(data.lineId)
         val renderStates = stopRenderStates(data, nowMs = System.currentTimeMillis())
 
-        Column(Modifier.verticalScroll(rememberScrollState())) {
-            for (state in renderStates) {
+        val highlightedStopId = intent.getIntExtra("stopId", -1)
+
+        val highlightedIndex = remember(renderStates,highlightedStopId) {
+            renderStates.indexOfFirst { it.stopId == highlightedStopId }
+                .takeIf { it >= 0 }
+        }
+
+        val listState = rememberLazyListState()
+
+        LaunchedEffect(highlightedIndex) {
+            val index = highlightedIndex ?: return@LaunchedEffect
+            // wait until the list has been measured at least once
+            snapshotFlow { listState.layoutInfo.viewportSize.height }
+                .first { it > 0 }
+                .let { viewportHeight ->
+                    listState.scrollToItem(index, -viewportHeight / 4)
+                }
+        }
+
+        LazyColumn(state = listState) {
+            items(renderStates) { state ->
                 StopRow(storage = storage, alias = alias, data = data, state = state)
             }
         }
