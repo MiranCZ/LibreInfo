@@ -54,7 +54,7 @@ internal fun buildConnectionUi(connection: Connection, storage: IdStorage, now: 
 private fun buildLeg(part: ConnectionLeg, index: Int, parts: List<ConnectionLeg>, storage: IdStorage): LegUi {
     val transport = part.transportMode
     if (transport.isVehicle) {
-        val tripId = transport.tripId
+        val tripId = transport.tripId - 1
         val lineId = storage.apiStorage.getLineIdAndRoute(tripId).left
         val alias = storage.lineStorage.getAlias(lineId)
         val trip = storage.tripStorage.trips[tripId]
