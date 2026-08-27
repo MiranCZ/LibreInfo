@@ -10,6 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -804,15 +805,19 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                 .padding(horizontal = 8.dp)
         ) {
             Row(Modifier.fillMaxWidth()) {
-                Row(Modifier.weight(3f)) {
+                Row(Modifier.weight(3f), verticalAlignment = Alignment.CenterVertically) {
                     LineIcon(line = departure.line)
                     Text(
                         departure.finalStop,
                         fontSize = 14.sp,
                         color = colorResource(R.color.secondaryColor),
+                        maxLines = 1,
+                        softWrap = false,
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .padding(start = 4.dp)
+                            .weight(1f)
+                            .basicMarquee(iterations = Int.MAX_VALUE)
                     )
                 }
 
