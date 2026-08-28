@@ -8,12 +8,10 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -27,7 +25,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -39,10 +36,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,9 +46,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -125,6 +116,8 @@ import io.github.mirancz.libreinfo.util.load.LoadState
 import io.github.mirancz.libreinfo.util.load.rememberDelayedLoadState
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.AppButton
+import io.github.mirancz.libreinfo.activity.component.Container
 import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
 import java.util.function.Consumer
 import kotlin.random.Random
@@ -298,20 +291,6 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         val result = super.onNavigateUp()
         overridePendingTransition(R.anim.fast_fade_in, R.anim.fast_scale_down)
         return result
-    }
-
-    @Composable
-    fun Container(onClick: () -> Unit,modifier: Modifier = Modifier, innerPadding: Dp = 16.dp, color: Color = colorResource(R.color.widget_background), content: @Composable BoxScope.() -> Unit) {
-        Card(modifier = modifier.fillMaxWidth(), colors = CardDefaults.cardColors().copy(containerColor = color), onClick = onClick) {
-            Box(Modifier.padding(innerPadding), content= content)
-        }
-    }
-
-    @Composable
-    fun Container(modifier: Modifier = Modifier, innerPadding: Dp = 16.dp, color: Color = colorResource(R.color.widget_background), content: @Composable BoxScope.() -> Unit) {
-        Card(modifier = modifier.fillMaxWidth(), colors = CardDefaults.cardColors().copy(containerColor = color)) {
-            Box(Modifier.padding(innerPadding), content= content)
-        }
     }
 
     /**
@@ -534,7 +513,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
     @Composable
     fun NothingHere(text: String = stringResource(R.string.nothing_here)) {
         Container(Modifier.padding(16.dp)) {
-            Box(Modifier.fillMaxWidth(),contentAlignment = Alignment.Center) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text(
                     text,
                     fontWeight = FontWeight.Medium,
@@ -576,39 +555,6 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                     unfocusedIndicatorColor = Color.Transparent
                 )
         )
-    }
-
-    @Composable
-    fun AppButton(
-        modifier: Modifier = Modifier,
-        onClick: () -> Unit = {},
-        color: Color = colorResource(R.color.widget_background),
-        border: BorderStroke? = null,
-        minHeight: Dp? = null,
-        content: @Composable RowScope.() -> Unit,
-    ) {
-        val interactionSource = remember { MutableInteractionSource() }
-
-        var modifier = modifier
-        if (minHeight != null) {
-            modifier = modifier.heightIn(min = minHeight)
-        }
-
-        CompositionLocalProvider(
-            LocalRippleConfiguration provides RippleConfiguration(color = colorResource(R.color.light_gray))
-        ) {
-            Button(
-                onClick = onClick,
-                content = content,
-                shape = RoundedCornerShape(12.dp),
-                border = border,
-                colors = ButtonDefaults.buttonColors().copy(
-                    containerColor = color
-                ),
-                interactionSource = interactionSource,
-                modifier = modifier.fillMaxWidth()
-            )
-        }
     }
 
 
@@ -693,9 +639,11 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         }
         val mod = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         if (post != null) {
-            Container({ startActivity(DeparturePostDetailActivity::class) {
-                it.putExtra("post", post)
-            } }, innerPadding = 0.dp, modifier = mod, content = content)
+            Container({
+                startActivity(DeparturePostDetailActivity::class) {
+                    it.putExtra("post", post)
+                }
+            }, innerPadding = 0.dp, modifier = mod, content = content)
         } else {
             Container(innerPadding = 0.dp, modifier = mod, content = content)
         }
@@ -717,11 +665,15 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
             val first = departure.entries.indexOfFirst { entry -> !alreadyLeft(entry) }
             val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = first)
 
-            LazyColumn(Modifier.padding(vertical = 8.dp, horizontal = 6.dp), state = lazyListState) {
+            LazyColumn(
+                Modifier.padding(vertical = 8.dp, horizontal = 6.dp),
+                state = lazyListState
+            ) {
                 stickyHeader {
-                    DeparturePostHeader(departure.name, Modifier
-                        .background(color)
-                        .clickable(interactionSource = null, indication = null) {})
+                    DeparturePostHeader(
+                        departure.name, Modifier
+                            .background(color)
+                            .clickable(interactionSource = null, indication = null) {})
                 }
                 items(departure.entries) { entry ->
                     val alreadyLeft = alreadyLeft(entry)
@@ -901,7 +853,12 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                             )
                         } else {
                             Box(Modifier.padding(horizontal = 16.dp).padding(top = 8.dp)) {
-                                ShimmerText(shimmer, height=18.dp, widthFraction = 0.4f, variance = 0.15f)
+                                ShimmerText(
+                                    shimmer,
+                                    height = 18.dp,
+                                    widthFraction = 0.4f,
+                                    variance = 0.15f
+                                )
                             }
                         }
                     }

@@ -37,6 +37,7 @@
     <string name="to">Do</string>
     <string name="departure_date">Datum odjezdu</string>
     <string name="departure_time">Čas odjezdu</string>
+    <string name="connection_date_time">Datum a čas</string>
     <string name="departure">Odjezd</string>
     <string name="date_yesterday">Včera</string>
     <string name="date_today">Dnes</string>
@@ -49,6 +50,7 @@
     <string name="connection_results">Výsledky hledání</string>
     <string name="connection_in">za %s</string>
     <string name="connection_now">nyní</string>
+    <string name="departure_now">Nyní</string>
     <string name="connection_stops">%d zastávek</string>
     <string name="connection_walk_to_stop">Pěšky na zastávku asi</string>
     <string name="connection_walk_transfer">Přestup pěšky asi</string>

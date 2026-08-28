@@ -31,6 +31,7 @@ import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.Container
 
 class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
 
@@ -101,7 +102,11 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
             Column() {
                 Row(Modifier.fillMaxWidth()) {
                     Row(Modifier.weight(1f)) {
-                        Text(item.getVehicleNumbersString(), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text(
+                            item.getVehicleNumbersString(),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                     Row(Modifier.weight(2f)) {
                         if (item.course != null) {
@@ -118,7 +123,10 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
                     }
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth()
+                ) {
                     Row(Modifier.weight(1f)) {
                         LineIcon(line = item.line, padding = 0.dp)
                         Text(
@@ -144,7 +152,11 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(item.lastStop.name, color = colorResource(R.color.secondary_color_tone), fontSize = 14.sp)
+                    Text(
+                        item.lastStop.name,
+                        color = colorResource(R.color.secondary_color_tone),
+                        fontSize = 14.sp
+                    )
                 }
             }
         }

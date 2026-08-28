@@ -24,6 +24,8 @@ import io.github.mirancz.libreinfo.ui.theme.AppTypography
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.Container
+import io.github.mirancz.libreinfo.parsing.types.DateTime
 import io.github.mirancz.libreinfo.parsing.types.NewsEntry
 
 // TODO pagination
@@ -68,7 +70,7 @@ class NewsActivity : KBaseActivity(R.string.news) {
                     style = AppTypography.titleMedium
                 )
 
-                if (news.published != null) {
+                if (news.published != DateTime.NONE) {
                     Text(
                         news.published.toString(),
                         fontSize = 12.sp,

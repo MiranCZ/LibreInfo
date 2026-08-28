@@ -45,6 +45,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
+import io.github.mirancz.libreinfo.activity.component.Container
 import io.github.mirancz.libreinfo.activity.component.FavouriteStopAction
 import io.github.mirancz.libreinfo.activity.component.StopViewModel
 import io.github.mirancz.libreinfo.activity.data.DelaysDataHolder
@@ -168,7 +169,10 @@ class ServerDeparturesActivity : KBaseActivity("") {
             if (!message.isNullOrBlank()) {
                 item {
                     Container(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp) ,color = colorResource(R.color.ui_warning), innerPadding = 0.dp) {
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        color = colorResource(R.color.ui_warning),
+                        innerPadding = 0.dp
+                    ) {
                         Text(
                             message,
                             color = colorResource(R.color.secondaryColor),

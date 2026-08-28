@@ -29,6 +29,7 @@ import io.github.mirancz.libreinfo.util.Text
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.Container
 import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
 
 class DeparturePostDetailActivity : KBaseActivity("") {

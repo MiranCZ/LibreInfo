@@ -61,7 +61,9 @@ import io.github.mirancz.libreinfo.parsing.types.LineAlias
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.AppButton
 import io.github.mirancz.libreinfo.activity.component.AppSwitch
+import io.github.mirancz.libreinfo.activity.component.Container
 import io.github.mirancz.libreinfo.util.AppSettings
 import kotlin.random.Random
 
@@ -331,18 +333,23 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
                     color = Color.Transparent,
                     border = BorderStroke(1.5.dp, colorResource(R.color.secondary_color_tone)),
                     onClick = {
-                    vm.filters = emptySet()
-                    scope.launch { sheetState.hide() }
-                        .invokeOnCompletion {
-                            if (!sheetState.isVisible) vm.showFilterPopup = false
-                        }
-                }) {
-                    Text(stringResource(R.string.clear_filters), color = colorResource(R.color.secondary_color_light_tone))
+                        vm.filters = emptySet()
+                        scope.launch { sheetState.hide() }
+                            .invokeOnCompletion {
+                                if (!sheetState.isVisible) vm.showFilterPopup = false
+                            }
+                    }, modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        stringResource(R.string.clear_filters),
+                        color = colorResource(R.color.secondary_color_light_tone)
+                    )
                 }
 
                 AppButton(
                     color = colorResource(R.color.light_blue),
-                    onClick = onApply
+                    onClick = onApply,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.apply), color = Color.White)
                 }

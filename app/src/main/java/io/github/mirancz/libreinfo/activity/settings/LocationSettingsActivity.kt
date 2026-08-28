@@ -8,10 +8,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,8 +29,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.activity.component.AppSwitch
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
+import io.github.mirancz.libreinfo.activity.component.AppButton
+import io.github.mirancz.libreinfo.activity.component.Container
 import io.github.mirancz.libreinfo.activity.component.SettingSwitch
 import io.github.mirancz.libreinfo.util.AppSettings
 import io.github.mirancz.libreinfo.util.PermissionHelper
@@ -95,7 +96,8 @@ class LocationSettingsActivity : KBaseActivity(R.string.location) {
 
                         AppButton(color = colorResource(R.color.light_blue), onClick = {
                             launchPermissionDialog()
-                        }) {
+                        }, modifier = Modifier.fillMaxWidth()
+                        ) {
                             Text(
                                 stringResource(R.string.allow_location),
                                 color = colorResource(R.color.secondaryColor)

@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.parsing.types.Diversion
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.Container
 
 class DiversionInfoActivity : KBaseActivity(R.string.diversions) {
     @Composable
@@ -28,7 +29,7 @@ class DiversionInfoActivity : KBaseActivity(R.string.diversions) {
                 EventHeader(diversion) {
                     HTML(diversion.content, Modifier.padding(top = 16.dp)) { tv ->
                         tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
-                            tv.setTextColor(ContextCompat.getColor(context, R.color.secondaryColor))
+                        tv.setTextColor(ContextCompat.getColor(context, R.color.secondaryColor))
                     }
 
                 }

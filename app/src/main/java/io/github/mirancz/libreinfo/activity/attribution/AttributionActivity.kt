@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.Container
 
 class AttributionActivity : KBaseActivity(R.string.data_sources) {
 
@@ -127,8 +128,16 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
     ) {
         Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Column() {
-                Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(name, fontSize = 24.sp, fontWeight = FontWeight.Black, modifier = Modifier.weight(1f))
+                Row(
+                    Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        name,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        modifier = Modifier.weight(1f)
+                    )
 
                     Image(
                         painter = painterResource(id = iconId),
@@ -141,11 +150,22 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
                 Divider()
 
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(description, modifier = Modifier.padding(top = 4.dp, end = 8.dp).weight(1f))
+                    Text(
+                        description,
+                        modifier = Modifier.padding(top = 4.dp, end = 8.dp).weight(1f)
+                    )
                 }
 
                 if (copyright != null || licenseUrl != null || note != null || sourceUrl != null) {
-                    LicenseLine(copyright, license, licenseUrl, note, sourceUrl, modified, licensePrefix)
+                    LicenseLine(
+                        copyright,
+                        license,
+                        licenseUrl,
+                        note,
+                        sourceUrl,
+                        modified,
+                        licensePrefix
+                    )
                 }
             }
         }

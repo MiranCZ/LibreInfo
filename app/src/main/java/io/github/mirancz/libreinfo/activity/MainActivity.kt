@@ -47,6 +47,8 @@ import io.github.mirancz.libreinfo.util.AppUpdater
 import io.github.mirancz.libreinfo.util.UpdateHelper
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.AppButton
+import io.github.mirancz.libreinfo.activity.component.Container
 
 class MainActivity : NavigationActivity(R.string.app_name) {
 
@@ -181,7 +183,7 @@ class MainActivity : NavigationActivity(R.string.app_name) {
                     }
 
                     AppButton(
-                        modifier = Modifier.padding(4.dp),
+                        modifier = Modifier.padding(4.dp).fillMaxWidth(),
                         color = colorResource(R.color.light_blue),
                         onClick = onInstall
                     ) {

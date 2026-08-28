@@ -19,9 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -64,6 +62,7 @@ import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import com.valentinilk.shimmer.Shimmer
+import io.github.mirancz.libreinfo.activity.component.Container
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.VehicleInfo
@@ -202,9 +201,11 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     ShimmerLineIcon(shimmer)
-                    Box(Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp)) {
+                    Box(
+                        Modifier
+                            .weight(1f)
+                            .padding(start = 8.dp)
+                    ) {
                         ShimmerText(shimmer, widthFraction = 0.6f, variance = 0.15f, height = 20.dp)
                     }
                 }

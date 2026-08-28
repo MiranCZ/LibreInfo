@@ -39,7 +39,9 @@ import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
 import io.github.mirancz.libreinfo.util.AppUpdater
 import io.github.mirancz.libreinfo.util.UpdateDownloader
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.AppButton
 import io.github.mirancz.libreinfo.activity.component.AppSwitch
+import io.github.mirancz.libreinfo.activity.component.Container
 
 class UpdatingSettingsActivity : KBaseActivity(R.string.updating_settings) {
 
@@ -178,7 +180,7 @@ class UpdatingSettingsActivity : KBaseActivity(R.string.updating_settings) {
     @Composable
     private fun CheckButton(checking: Boolean, onClick: () -> Unit) {
         AppButton(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
             color = colorResource(R.color.light_blue),
             onClick = onClick
         ) {
@@ -215,7 +217,8 @@ class UpdatingSettingsActivity : KBaseActivity(R.string.updating_settings) {
                     Spacer(Modifier.height(12.dp))
 
                     Text(
-                        stringResource(R.string.update_available_message, versionName), color = colorResource(R.color.secondaryColor)
+                        stringResource(R.string.update_available_message, versionName),
+                        color = colorResource(R.color.secondaryColor)
                     )
 
                     Spacer(Modifier.height(16.dp))

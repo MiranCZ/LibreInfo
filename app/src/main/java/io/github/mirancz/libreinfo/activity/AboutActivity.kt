@@ -15,11 +15,12 @@ import io.github.mirancz.libreinfo.activity.attribution.AttributionActivity
 import io.github.mirancz.libreinfo.activity.base.NavigationActivity
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.Container
 
 class AboutActivity : NavigationActivity(R.string.about) {
     @Composable
     override fun CreateNavigation() {
-        Container(Modifier.padding(vertical=16.dp)) {
+        Container(Modifier.padding(vertical = 16.dp)) {
             Column {
                 Text(
                     text = stringResource(R.string.about_text),

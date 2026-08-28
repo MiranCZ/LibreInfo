@@ -23,6 +23,7 @@ import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.DateTime
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.Container
 import io.github.mirancz.libreinfo.parsing.types.Event
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
@@ -99,7 +100,7 @@ class EventsActivity : KBaseActivity(R.string.events) {
             Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Column {
-                Text(item.title,  fontSize = 18.sp, fontWeight = FontWeight.Black)
+                Text(item.title, fontSize = 18.sp, fontWeight = FontWeight.Black)
 
                 Row(Modifier.padding(top = 8.dp)) {
                     Text(times[0], fontWeight = FontWeight.Bold, fontSize = 15.sp)
@@ -131,7 +132,7 @@ class EventsActivity : KBaseActivity(R.string.events) {
                 }
 
                 if (!item.content.isBlank()) {
-                    HTML(item.content, Modifier.padding(top=12.dp))
+                    HTML(item.content, Modifier.padding(top = 12.dp))
                 }
             }
         }

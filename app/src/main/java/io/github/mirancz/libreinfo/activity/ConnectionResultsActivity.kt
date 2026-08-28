@@ -33,11 +33,11 @@ import com.valentinilk.shimmer.Shimmer
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.DateTime
-import io.github.mirancz.libreinfo.parsing.types.connection.Connection
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.Container
 
 class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
 
@@ -292,9 +292,19 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
                                 .weight(1f)
                                 .padding(start = 8.dp)
                         ) {
-                            ShimmerText(shimmer, widthFraction = 0.55f, variance = 0.15f, height = 15.dp)
+                            ShimmerText(
+                                shimmer,
+                                widthFraction = 0.55f,
+                                variance = 0.15f,
+                                height = 15.dp
+                            )
                             Spacer(Modifier.height(3.dp))
-                            ShimmerText(shimmer, widthFraction = 0.7f, variance = 0.15f, height = 12.dp)
+                            ShimmerText(
+                                shimmer,
+                                widthFraction = 0.7f,
+                                variance = 0.15f,
+                                height = 12.dp
+                            )
                         }
                         ShimmerBox(Modifier.width(40.dp).height(14.dp), shimmer)
                     }

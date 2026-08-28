@@ -119,7 +119,7 @@ object RequestHelper {
     ): ConnectionsResponse {
         return makeOwnRequest(
             context,
-            "findConnections?fromStop=" + fromStop.parentStation + "&toStop=" + toStop.parentStation
+            "findConnections?fromStop=${fromStop.parentStation}&toStop=${toStop.parentStation}&time=$time"
         )
     }
 

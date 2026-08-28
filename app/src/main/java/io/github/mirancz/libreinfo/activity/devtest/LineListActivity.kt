@@ -17,6 +17,7 @@ import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.component.Container
 
 class LineListActivity : KBaseActivity(R.string.dev_settings) {
     @Composable
@@ -35,7 +36,10 @@ class LineListActivity : KBaseActivity(R.string.dev_settings) {
         if (storage != null) {
             val items = storage!!.lineStorage.allAliases
 
-            Container(Modifier.padding(16.dp).verticalScroll(rememberScrollState()), innerPadding = 4.dp) {
+            Container(
+                Modifier.padding(16.dp).verticalScroll(rememberScrollState()),
+                innerPadding = 4.dp
+            ) {
                 LineList(items)
             }
         }
