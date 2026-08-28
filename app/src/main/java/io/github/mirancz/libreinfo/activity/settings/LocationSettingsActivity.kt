@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -26,6 +27,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import io.github.mirancz.libreinfo.R
@@ -50,12 +52,18 @@ class LocationSettingsActivity : KBaseActivity(R.string.location) {
 
 
         var locationEnabled by remember { mutableStateOf(PermissionHelper.locationEnabled(context))}
+        var fineLocationEnabled by remember { mutableStateOf(PermissionHelper.permissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION))}
 
         val launcher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestMultiplePermissions()
         ) { results: Map<String, Boolean> ->
-            locationEnabled = results.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) ||
-                    results.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)
+            fineLocationEnabled = results.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)
+
+            locationEnabled = results.getOrDefault(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                false
+            ) || fineLocationEnabled
+
 
             val requestedBefore = AppSettings.Location.locationPermissionsRequested
 
@@ -87,24 +95,9 @@ class LocationSettingsActivity : KBaseActivity(R.string.location) {
 
         Column {
             if (!locationEnabled) {
-                Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    Column {
-                        Text(
-                            stringResource(R.string.allow_location_text),
-                            color = colorResource(R.color.secondaryColor)
-                        )
-
-                        AppButton(color = colorResource(R.color.light_blue), onClick = {
-                            launchPermissionDialog()
-                        }, modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                stringResource(R.string.allow_location),
-                                color = colorResource(R.color.secondaryColor)
-                            )
-                        }
-                    }
-                }
+                AllowLocationCard(R.string.allow_location_text, R.string.allow_location, launchPermissionDialog)
+            } else if (!fineLocationEnabled) {
+                AllowLocationCard(R.string.allow_fine_location_text, R.string.allow_fine_location, launchPermissionDialog)
             }
 
 
@@ -117,6 +110,34 @@ class LocationSettingsActivity : KBaseActivity(R.string.location) {
             }
         }
 
+    }
+
+    @Composable
+    private fun AllowLocationCard(
+        @StringRes description: Int,
+        @StringRes allow: Int,
+        launchPermissionDialog: () -> Unit
+    ) {
+        Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Column {
+                Text(
+                    stringResource(description),
+                    color = colorResource(R.color.secondaryColor),
+                    textAlign = TextAlign.Center
+                )
+
+                AppButton(
+                    color = colorResource(R.color.light_blue), onClick = {
+                        launchPermissionDialog()
+                    }, modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        stringResource(allow),
+                        color = colorResource(R.color.secondaryColor),
+                    )
+                }
+            }
+        }
     }
 
     @Composable

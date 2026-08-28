@@ -108,6 +108,8 @@
     <string name="update_prompt_enable">Zapnout</string>
     <string name="update_prompt_decline">Teď ne</string>
     <string name="allow_location_text">Pro změnu nastevení musí mít aplikace povolený přístup k poloze zařízení</string>
+    <string name="allow_fine_location_text">Pro nejlepší fungování aplikace povolte přístup k přesné poloze zařízení</string>
     <string name="allow_location">Povolit přístup k poloze</string>
+    <string name="allow_fine_location">Povolit přístup k přesné poloze</string>
     <string name="sort_stops_by_distance">Řadit zastávky podle vzdálenosti</string>
 </resources>
