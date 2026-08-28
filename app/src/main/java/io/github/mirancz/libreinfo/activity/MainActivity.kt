@@ -48,6 +48,7 @@ import io.github.mirancz.libreinfo.util.UpdateHelper
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.component.AppButton
+import io.github.mirancz.libreinfo.activity.component.ConfirmDialog
 import io.github.mirancz.libreinfo.activity.component.Container
 
 class MainActivity : NavigationActivity(R.string.app_name) {
@@ -197,69 +198,33 @@ class MainActivity : NavigationActivity(R.string.app_name) {
 
     @Composable
     private fun AutoUpdatePromptDialog(onChoice: (Boolean) -> Unit) {
-        Dialog(onDismissRequest = { onChoice(false) }) {
-            Container {
-                Column {
-                    Text(
-                        stringResource(R.string.update_prompt_title),
-                        color = colorResource(R.color.secondaryColor),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
-
-                    Spacer(Modifier.height(12.dp))
-
-                    Text(
-                        stringResource(R.string.update_prompt_message),
-                        color = colorResource(R.color.secondaryColor)
-                    )
-
-                    Spacer(Modifier.height(16.dp))
-
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        TextButton(onClick = { onChoice(false) }) {
-                            Text(stringResource(R.string.update_prompt_decline))
-                        }
-                        TextButton(onClick = { onChoice(true) }) {
-                            Text(stringResource(R.string.update_prompt_enable))
-                        }
-                    }
-                }
-            }
+        ConfirmDialog(
+            stringResource(R.string.update_prompt_title),
+            stringResource(R.string.update_prompt_decline),
+            stringResource(R.string.update_prompt_enable),
+            { onChoice(false) },
+            { onChoice(true) }
+        ) {
+            Text(
+                stringResource(R.string.update_prompt_message),
+                color = colorResource(R.color.secondaryColor)
+            )
         }
     }
 
     @Composable
     private fun InstallPermissionDialog(onContinue: () -> Unit, onDismiss: () -> Unit) {
-        Dialog(onDismissRequest = onDismiss) {
-            Container {
-                Column {
-                    Text(
-                        stringResource(R.string.install_permission_title),
-                        color = colorResource(R.color.secondaryColor),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
-
-                    Spacer(Modifier.height(12.dp))
-
-                    Text(
-                        stringResource(R.string.install_permission_rationale),
-                        color = colorResource(R.color.secondaryColor)
-                    )
-
-                    Spacer(Modifier.height(12.dp))
-
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        TextButton(onClick = onDismiss) {
-                            Text(stringResource(R.string.cancel))
-                        }
-                        TextButton(onClick = onContinue) {
-                            Text(stringResource(R.string.continue_action))
-                        }
-                    }
-                }
-            }
+        ConfirmDialog(
+            stringResource(R.string.install_permission_title),
+            stringResource(R.string.cancel),
+            stringResource(R.string.continue_action),
+            onDismiss,
+            onContinue
+        ) {
+            Text(
+                stringResource(R.string.install_permission_rationale),
+                color = colorResource(R.color.secondaryColor)
+            )
         }
     }
 
