@@ -49,7 +49,7 @@ import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.ui.components.AppSwitch
-import io.github.mirancz.libreinfo.ui.components.Container
+import io.github.mirancz.libreinfo.ui.components.CountdownConfirmDialog
 
 class DeparturesSettingsActivity : KBaseActivity(R.string.departures_settings) {
 
@@ -168,46 +168,18 @@ class DeparturesSettingsActivity : KBaseActivity(R.string.departures_settings) {
      */
     @Composable
     private fun LocalSourceWarningDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
-        var remaining by remember { mutableIntStateOf(CONFIRM_COOLDOWN_SECONDS) }
-
-        LaunchedEffect(Unit) {
-            while (remaining > 0) {
-                delay(1000)
-                remaining--
-            }
-        }
-
-        Dialog(onDismissRequest = onDismiss) {
-            Container {
-                Column {
-                    Text(
-                        stringResource(R.string.departure_source_warning_title),
-                        color = colorResource(R.color.secondaryColor),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
-
-                    Spacer(Modifier.height(12.dp))
-
-                    Text(
-                        stringResource(R.string.departure_source_warning_message),
-                        color = colorResource(R.color.secondaryColor)
-                    )
-
-                    Spacer(Modifier.height(16.dp))
-
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        TextButton(onClick = onDismiss) {
-                            Text(stringResource(R.string.cancel))
-                        }
-                        TextButton(onClick = onConfirm, enabled = remaining == 0) {
-                            val confirm = stringResource(R.string.departure_source_warning_confirm)
-
-                            Text(if (remaining > 0) "$confirm ($remaining)" else confirm)
-                        }
-                    }
-                }
-            }
+        CountdownConfirmDialog(
+            stringResource(R.string.departure_source_warning_title),
+            stringResource(R.string.cancel),
+            stringResource(R.string.departure_source_warning_confirm),
+            onDismiss,
+            onConfirm,
+            CONFIRM_COOLDOWN_SECONDS
+        ) {
+            Text(
+                stringResource(R.string.departure_source_warning_message),
+                color = colorResource(R.color.secondaryColor)
+            )
         }
     }
 
