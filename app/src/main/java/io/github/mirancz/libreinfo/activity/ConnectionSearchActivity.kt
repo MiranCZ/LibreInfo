@@ -60,9 +60,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
-import io.github.mirancz.libreinfo.activity.component.AppButton
-import io.github.mirancz.libreinfo.activity.component.ConfirmDialog
-import io.github.mirancz.libreinfo.activity.component.Container
+import io.github.mirancz.libreinfo.ui.components.AppButton
+import io.github.mirancz.libreinfo.ui.components.ConfirmDialog
+import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
 import java.time.LocalDate
 import java.time.LocalDateTime

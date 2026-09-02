@@ -45,9 +45,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
-import io.github.mirancz.libreinfo.activity.component.Container
-import io.github.mirancz.libreinfo.activity.component.FavouriteStopAction
-import io.github.mirancz.libreinfo.activity.component.StopViewModel
+import io.github.mirancz.libreinfo.ui.components.Container
+import io.github.mirancz.libreinfo.ui.components.FavouriteStopAction
+import io.github.mirancz.libreinfo.ui.components.StopViewModel
 import io.github.mirancz.libreinfo.activity.data.DelaysDataHolder
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.exception.RequestException

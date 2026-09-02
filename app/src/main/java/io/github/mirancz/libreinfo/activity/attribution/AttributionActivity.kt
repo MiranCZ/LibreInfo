@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.activity.component.Container
+import io.github.mirancz.libreinfo.ui.components.Container
 
 class AttributionActivity : KBaseActivity(R.string.data_sources) {
 

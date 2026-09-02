@@ -13,8 +13,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
-import io.github.mirancz.libreinfo.activity.component.FavouriteStopAction
-import io.github.mirancz.libreinfo.activity.component.StopViewModel
+import io.github.mirancz.libreinfo.ui.components.FavouriteStopAction
+import io.github.mirancz.libreinfo.ui.components.StopViewModel
 import io.github.mirancz.libreinfo.activity.data.DelaysDataHolder
 import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer

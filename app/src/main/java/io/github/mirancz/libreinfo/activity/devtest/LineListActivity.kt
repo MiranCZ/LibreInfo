@@ -17,7 +17,7 @@ import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.activity.component.Container
+import io.github.mirancz.libreinfo.ui.components.Container
 
 class LineListActivity : KBaseActivity(R.string.dev_settings) {
     @Composable

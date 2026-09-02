@@ -1,4 +1,4 @@
-package io.github.mirancz.libreinfo.activity.component
+package io.github.mirancz.libreinfo.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

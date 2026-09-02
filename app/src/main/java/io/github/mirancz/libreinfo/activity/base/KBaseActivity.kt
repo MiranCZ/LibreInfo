@@ -116,8 +116,8 @@ import io.github.mirancz.libreinfo.util.load.LoadState
 import io.github.mirancz.libreinfo.util.load.rememberDelayedLoadState
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.activity.component.AppButton
-import io.github.mirancz.libreinfo.activity.component.Container
+import io.github.mirancz.libreinfo.ui.components.AppButton
+import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
 import java.util.function.Consumer
 import kotlin.random.Random

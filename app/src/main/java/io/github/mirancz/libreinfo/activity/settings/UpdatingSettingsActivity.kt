@@ -39,9 +39,9 @@ import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
 import io.github.mirancz.libreinfo.util.AppUpdater
 import io.github.mirancz.libreinfo.util.UpdateDownloader
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.activity.component.AppButton
-import io.github.mirancz.libreinfo.activity.component.AppSwitch
-import io.github.mirancz.libreinfo.activity.component.Container
+import io.github.mirancz.libreinfo.ui.components.AppButton
+import io.github.mirancz.libreinfo.ui.components.AppSwitch
+import io.github.mirancz.libreinfo.ui.components.Container
 
 class UpdatingSettingsActivity : KBaseActivity(R.string.updating_settings) {
 

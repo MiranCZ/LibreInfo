@@ -1,4 +1,4 @@
-package io.github.mirancz.libreinfo.activity.component
+package io.github.mirancz.libreinfo.ui.components
 
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -22,7 +22,7 @@ fun AppSwitch(
         enabled = enabled,
         colors = SwitchDefaults.colors(
             checkedTrackColor = colorResource(R.color.light_blue),
-            checkedThumbColor = Color.Companion.White,
+            checkedThumbColor = Color.White,
         )
     )
 }

@@ -15,7 +15,7 @@ import io.github.mirancz.libreinfo.activity.attribution.AttributionActivity
 import io.github.mirancz.libreinfo.activity.base.NavigationActivity
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.activity.component.Container
+import io.github.mirancz.libreinfo.ui.components.Container
 
 class AboutActivity : NavigationActivity(R.string.about) {
     @Composable

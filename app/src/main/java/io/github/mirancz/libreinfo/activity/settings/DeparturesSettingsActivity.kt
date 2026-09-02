@@ -48,9 +48,8 @@ import io.github.mirancz.libreinfo.parsing.types.departure.VehicleInfo
 import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.activity.component.AppSwitch
-import io.github.mirancz.libreinfo.activity.component.ConfirmDialog
-import io.github.mirancz.libreinfo.activity.component.Container
+import io.github.mirancz.libreinfo.ui.components.AppSwitch
+import io.github.mirancz.libreinfo.ui.components.Container
 
 class DeparturesSettingsActivity : KBaseActivity(R.string.departures_settings) {
 

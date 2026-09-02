@@ -34,9 +34,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
-import io.github.mirancz.libreinfo.activity.component.AppButton
-import io.github.mirancz.libreinfo.activity.component.Container
-import io.github.mirancz.libreinfo.activity.component.SettingSwitch
+import io.github.mirancz.libreinfo.ui.components.AppButton
+import io.github.mirancz.libreinfo.ui.components.Container
+import io.github.mirancz.libreinfo.ui.components.SettingSwitch
 import io.github.mirancz.libreinfo.util.AppSettings
 import io.github.mirancz.libreinfo.util.PermissionHelper
 

@@ -1,4 +1,4 @@
-package io.github.mirancz.libreinfo.activity.component
+package io.github.mirancz.libreinfo.ui.components
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
