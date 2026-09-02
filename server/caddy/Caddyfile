@@ -1,17 +1,25 @@
 {
     order rate_limit first
+
+    # Caddy sits behind a Cloudflare Tunnel, so the socket peer is always
+    # cloudflared. Without these, {client_ip} falls back to that peer address
+    # and every rate limit zone becomes one bucket shared by all clients.
+    servers {
+        trusted_proxies static private_ranges
+        client_ip_headers Cf-Connecting-IP
+    }
 }
 
 localhost {
     @api not path /stream /stream/* /static/*
     rate_limit @api {
         zone api_burst {
-            key {remote_host}
+            key {client_ip}
             events 40
             window 1m
         }
         zone api_hourly {
-            key {remote_host}
+            key {client_ip}
             events 500
             window 1h
         }
@@ -22,7 +30,7 @@ localhost {
 	handle @stream {
 		rate_limit {
 			zone ws_stream {
-				key {remote_host}
+				key {client_ip}
 				events 10
 				window 1m
 			}
@@ -33,7 +41,7 @@ localhost {
 	handle /static/data {
 		rate_limit {
 			zone static_data {
-				key {remote_host}
+				key {client_ip}
 				events 5
 				window 1m
 			}
@@ -47,7 +55,7 @@ localhost {
 	handle /static/info {
 		rate_limit {
 			zone static_info {
-				key {remote_host}
+				key {client_ip}
 				events 30
 				window 1m
 			}
@@ -61,7 +69,7 @@ localhost {
     handle /departures {
             rate_limit {
                 zone departures {
-                    key {remote_host}
+                    key {client_ip}
                     events 1
                     window 5s
             }
