@@ -12,7 +12,9 @@ import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -125,6 +127,8 @@ class LocationSettingsActivity : KBaseActivity(R.string.location) {
                     color = colorResource(R.color.secondaryColor),
                     textAlign = TextAlign.Center
                 )
+
+                Spacer(Modifier.height(12.dp))
 
                 AppButton(
                     color = colorResource(R.color.light_blue), onClick = {
