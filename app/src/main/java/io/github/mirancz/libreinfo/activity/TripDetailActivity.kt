@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -115,26 +116,27 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
             var data by remember{ mutableStateOf(res.second) }
             var lastUpdated: Long? by remember { mutableStateOf(null) }
 
+            // FIXME don't update on finished routes
             if (data.vehicleInfo != VehicleInfo.NONE) {
                 lastUpdated = System.currentTimeMillis()
-            }
 
-            val lifecycleOwner = LocalLifecycleOwner.current
-            LaunchedEffect(Unit) {
-                lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    while (true) {
-                        delay(10_000.milliseconds)
+                val lifecycleOwner = LocalLifecycleOwner.current
+                LaunchedEffect(Unit) {
+                    lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                        while (true) {
+                            delay(15_000.milliseconds)
 
-                        withContext(Dispatchers.IO) {
-                            data = loadAndParseTripInfoData(
-                                storage,
-                                tripId,
-                                context,
-                                highlightedStopId,
-                                vehicleId
-                            )
+                            withContext(Dispatchers.IO) {
+                                data = loadAndParseTripInfoData(
+                                    storage,
+                                    tripId,
+                                    context,
+                                    highlightedStopId,
+                                    vehicleId
+                                )
 
-                            lastUpdated = System.currentTimeMillis()
+                                lastUpdated = System.currentTimeMillis()
+                            }
                         }
                     }
                 }
@@ -337,14 +339,12 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
                             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                                 while (true) {
                                     now = System.currentTimeMillis()
-                                    println("PING")
                                     delay(1000.milliseconds)
                                 }
                             }
                         }
 
-                        // TODO translatable
-                        val text = "Last updated: ${(now - lastUpdate)/1000}s"
+                        val text = "${stringResource(R.string.last_updated)} ${(now - lastUpdate)/1000}s"
                         Text(
                             text,
                             color = colorResource(R.color.secondary_color_tone),

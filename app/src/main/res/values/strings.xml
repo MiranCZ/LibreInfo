@@ -112,4 +112,5 @@
     <string name="allow_location">Povolit přístup k poloze</string>
     <string name="allow_fine_location">Povolit přístup k přesné poloze</string>
     <string name="sort_stops_by_distance">Řadit zastávky podle vzdálenosti</string>
+    <string name="last_updated">Aktualizováno:</string>
 </resources>
