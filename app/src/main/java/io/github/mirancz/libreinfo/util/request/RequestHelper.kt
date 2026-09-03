@@ -28,15 +28,25 @@ import io.github.mirancz.libreinfo.util.json
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.serializer
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.TimeUnit
+import kotlin.getValue
 
 object RequestHelper {
 
+    private val httpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .build()
+    }
 
     @Throws(AppException::class)
     @JvmStatic
@@ -210,31 +220,54 @@ object RequestHelper {
         }
 
         // TODO make this into a setting
-        val timeoutMs = 10000
-        var con: HttpURLConnection? = null
+        val timeoutMs = 10000L
+
+        val request = Request.Builder()
+            .url(endpoint.url)
+            .header("User-Agent", getUserAgent())
+            .build()
+
+        val call = httpClient.newBuilder()
+            .connectTimeout(timeoutMs, TimeUnit.MILLISECONDS)
+            .readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
+            .build()
+            .newCall(request)
+
+        val deadline = System.currentTimeMillis() + timeoutMs
+
         try {
-            val url = URL(endpoint.url)
+            var response = call.execute()
 
-            con = url.openConnection() as HttpURLConnection
-            con.setRequestProperty("User-Agent", getUserAgent())
-            con.setConnectTimeout(timeoutMs)
-            con.setReadTimeout(timeoutMs)
+            // retry for "too many requests"
+            while (response.code == 429) {
+                val remainingMs = deadline - System.currentTimeMillis()
+                if (remainingMs <= 0) break
 
-            val code = con.getResponseCode()
-            if (code >= 400) {
-                drainAndClose(con.errorStream)
-                con.disconnect()
+                val retryAfterStr = response.header("Retry-After")
+
+                if (retryAfterStr?.toLongOrNull() == null) break
+
+                val waitMs = retryAfterStr.toLong() * 1000
+
+                if (remainingMs < waitMs) break
+
+                response.close()
+
+                Thread.sleep(waitMs)
+                response = call.clone().execute()
+
+            }
+
+            if (!response.isSuccessful) {
+                val code = response.code
+                response.close()
                 throw RequestException.serverError(endpoint, code)
             }
 
-            return con.getInputStream()
+            return response.body.byteStream()
         } catch (e: SocketTimeoutException) {
-            con?.disconnect()
-
-            throw RequestException.timedOutError(endpoint, timeoutMs)
+            throw RequestException.timedOutError(endpoint, timeoutMs.toInt())
         } catch (e: IOException) {
-            con?.disconnect()
-
             AppLog.e("Failed to reach " + endpoint.url, e)
             throw RequestException.reachError(endpoint)
         }
@@ -246,17 +279,6 @@ object RequestHelper {
         }
 
         return "LibreInfo-v${BuildConfig.VERSION_NAME}-${BuildConfig.FLAVOR}"
-    }
-
-    /** Reads and discards an error-stream body so the connection can be released, then closes it.  */
-    private fun drainAndClose(stream: InputStream?) {
-        if (stream == null) return
-        try {
-            stream.use {
-                IOUtil.readAllBytes(stream)
-            }
-        } catch (ignored: IOException) {
-        }
     }
 
     private fun hasNetwork(context: Context): Boolean {
