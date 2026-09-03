@@ -1,5 +1,6 @@
 package io.github.mirancz.libreinfo.activity
 
+import android.content.Context
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -25,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,6 +47,9 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.exception.RequestException
@@ -67,10 +72,13 @@ import io.github.mirancz.libreinfo.util.DelayUtil.getDelayColor
 import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.util.load.rememberLoad
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import java.util.function.Function
+import kotlin.time.Duration.Companion.milliseconds
 
-// TODO periodic updates
 class TripDetailActivity : KBaseActivity(R.string.trip) {
 
     private var departuresSettings by mutableStateOf(DeparturesSettings())
@@ -94,94 +102,135 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
 
         val loadResult = rememberLoad {
             val storage = provider.getInstance()
-            val res = storage.apiStorage.getLineIdAndRoute(tripId)
+            val tripInfoData = loadAndParseTripInfoData(storage, tripId, context, highlightedStopId, vehicleId)
 
-            var vehicleInfo = VehicleInfo.NONE
-            try {
-                vehicleInfo = RequestHelper.getVehicleInfo(context, res.left!!, res.right!!).map(storage)
-
-            } catch (e: RequestException) {
-                showErrorSnackBar(e)
-            }
-
-
-            val trip = storage.tripStorage.trips[tripId]
-            var headsign = storage.tripStorage.getTripHeadsign(trip)
-
-            var routeInfoText = getString(R.string.trip_number, res.left, res.right)
-
-
-            var stops = trip.getRouteStops(storage.routeStopStorage)
-
-            if (trip.blockId.toInt() != -1) {
-                val neighbors: MutableList<Trip> =
-                    ArrayList(storage.tripStorage.getTripsForBlock(trip.blockId.toInt()))
-
-                neighbors.removeIf { t: Trip? ->
-                    !storage.calendarStorage.available(
-                        CalendarStorage.Date.now(), t!!.serviceId.toInt()
-                    )
-                }
-
-                neighbors.sortWith(Comparator.comparing(Function { t: Trip? ->
-                    storage.routeStopStorage.getRouteStop(
-                        t!!.startPos
-                    ).departure()
-                }))
-
-                headsign = storage.tripStorage.getHeadsignForTripList(neighbors, storage)
-
-                routeInfoText = getString(R.string.trip) + " "
-
-
-                val stopsList: MutableList<RouteStop?> = ArrayList()
-
-                for (i in neighbors.indices) {
-                    val neighbor = neighbors[i]
-                    val info = storage.apiStorage.getLineIdAndRoute(neighbor.id)
-
-                    if (i != 0) {
-                        routeInfoText += " => "
-                    }
-                    routeInfoText += info.left.toString() + "/" + info.right
-
-                    val routeStops = neighbor.getRouteStops(storage.routeStopStorage)
-                    for (j in routeStops.indices) {
-                        val routeStop = routeStops[j]
-
-                        if (i != 0 && j == 0 && stopsList[stopsList.size - 1]!!.stopId == routeStop.stopId) continue
-                        stopsList.add(routeStop)
-                    }
-                }
-
-                stops = stopsList.toTypedArray<RouteStop?>()
-            }
-
-            val lineRoute = storage.apiStorage.getLineIdAndRoute(tripId)
             Pair(
-                storage, TripInfoData(
-                    tripId,
-                    highlightedStopId,
-                    lineRoute.left,
-                    lineRoute.right,
-                    vehicleId,
-                    vehicleInfo,
-                    headsign,
-                    routeInfoText,
-                    stops
-                )
+                storage, tripInfoData
             )
         }
 
 
         AsyncContent(loadResult, loading = { TripDetailShimmer() }) { res ->
             val storage = res.first
-            val data = res.second
+            var data by remember{ mutableStateOf(res.second) }
+            var lastUpdated: Long? by remember { mutableStateOf(null) }
+
+            if (data.vehicleInfo != VehicleInfo.NONE) {
+                lastUpdated = System.currentTimeMillis()
+            }
+
+            val lifecycleOwner = LocalLifecycleOwner.current
+            LaunchedEffect(Unit) {
+                lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    while (true) {
+                        delay(10_000.milliseconds)
+
+                        withContext(Dispatchers.IO) {
+                            data = loadAndParseTripInfoData(
+                                storage,
+                                tripId,
+                                context,
+                                highlightedStopId,
+                                vehicleId
+                            )
+
+                            lastUpdated = System.currentTimeMillis()
+                        }
+                    }
+                }
+            }
 
             CompositionLocalProvider(LocalDeparturesSettings provides departuresSettings) {
-                TripInfo(storage, data)
+                TripInfo(storage, data, lastUpdated)
             }
         }
+    }
+
+    private fun loadAndParseTripInfoData(
+        storage: IdStorage,
+        tripId: Int,
+        context: Context,
+        highlightedStopId: Int,
+        vehicleId: Int
+    ): TripInfoData {
+        val res = storage.apiStorage.getLineIdAndRoute(tripId)
+
+        var vehicleInfo = VehicleInfo.NONE
+        try {
+            vehicleInfo =
+                RequestHelper.getVehicleInfo(context, res.left!!, res.right!!).map(storage)
+
+        } catch (e: RequestException) {
+            showErrorSnackBar(e)
+        }
+
+
+        val trip = storage.tripStorage.trips[tripId]
+        var headsign = storage.tripStorage.getTripHeadsign(trip)
+
+        var routeInfoText = getString(R.string.trip_number, res.left, res.right)
+
+
+        var stops = trip.getRouteStops(storage.routeStopStorage)
+
+        if (trip.blockId.toInt() != -1) {
+            val neighbors: MutableList<Trip> =
+                ArrayList(storage.tripStorage.getTripsForBlock(trip.blockId.toInt()))
+
+            neighbors.removeIf { t: Trip? ->
+                !storage.calendarStorage.available(
+                    CalendarStorage.Date.now(), t!!.serviceId.toInt()
+                )
+            }
+
+            neighbors.sortWith(Comparator.comparing(Function { t: Trip? ->
+                storage.routeStopStorage.getRouteStop(
+                    t!!.startPos
+                ).departure()
+            }))
+
+            headsign = storage.tripStorage.getHeadsignForTripList(neighbors, storage)
+
+            routeInfoText = getString(R.string.trip) + " "
+
+
+            val stopsList: MutableList<RouteStop?> = ArrayList()
+
+            for (i in neighbors.indices) {
+                val neighbor = neighbors[i]
+                val info = storage.apiStorage.getLineIdAndRoute(neighbor.id)
+
+                if (i != 0) {
+                    routeInfoText += " => "
+                }
+                routeInfoText += info.left.toString() + "/" + info.right
+
+                val routeStops = neighbor.getRouteStops(storage.routeStopStorage)
+                for (j in routeStops.indices) {
+                    val routeStop = routeStops[j]
+
+                    if (i != 0 && j == 0 && stopsList[stopsList.size - 1]!!.stopId == routeStop.stopId) continue
+                    stopsList.add(routeStop)
+                }
+            }
+
+            stops = stopsList.toTypedArray<RouteStop?>()
+        }
+
+        val lineRoute = storage.apiStorage.getLineIdAndRoute(tripId)
+
+        val tripInfoData = TripInfoData(
+            tripId,
+            highlightedStopId,
+            lineRoute.left,
+            lineRoute.right,
+            vehicleId,
+            vehicleInfo,
+            headsign,
+            routeInfoText,
+            stops
+        )
+        return tripInfoData
     }
 
 
@@ -236,7 +285,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
     }
 
     @Composable
-    private fun TripInfo(storage: IdStorage, data: TripInfoData) {
+    private fun TripInfo(storage: IdStorage, data: TripInfoData, lastUpdate: Long? = null) {
         val context = LocalContext.current
         val delay = data.vehicleInfo.delay
 
@@ -271,11 +320,38 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
                     }
                 }
 
-                Text(
-                    data.routeInfoText,
-                    color = colorResource(R.color.secondary_color_tone),
-                    fontSize = 14.sp
-                )
+                Row(Modifier.fillMaxWidth()) {
+                    Text(
+                        data.routeInfoText,
+                        color = colorResource(R.color.secondary_color_tone),
+                        fontSize = 14.sp
+                    )
+
+                    if (lastUpdate != null) {
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+                        val lifecycleOwner = LocalLifecycleOwner.current
+
+                        LaunchedEffect(Unit) {
+                            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                                while (true) {
+                                    now = System.currentTimeMillis()
+                                    println("PING")
+                                    delay(1000.milliseconds)
+                                }
+                            }
+                        }
+
+                        // TODO translatable
+                        val text = "Last updated: ${(now - lastUpdate)/1000}s"
+                        Text(
+                            text,
+                            color = colorResource(R.color.secondary_color_tone),
+                            fontSize = 14.sp
+                        )
+                    }
+                }
 
                 StopsList(storage, data)
             }
