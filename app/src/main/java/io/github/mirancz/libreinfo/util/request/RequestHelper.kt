@@ -36,6 +36,7 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import kotlin.getValue
 
@@ -47,6 +48,8 @@ object RequestHelper {
             .readTimeout(10, TimeUnit.SECONDS)
             .build()
     }
+
+    private var requestCache: ConcurrentHashMap<String, Pair<Any, Long>> = ConcurrentHashMap()
 
     @Throws(AppException::class)
     @JvmStatic
@@ -71,29 +74,29 @@ object RequestHelper {
 
 
     @Throws(RequestException::class)
-    fun getNews(context: Context): NewsResponse {
-        return makeOwnRequest(context, "news")
+    fun getNews(context: Context, force: Boolean = false): NewsResponse {
+        return makeOwnCachedRequest(context, "news", 60, force)
     }
 
     @Throws(RequestException::class)
-    fun getEvents(context: Context): EventsResponse {
-        return makeOwnRequest(context, "events")
+    fun getEvents(context: Context, force: Boolean = false): EventsResponse {
+        return makeOwnCachedRequest(context, "events", 30, force)
     }
 
     @Throws(RequestException::class)
-    fun getDiversions(context: Context): DiversionsResponse {
-        return makeOwnRequest(context, "diversions")
+    fun getDiversions(context: Context, force: Boolean = false): DiversionsResponse {
+        return makeOwnCachedRequest(context, "diversions", 120, force)
     }
 
     @Throws(RequestException::class)
-    fun getRouteDelays(context: Context): RouteDelaysResponse {
-        return makeOwnRequest(context, "routeDelays")
+    fun getRouteDelays(context: Context, force: Boolean = false): RouteDelaysResponse {
+        return makeOwnCachedRequest(context, "routeDelays", 5, force)
     }
 
     @JvmStatic
     @Throws(RequestException::class)
-    fun getVehicles(context: Context): VehiclesResponse {
-        return makeOwnRequest(context, "vehicles")
+    fun getVehicles(context: Context, force: Boolean = false): VehiclesResponse {
+        return makeOwnCachedRequest(context, "vehicles", 5, force)
     }
 
     @Throws(RequestException::class)
@@ -165,6 +168,28 @@ object RequestHelper {
         return readUrl(context, Endpoint(URL, Text.literal(endpointName)))
     }
 
+    @Throws(RequestException::class)
+    private inline fun <reified T> makeOwnCachedRequest(context: Context, endpoint: String, cacheAliveSec: Int, forceRequest: Boolean): T {
+        val key = T::class.qualifiedName + "%" + endpoint
+
+        val cached = requestCache[key]
+        if (cached != null && !forceRequest) {
+            val value = cached.first
+            val created = cached.second
+
+            if ((System.currentTimeMillis() - created)/1000 < cacheAliveSec) {
+                if (value is T) {
+                    return value as T
+                }
+            }
+        }
+
+        val requestResult: T = makeRequest(context, Endpoint.APP_SERVER.resolve(endpoint))
+
+        requestCache[key] = Pair(requestResult as Any, System.currentTimeMillis())
+
+        return requestResult
+    }
 
     @Throws(RequestException::class)
     private inline fun <reified T> makeRequest(context: Context, endpoint: Endpoint): T =

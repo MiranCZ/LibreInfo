@@ -121,7 +121,7 @@ public class VehicleMapActivity extends BaseActivity {
     private void startVehicleUpdates(GeoJsonSource source, MapLibreMap map) {
         new Thread(() -> {
             try {
-                List<Vehicle> vehicles = RequestHelper.getVehicles(this).getVehicles().stream()
+                List<Vehicle> vehicles = RequestHelper.getVehicles(this, false).getVehicles().stream()
                         .map(dto -> dto.map(storage))
                         .collect(Collectors.toList());
 
