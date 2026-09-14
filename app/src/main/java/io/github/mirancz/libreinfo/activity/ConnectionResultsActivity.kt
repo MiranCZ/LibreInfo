@@ -92,7 +92,9 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
     private fun ConnectionHeader(connection: ConnectionUi) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
 
-            val countdown = if (connection.countdownMin <= 0) {
+            val countdown = if (connection.countdownMin < 0) {
+                stringResource(R.string.connection_before, formatMinutes(-connection.countdownMin))
+            } else if (connection.countdownMin == 0) {
                 stringResource(R.string.connection_now)
             } else {
                 stringResource(R.string.connection_in, formatMinutes(connection.countdownMin))

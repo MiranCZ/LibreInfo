@@ -48,6 +48,7 @@
     <string name="connection_select_stops">Vyberte počáteční i cílovou zastávku</string>
     <string name="connection_dev_warning">Hledání spojení je stále v brzkém vývoji, takže chybí některé nastavení, ovládání a nemusí být úplně doladěné UI. Všechny tyto věci se postupně vyřeší.</string>
     <string name="connection_results">Výsledky hledání</string>
+    <string name="connection_before">před %s</string>
     <string name="connection_in">za %s</string>
     <string name="connection_now">nyní</string>
     <string name="departure_now">Nyní</string>
