@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,7 +49,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -64,6 +64,7 @@ import io.github.mirancz.libreinfo.ui.components.AppButton
 import io.github.mirancz.libreinfo.ui.components.ConfirmDialog
 import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -100,11 +101,8 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
 
             Spacer(Modifier.height(24.dp))
 
-            Container(color = colorResource(R.color.ui_warning)) {
-                Text(
-                    stringResource(R.string.connection_dev_warning),
-                    color = colorResource(R.color.secondaryColor)
-                )
+            Container(color = MaterialTheme.colorScheme.errorContainer) {
+                Text(stringResource(R.string.connection_dev_warning))
             }
         }
 
@@ -140,7 +138,7 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
                     Icon(
                         imageVector = Icons.Default.AccessTime,
                         contentDescription = null,
-                        tint = colorResource(R.color.secondary_color_tone),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
                             .size(20.dp)
                     )
@@ -150,7 +148,7 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
                     Text(
                         stringResource(R.string.departure) + " ",
                         fontWeight = FontWeight.Medium,
-                        color = colorResource(R.color.secondary_color_light_tone),
+                        color = MaterialTheme.extendedColors.onSurfaceMedium,
                     )
                 }
             }
@@ -172,7 +170,6 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
                 }
                 Text(
                     text,
-                    color = colorResource(R.color.secondaryColor),
                     fontWeight = FontWeight.Medium,
                 )
 
@@ -185,7 +182,6 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = null,
-                            tint = colorResource(R.color.secondaryColor),
                             modifier = Modifier
                                 .size(20.dp)
                         )
@@ -219,11 +215,11 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
                     onSearch(vm)
                 }
             },
-            color = colorResource(R.color.light_blue),
+            color = MaterialTheme.colorScheme.primary,
             enabled = validStops,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(stringResource(R.string.search), color = Color.White)
+            Text(stringResource(R.string.search))
         }
     }
 
@@ -265,12 +261,12 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
                     Modifier
                         .align(Alignment.CenterEnd)
                         .padding(horizontal = 6.dp)
-                        .background(colorResource(R.color.on_widget_background), CircleShape)
+                        .background(MaterialTheme.extendedColors.surfaceHighlight, CircleShape)
                 ) {
                     Icon(
                         imageVector = Icons.Default.SwapVert,
                         contentDescription = null,
-                        tint = colorResource(R.color.light_blue),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
                             .size(32.dp)
                             .rotate(animatedRotation)
@@ -299,7 +295,7 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
                         contentDescription = null,
                         modifier = Modifier
                             .size(20.dp),
-                        tint = colorResource(R.color.light_blue)
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 },
             )
@@ -359,7 +355,7 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
                         .fillMaxWidth()
                         .height(WHEEL_ITEM_HEIGHT)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(colorResource(R.color.on_widget_background).copy(alpha = 0.6f))
+                        .background(MaterialTheme.extendedColors.surfaceHighlight.copy(alpha = 0.6f))
                 )
 
                 Row(
@@ -377,7 +373,7 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
                     ) { hour = it }
                     Text(
                         ":",
-                        color = colorResource(R.color.secondary_color_light_tone),
+                        color = MaterialTheme.extendedColors.onSurfaceMedium,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -451,7 +447,7 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
                 val selected = it == centerIndex
 
                 val color =
-                    if (selected) colorResource(R.color.secondaryColor) else colorResource(R.color.secondary_color_tone)
+                    if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                 Box(
                     Modifier
                         .fillMaxWidth()

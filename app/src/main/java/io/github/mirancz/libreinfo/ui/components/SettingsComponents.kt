@@ -12,11 +12,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.mirancz.libreinfo.R
 import kotlin.reflect.KMutableProperty0
 
 @Composable
@@ -30,7 +28,7 @@ fun SettingSwitch(label: String, state: KMutableProperty0<Boolean>, onChange: (B
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = colorResource(R.color.secondaryColor))
+        Text(label, fontSize = 16.sp, fontWeight = FontWeight.Medium)
         AppSwitch(checked = checked, onCheckedChange = {
             checked = it
             state.set(it)

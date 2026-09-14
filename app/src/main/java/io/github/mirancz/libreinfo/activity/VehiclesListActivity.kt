@@ -11,13 +11,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,6 +27,7 @@ import com.valentinilk.shimmer.Shimmer
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.Vehicle
+import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
@@ -147,14 +148,14 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
                         Modifier
                             .size(20.dp)
                             .align(Alignment.CenterVertically),
-                        tint = colorResource(R.color.secondary_color_light_tone)
+                        tint = MaterialTheme.extendedColors.onSurfaceMedium
                     )
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         item.lastStop.name,
-                        color = colorResource(R.color.secondary_color_tone),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp
                     )
                 }

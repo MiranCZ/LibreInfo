@@ -3,18 +3,18 @@ package io.github.mirancz.libreinfo.ui.components
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.ui.theme.extendedColors
 
 class StopViewModel : ViewModel() {
     private val _liked = mutableStateOf(false)
@@ -50,14 +50,14 @@ fun FavouriteStopAction(stop: Stop) {
             Icon(
                 painter = painterResource(R.drawable.heart_solid),
                 contentDescription = "Unlike",
-                tint = Color.Red,
+                tint = MaterialTheme.extendedColors.favourite,
                 modifier = Modifier.size(32.dp)
             )
         } else {
             Icon(
                 painter = painterResource(R.drawable.heart_regular),
                 contentDescription = "Like",
-                tint = colorResource(R.color.light_blue),
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(32.dp)
             )
         }

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -42,6 +42,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import io.github.mirancz.libreinfo.activity.base.NavigationActivity
 import io.github.mirancz.libreinfo.activity.settings.SettingsActivity
+import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.ApkInstaller
 import io.github.mirancz.libreinfo.util.AppUpdater
 import io.github.mirancz.libreinfo.util.UpdateHelper
@@ -147,14 +148,10 @@ class MainActivity : NavigationActivity(R.string.app_name) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(
                         Modifier.size(24.dp),
-                        strokeWidth = 3.dp,
-                        color = colorResource(R.color.light_blue)
+                        strokeWidth = 3.dp
                     )
                     Spacer(Modifier.width(16.dp))
-                    Text(
-                        stringResource(R.string.update_preparing),
-                        color = colorResource(R.color.secondaryColor)
-                    )
+                    Text(stringResource(R.string.update_preparing))
                 }
             }
         }
@@ -166,7 +163,6 @@ class MainActivity : NavigationActivity(R.string.app_name) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = stringResource(R.string.update_ready),
-                    color = colorResource(R.color.secondaryColor),
                     fontWeight = FontWeight.Medium
                 )
 
@@ -174,21 +170,21 @@ class MainActivity : NavigationActivity(R.string.app_name) {
                     AppButton(
                         modifier = Modifier.fillMaxWidth(0.5f).padding(4.dp),
                         color = Color.Transparent,
-                        border = BorderStroke(1.5.dp, colorResource(R.color.secondary_color_tone)),
+                        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
                         onClick = onDismiss
                     ) {
                         Text(
                             stringResource(R.string.close),
-                            color = colorResource(R.color.secondary_color_light_tone)
+                            color = MaterialTheme.extendedColors.onSurfaceMedium
                         )
                     }
 
                     AppButton(
                         modifier = Modifier.padding(4.dp).fillMaxWidth(),
-                        color = colorResource(R.color.light_blue),
+                        color = MaterialTheme.colorScheme.primary,
                         onClick = onInstall
                     ) {
-                        Text(stringResource(R.string.install), color = Color.White)
+                        Text(stringResource(R.string.install))
 
                     }
                 }
@@ -205,10 +201,7 @@ class MainActivity : NavigationActivity(R.string.app_name) {
             { onChoice(false) },
             { onChoice(true) }
         ) {
-            Text(
-                stringResource(R.string.update_prompt_message),
-                color = colorResource(R.color.secondaryColor)
-            )
+            Text(stringResource(R.string.update_prompt_message))
         }
     }
 
@@ -221,10 +214,7 @@ class MainActivity : NavigationActivity(R.string.app_name) {
             onDismiss,
             onContinue
         ) {
-            Text(
-                stringResource(R.string.install_permission_rationale),
-                color = colorResource(R.color.secondaryColor)
-            )
+            Text(stringResource(R.string.install_permission_rationale))
         }
     }
 
@@ -237,17 +227,13 @@ class MainActivity : NavigationActivity(R.string.app_name) {
                 Column {
                     Text(
                         stringResource(R.string.install_failed_title),
-                        color = colorResource(R.color.secondaryColor),
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
 
                     Spacer(Modifier.height(12.dp))
 
-                    Text(
-                        stringResource(R.string.install_failed_message),
-                        color = colorResource(R.color.secondaryColor)
-                    )
+                    Text(stringResource(R.string.install_failed_message))
 
                     Spacer(Modifier.height(12.dp))
 
@@ -259,13 +245,13 @@ class MainActivity : NavigationActivity(R.string.app_name) {
                     ) {
                         Text(
                             stringResource(R.string.debug_info),
-                            color = colorResource(R.color.secondary_color_light_tone),
+                            color = MaterialTheme.extendedColors.onSurfaceMedium,
                             fontWeight = FontWeight.Medium
                         )
                         Icon(
                             imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = null,
-                            tint = colorResource(R.color.secondary_color_light_tone)
+                            tint = MaterialTheme.extendedColors.onSurfaceMedium
                         )
                     }
 
@@ -274,7 +260,7 @@ class MainActivity : NavigationActivity(R.string.app_name) {
                         SelectionContainer {
                             Text(
                                 detail,
-                                color = colorResource(R.color.secondary_color_light_tone),
+                                color = MaterialTheme.extendedColors.onSurfaceMedium,
                                 fontSize = 12.sp
                             )
                         }

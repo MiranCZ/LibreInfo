@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -22,9 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,6 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
+import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.AppUpdater
 import io.github.mirancz.libreinfo.util.UpdateDownloader
 import io.github.mirancz.libreinfo.R
@@ -142,7 +142,7 @@ class UpdatingSettingsActivity : KBaseActivity(R.string.updating_settings) {
                 Text(
                     stringResource(R.string.update_wifi_charging_note),
                     fontSize = 13.sp,
-                    color = colorResource(R.color.secondary_color_light_tone)
+                    color = MaterialTheme.extendedColors.onSurfaceMedium
                 )
             }
             AppSwitch(checked = checked, onCheckedChange = onCheckedChange)
@@ -172,7 +172,7 @@ class UpdatingSettingsActivity : KBaseActivity(R.string.updating_settings) {
                 fontWeight = FontWeight.Medium
             )
             Text(
-                value, fontSize = 14.sp, color = colorResource(R.color.secondary_color_light_tone)
+                value, fontSize = 14.sp, color = MaterialTheme.extendedColors.onSurfaceMedium
             )
         }
     }
@@ -181,17 +181,17 @@ class UpdatingSettingsActivity : KBaseActivity(R.string.updating_settings) {
     private fun CheckButton(checking: Boolean, onClick: () -> Unit) {
         AppButton(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
-            color = colorResource(R.color.light_blue),
+            color = MaterialTheme.colorScheme.primary,
             onClick = onClick
         ) {
             if (checking) {
                 CircularProgressIndicator(
-                    Modifier.size(20.dp), strokeWidth = 2.5.dp, color = Color.White
+                    Modifier.size(20.dp), strokeWidth = 2.5.dp, color = MaterialTheme.colorScheme.onPrimary
                 )
                 Spacer(Modifier.width(12.dp))
-                Text(stringResource(R.string.checking_updates), color = Color.White)
+                Text(stringResource(R.string.checking_updates))
             } else {
-                Text(stringResource(R.string.check_for_updates), color = Color.White)
+                Text(stringResource(R.string.check_for_updates))
             }
         }
     }
@@ -209,17 +209,13 @@ class UpdatingSettingsActivity : KBaseActivity(R.string.updating_settings) {
                 Column {
                     Text(
                         stringResource(R.string.update_available_title),
-                        color = colorResource(R.color.secondaryColor),
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
 
                     Spacer(Modifier.height(12.dp))
 
-                    Text(
-                        stringResource(R.string.update_available_message, versionName),
-                        color = colorResource(R.color.secondaryColor)
-                    )
+                    Text(stringResource(R.string.update_available_message, versionName))
 
                     Spacer(Modifier.height(16.dp))
 
@@ -231,14 +227,10 @@ class UpdatingSettingsActivity : KBaseActivity(R.string.updating_settings) {
                         ) {
                             CircularProgressIndicator(
                                 Modifier.size(20.dp),
-                                strokeWidth = 2.5.dp,
-                                color = colorResource(R.color.light_blue)
+                                strokeWidth = 2.5.dp
                             )
                             Spacer(Modifier.width(12.dp))
-                            Text(
-                                stringResource(R.string.update_downloading),
-                                color = colorResource(R.color.secondaryColor)
-                            )
+                            Text(stringResource(R.string.update_downloading))
                         }
                     } else {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {

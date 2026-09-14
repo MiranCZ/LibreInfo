@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,7 +23,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -98,7 +98,7 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
             }
             Text(
                 countdown,
-                color = colorResource(R.color.light_blue),
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
@@ -111,13 +111,13 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
                     Text(
                         " - ",
                         fontSize = 12.sp,
-                        color = colorResource(R.color.secondary_color_tone)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(connection.arrTime, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 }
                 Text(
                     formatMinutes(connection.durationMin),
-                    color = colorResource(R.color.secondary_color_tone),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp
                 )
             }
@@ -127,7 +127,7 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
     @Composable
     private fun VehicleLeg(leg: VehicleLegUi) {
         val lineColor = Color(leg.alias.backgroundColor)
-        val bg = colorResource(R.color.widget_background)
+        val bg = MaterialTheme.colorScheme.surfaceContainer
 
         val openTripDetail = {
             startActivity(TripDetailActivity::class) { intent ->
@@ -156,7 +156,7 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
             TimelineRow(lineColor, bg, Dot.NONE, connectTop = true, connectBottom = true) {
                 Text(
                     stringResource(R.string.connection_stops, leg.stopCount),
-                    color = colorResource(R.color.secondary_color_tone),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp
                 )
             }
@@ -184,7 +184,7 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
             }
             Text(
                 text,
-                color = colorResource(R.color.secondary_color_tone),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp
             )
         }
@@ -254,7 +254,7 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
         Icon(
             painter = painterResource(R.drawable.person_walking_solid),
             contentDescription = null,
-            tint = colorResource(R.color.secondary_color_tone),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(22.dp)
         )
     }

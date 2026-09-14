@@ -57,7 +57,7 @@
                     android:maxEms="20"
                     android:paddingLeft="8dp"
                     android:singleLine="true"
-                    android:textColor="@color/secondaryColor"
+                    android:textColor="@color/on_surface"
                     android:textSize="20sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/vehicle_wheelchair_icon"
@@ -79,7 +79,7 @@
                         android:layout_height="20dp"
                         android:layout_gravity="right|center_vertical"
                         android:src="@drawable/wheelchair_regular"
-                        app:tint="@color/secondary_color_light_tone" />
+                        app:tint="@color/on_surface_medium" />
                 </FrameLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -100,7 +100,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="24dp"
                         android:src="@drawable/stop"
-                        app:tint="@color/light_blue" />
+                        app:tint="@color/primary" />
 
                     <TextView
                         android:id="@+id/vehicle_next_stop"
@@ -108,7 +108,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/roboto_regular"
                         android:gravity="center_vertical"
-                        android:textColor="@color/secondary_color_tone"
+                        android:textColor="@color/on_surface_variant"
                         android:textSize="16sp" />
                 </LinearLayout>
 

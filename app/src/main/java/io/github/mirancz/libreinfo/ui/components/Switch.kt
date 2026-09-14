@@ -1,12 +1,8 @@
 package io.github.mirancz.libreinfo.ui.components
 
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
-import io.github.mirancz.libreinfo.R
 
 @Composable
 fun AppSwitch(
@@ -20,9 +16,5 @@ fun AppSwitch(
         onCheckedChange = onCheckedChange,
         modifier = modifier,
         enabled = enabled,
-        colors = SwitchDefaults.colors(
-            checkedTrackColor = colorResource(R.color.light_blue),
-            checkedThumbColor = Color.White,
-        )
     )
 }

@@ -9,18 +9,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.valentinilk.shimmer.Shimmer
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
-import io.github.mirancz.libreinfo.ui.theme.AppTypography
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
@@ -67,7 +66,7 @@ class NewsActivity : KBaseActivity(R.string.news) {
                 Text(
                     text = news.title,
                     fontWeight = FontWeight.Black,
-                    style = AppTypography.titleMedium
+                    style = MaterialTheme.typography.titleMedium
                 )
 
                 if (news.published != DateTime.NONE) {
@@ -85,7 +84,7 @@ class NewsActivity : KBaseActivity(R.string.news) {
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = FontWeight.Normal,
                     fontSize = 14.sp,
-                    color = colorResource(R.color.secondary_color_tone)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

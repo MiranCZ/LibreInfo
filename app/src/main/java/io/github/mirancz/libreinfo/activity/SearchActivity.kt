@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -33,9 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,6 +51,7 @@ import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.data.DelaysDataHolder
 import io.github.mirancz.libreinfo.activity.settings.DepartureSource
 import io.github.mirancz.libreinfo.activity.settings.LocationSettingsActivity
+import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.AppSettings
 import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.parsing.storage.StopStorage
@@ -121,14 +121,14 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                     Icon(
                         painter = painterResource(R.drawable.heart_solid),
                         contentDescription = "Unlike",
-                        tint = Color.Red,
+                        tint = MaterialTheme.extendedColors.favourite,
                         modifier = Modifier.size(32.dp)
                     )
                 } else {
                     Icon(
                         painter = painterResource(R.drawable.heart_regular),
                         contentDescription = "Like",
-                        tint = colorResource(R.color.light_blue),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -166,7 +166,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                         modifier = Modifier
                             .padding(start = 4.dp)
                             .size(24.dp),
-                        tint = colorResource(R.color.light_blue),
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 },
                 trailingIcon = {
@@ -278,14 +278,14 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                                 painter = painterResource(R.drawable.heart_solid),
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
-                                tint = Color.Red
+                                tint = MaterialTheme.extendedColors.favourite
                             )
                         } else {
                             Icon(
                                 painter = painterResource(R.drawable.stop),
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
-                                tint = colorResource(R.color.light_blue)
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
 
@@ -309,7 +309,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                                 text = text,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = colorResource(R.color.secondary_color_tone)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }

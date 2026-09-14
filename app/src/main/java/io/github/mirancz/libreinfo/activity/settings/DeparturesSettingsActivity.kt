@@ -23,7 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -176,10 +175,7 @@ class DeparturesSettingsActivity : KBaseActivity(R.string.departures_settings) {
             onConfirm,
             CONFIRM_COOLDOWN_SECONDS
         ) {
-            Text(
-                stringResource(R.string.departure_source_warning_message),
-                color = colorResource(R.color.secondaryColor)
-            )
+            Text(stringResource(R.string.departure_source_warning_message))
         }
     }
 

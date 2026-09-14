@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -34,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -59,6 +59,7 @@ import io.github.mirancz.libreinfo.parsing.types.dto.mapLine
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
 import io.github.mirancz.libreinfo.parsing.types.response.ServerDeparturesResponse
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
@@ -170,12 +171,11 @@ class ServerDeparturesActivity : KBaseActivity("") {
                 item {
                     Container(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        color = colorResource(R.color.ui_warning),
+                        color = MaterialTheme.colorScheme.errorContainer,
                         innerPadding = 0.dp
                     ) {
                         Text(
                             message,
-                            color = colorResource(R.color.secondaryColor),
                             fontSize = 14.sp,
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                         )
@@ -245,7 +245,6 @@ class ServerDeparturesActivity : KBaseActivity("") {
                 Text(
                     departure.finalStop,
                     fontSize = 14.sp,
-                    color = colorResource(R.color.secondaryColor),
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .padding(start = 4.dp)
@@ -259,7 +258,7 @@ class ServerDeparturesActivity : KBaseActivity("") {
                     Modifier
                         .size(20.dp)
                         .align(Alignment.CenterVertically),
-                    tint = colorResource(R.color.secondary_color_light_tone)
+                    tint = MaterialTheme.extendedColors.onSurfaceMedium
                 )
             }
 

@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,7 +44,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -307,7 +307,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
                     if (data.vehicleId != -1) {
                         Text(
                             getString(R.string.vehicle_number, data.vehicleId),
-                            color = colorResource(R.color.secondary_color_tone),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
                         )
                     }
@@ -325,7 +325,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
                 Row(Modifier.fillMaxWidth()) {
                     Text(
                         data.routeInfoText,
-                        color = colorResource(R.color.secondary_color_tone),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp
                     )
 
@@ -347,7 +347,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
                         val text = "${stringResource(R.string.last_updated)} ${(now - lastUpdate)/1000}s"
                         Text(
                             text,
-                            color = colorResource(R.color.secondary_color_tone),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
                         )
                     }
@@ -505,7 +505,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
 
             Text(
                 text = stopName,
-                color = colorResource(R.color.secondaryColor).copy(alpha = textAlpha),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = textAlpha),
                 fontWeight = if (isHighlighted) FontWeight.Bold else FontWeight.Normal,
                 modifier = Modifier
                     .padding(start = 8.dp, end = 4.dp)
@@ -517,7 +517,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
             } else {
                 Text(
                     text = stop.stopTime.formatWithoutDelay(!state.isLast),
-                    color = colorResource(R.color.secondary_color_tone).copy(alpha = textAlpha),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = textAlpha),
                 )
             }
         }
@@ -571,7 +571,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
 
         Row {
             Text(arrivalText, color = Color(getDelayColor(delay)).copy(alpha = alpha))
-            Text(" - ", color = colorResource(R.color.secondary_color_tone).copy(alpha = alpha))
+            Text(" - ", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha))
             Text(departureText, color = Color(getDelayColor(loweredDelay)).copy(alpha = alpha))
         }
     }

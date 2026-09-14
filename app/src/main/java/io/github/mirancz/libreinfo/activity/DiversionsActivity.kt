@@ -25,6 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -43,7 +44,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -58,6 +58,7 @@ import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.Diversion
 import io.github.mirancz.libreinfo.parsing.types.LineAlias
+import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
@@ -93,7 +94,7 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
                 Icon(
                     painter = painterResource(painter),
                     contentDescription = "filter",
-                    tint = colorResource(R.color.light_blue),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(32.dp)
                 )
             }
@@ -331,7 +332,7 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
 
                 AppButton(
                     color = Color.Transparent,
-                    border = BorderStroke(1.5.dp, colorResource(R.color.secondary_color_tone)),
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
                     onClick = {
                         vm.filters = emptySet()
                         scope.launch { sheetState.hide() }
@@ -342,16 +343,16 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
                 ) {
                     Text(
                         stringResource(R.string.clear_filters),
-                        color = colorResource(R.color.secondary_color_light_tone)
+                        color = MaterialTheme.extendedColors.onSurfaceMedium
                     )
                 }
 
                 AppButton(
-                    color = colorResource(R.color.light_blue),
+                    color = MaterialTheme.colorScheme.primary,
                     onClick = onApply,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(stringResource(R.string.apply), color = Color.White)
+                    Text(stringResource(R.string.apply))
                 }
 
             }

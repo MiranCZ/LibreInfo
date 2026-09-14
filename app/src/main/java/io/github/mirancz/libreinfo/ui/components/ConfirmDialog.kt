@@ -15,12 +15,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import io.github.mirancz.libreinfo.R
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -103,8 +101,7 @@ fun CountdownConfirmDialog(
                 Text(
                     title,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = colorResource(R.color.secondaryColor)
+                    fontSize = 18.sp
                 )
 
                 Spacer(Modifier.height(12.dp))

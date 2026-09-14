@@ -46,7 +46,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -75,7 +75,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -107,7 +106,7 @@ import io.github.mirancz.libreinfo.parsing.types.Time
 import io.github.mirancz.libreinfo.parsing.types.departure.Departure
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureEntry
 import io.github.mirancz.libreinfo.ui.theme.AppTheme
-import io.github.mirancz.libreinfo.ui.theme.AppTypography
+import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.HtmlHelper
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.util.Text
@@ -160,17 +159,16 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
 
                         val type = customVisuals?.type ?: SnackBarType.INFO
 
-                        // TODO make theme colors
                         val backgroundColor = when (type) {
-                            SnackBarType.SUCCESS -> Color(0xFF4CAF50)
-                            SnackBarType.ERROR -> colorResource(R.color.ui_warning)
-                            SnackBarType.INFO -> Color(0xFF323232)
+                            SnackBarType.SUCCESS -> MaterialTheme.extendedColors.successContainer
+                            SnackBarType.ERROR -> MaterialTheme.colorScheme.errorContainer
+                            SnackBarType.INFO -> MaterialTheme.extendedColors.infoContainer
                         }
 
                         Snackbar(
                             snackbarData = data,
                             containerColor = backgroundColor,
-                            contentColor = colorResource(R.color.secondaryColor)
+                            contentColor = MaterialTheme.colorScheme.onSurface
                         )
                     } },
                     topBar = {
@@ -189,7 +187,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                                         Icon(
                                             painterResource(R.drawable.chevron_left),
                                             "Go back",
-                                            tint = colorResource(R.color.light_blue)
+                                            tint = MaterialTheme.colorScheme.primary
                                         )
                                     }
                                 }
@@ -230,7 +228,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                     .offset(x = shift, y = shift)
                     .rotate(-45f)
                     .width(corner * 2)
-                    .background(colorResource(R.color.ui_warning))
+                    .background(MaterialTheme.colorScheme.errorContainer)
                     .padding(vertical = 3.dp),
                 contentAlignment = Alignment.Center,
             ) {
@@ -325,7 +323,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                 Icon(
                         painter = painterResource(type.icon),
                         "error",
-                        tint = Color.Red
+                        tint = MaterialTheme.colorScheme.error
                 )
 
                 Text(stringResource(type.title), fontSize = 24.sp, fontWeight = FontWeight.Bold)
@@ -345,8 +343,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                         Text(
                             stringResource(R.string.retry),
                             fontWeight = FontWeight.Medium,
-                            fontSize = 16.sp,
-                            color = colorResource(R.color.secondaryColor)
+                            fontSize = 16.sp
                         )
                     }
                 }
@@ -356,7 +353,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
 
     @Composable
     fun Divider(modifier: Modifier = Modifier) {
-        HorizontalDivider(thickness = 1.dp, color = colorResource(R.color.mid_gray), modifier = modifier)
+        HorizontalDivider(modifier)
     }
 
     @Composable
@@ -427,19 +424,19 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
             Text(
                 text = item.title,
                 fontWeight = FontWeight.Black,
-                style = AppTypography.titleMedium
+                style = MaterialTheme.typography.titleMedium
             )
 
             if (item.from != DateTime.NONE) {
                 Row {
                     Text(
                         "Od: ",
-                        style = AppTypography.bodyMedium,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Normal
                     )
                     Text(
                         item.from.toString(),
-                        style = AppTypography.bodyMedium,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -448,12 +445,12 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                 Row {
                     Text(
                         "Do: ",
-                        style = AppTypography.bodyMedium,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Normal
                     )
                     Text(
                         item.to.toString(),
-                        style = AppTypography.bodyMedium,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -487,7 +484,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
 
     @Composable
     fun ShimmerBox(modifier: Modifier, shimmer: Shimmer, shape: Shape = RoundedCornerShape(4.dp)) {
-        Box(modifier.shimmer(shimmer).background(colorResource(R.color.shimmer_color), shape))
+        Box(modifier.shimmer(shimmer).background(MaterialTheme.extendedColors.shimmer, shape))
     }
 
     @Composable
@@ -517,7 +514,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                 Text(
                     text,
                     fontWeight = FontWeight.Medium,
-                    style = AppTypography.titleMedium
+                    style = MaterialTheme.typography.titleMedium
                 )
             }
         }
@@ -532,7 +529,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         focusRequester: FocusRequester = remember { FocusRequester() },
         leadingIcon: @Composable (() -> Unit)? = null,
         trailingIcon: @Composable (() -> Unit)? = null,
-        color: Color = colorResource(R.color.widget_background),
+        color: Color = MaterialTheme.colorScheme.surfaceContainer,
         readOnly: Boolean = false,
     ) {
         TextField(
@@ -564,12 +561,11 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         options: List<T>,
         onSelect: (T) -> Unit,
         modifier: Modifier = Modifier,
-        color: Color = colorResource(R.color.widget_background),
+        color: Color = MaterialTheme.colorScheme.surfaceContainer,
         displayString: (T) -> String = { it.toString() },
     ) {
         var expanded by remember { mutableStateOf(false) }
-        val accentColor = colorResource(R.color.light_blue)
-        val textColor = colorResource(R.color.secondaryColor)
+        val accentColor = MaterialTheme.colorScheme.primary
 
         ExposedDropdownMenuBox(
             expanded = expanded,
@@ -618,7 +614,6 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                             onSelect(option)
                             expanded = false
                         },
-                        colors = MenuDefaults.itemColors(textColor = textColor),
                     )
                 }
             }
@@ -651,7 +646,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
 
     @Composable
     fun DepartureDetail(departure: Departure, apiStorage: ApiStorage, stopDelays: StopDelaysResponse) {
-        val color = colorResource(R.color.widget_background)
+        val color = MaterialTheme.colorScheme.surfaceContainer
         val stopDelays = stopDelays.stopDelays
 
         fun alreadyLeft(entry: DepartureEntry): Boolean {
@@ -716,7 +711,6 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         Column(modifier) {
             Text(
                 name,
-                color = colorResource(R.color.secondaryColor),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
@@ -762,7 +756,6 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                     Text(
                         departure.finalStop,
                         fontSize = 14.sp,
-                        color = colorResource(R.color.secondaryColor),
                         maxLines = 1,
                         softWrap = false,
                         modifier = Modifier
@@ -780,7 +773,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                         Modifier
                             .size(20.dp)
                             .align(Alignment.CenterVertically),
-                        tint = colorResource(R.color.secondary_color_light_tone)
+                        tint = MaterialTheme.extendedColors.onSurfaceMedium
                     )
                 }
 
@@ -845,7 +838,6 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                         if (name != null) {
                             Text(
                                 name,
-                                color = colorResource(R.color.secondaryColor),
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp)

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -13,7 +14,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.data.DelaysDataHolder
@@ -28,7 +28,6 @@ import io.github.mirancz.libreinfo.util.OfflineDepartures
 import io.github.mirancz.libreinfo.util.Text
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
-import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
 
@@ -88,7 +87,7 @@ class DeparturePostDetailActivity : KBaseActivity("") {
     @Composable
     fun DepartureDetailShimmer(post: Post) {
         val shimmer = rememberActivityShimmer()
-        val color = colorResource(R.color.widget_background)
+        val color = MaterialTheme.colorScheme.surfaceContainer
         Container(
             innerPadding = 0.dp,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)

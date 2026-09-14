@@ -75,7 +75,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         if (getParentActivityIntent() != null) {
             toolbar.setNavigationIcon(R.drawable.chevron_left);
-            toolbar.getNavigationIcon().setColorFilter(ContextCompat.getColor(this, R.color.light_blue), PorterDuff.Mode.SRC_ATOP);
+            toolbar.getNavigationIcon().setColorFilter(ContextCompat.getColor(this, R.color.primary), PorterDuff.Mode.SRC_ATOP);
 
             toolbar.setNavigationOnClickListener(v -> onBackPressed());
         }
@@ -104,7 +104,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         button.setImageResource(iconResId);
 
         if (addTint) {
-            int tintColor = ContextCompat.getColor(this, R.color.light_blue);
+            int tintColor = ContextCompat.getColor(this, R.color.primary);
             DrawableCompat.setTint(button.getDrawable().mutate(), tintColor);
         }
 

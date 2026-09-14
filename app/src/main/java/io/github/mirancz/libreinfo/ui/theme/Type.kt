@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.sp
 
 import io.github.mirancz.libreinfo.R
 
-val robotoFamily = FontFamily(
+private val robotoFamily = FontFamily(
     Font(R.font.roboto_light, FontWeight.Light),
     Font(R.font.roboto_regular, FontWeight.Normal),
     Font(R.font.roboto_medium, FontWeight.Medium),
@@ -20,7 +20,7 @@ val robotoFamily = FontFamily(
 )
 
 // Default Material 3 typography values
-val baseline = Typography()
+private val baseline = Typography()
 
 private fun TextStyle.withRoboto() =
     copy(
@@ -31,14 +31,7 @@ private fun TextStyle.withRoboto() =
         lineHeight = TextUnit.Unspecified
     )
 
-val fontTest = TextStyle().copy(
-    fontFamily = robotoFamily,
-    platformStyle = PlatformTextStyle(
-        includeFontPadding = false
-    )
-)
-
-val AppTypography = Typography(
+internal val AppTypography = Typography(
     displayLarge = baseline.displayLarge.withRoboto(),
     displayMedium = baseline.displayMedium.withRoboto(),
     displaySmall = baseline.displaySmall.withRoboto(),
@@ -55,4 +48,3 @@ val AppTypography = Typography(
     labelMedium = baseline.labelMedium.withRoboto(),
     labelSmall = baseline.labelSmall.withRoboto(),
 )
-

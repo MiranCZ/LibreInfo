@@ -10,12 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.ui.components.Container
+import io.github.mirancz.libreinfo.ui.theme.extendedColors
 
 class AttributionActivity : KBaseActivity(R.string.data_sources) {
 
@@ -183,7 +184,7 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
     ) {
         val linkStyle = TextLinkStyles(
             SpanStyle(
-                color = colorResource(R.color.light_blue),
+                color = MaterialTheme.colorScheme.primary,
                 textDecoration = TextDecoration.Underline
             )
         )
@@ -207,7 +208,7 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
                 }
             },
             fontSize = 12.sp,
-            color = colorResource(R.color.secondary_color_light_tone),
+            color = MaterialTheme.extendedColors.onSurfaceMedium,
             modifier = Modifier.padding(top = 8.dp)
         )
     }

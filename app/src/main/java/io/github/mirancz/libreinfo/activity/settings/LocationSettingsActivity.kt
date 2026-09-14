@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,7 +28,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -124,21 +124,17 @@ class LocationSettingsActivity : KBaseActivity(R.string.location) {
             Column {
                 Text(
                     stringResource(description),
-                    color = colorResource(R.color.secondaryColor),
                     textAlign = TextAlign.Center
                 )
 
                 Spacer(Modifier.height(12.dp))
 
                 AppButton(
-                    color = colorResource(R.color.light_blue), onClick = {
+                    color = MaterialTheme.colorScheme.primary, onClick = {
                         launchPermissionDialog()
                     }, modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        stringResource(allow),
-                        color = colorResource(R.color.secondaryColor),
-                    )
+                    Text(stringResource(allow))
                 }
             }
         }
