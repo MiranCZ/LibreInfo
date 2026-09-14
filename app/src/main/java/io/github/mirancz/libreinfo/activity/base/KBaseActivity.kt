@@ -28,12 +28,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.CircularProgressIndicator
@@ -79,6 +81,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -376,42 +379,41 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
     }
 
     @Composable
-    fun LineIcon(modifier: Modifier = Modifier, text: String, textColor: Color, backgroundColor: Color, padding: Dp = 4.dp, scale: Float = 1f) {
+    fun LineIcon(
+        modifier: Modifier = Modifier,
+        text: String,
+        textColor: Color,
+        backgroundColor: Color,
+        padding: Dp = 4.dp,
+        scale: Float = 1f
+    ) {
         val shape = RoundedCornerShape(8.dp * scale)
-        val density = LocalDensity.current
-
-        val size = with(density) { 31.sp.toDp() * scale }
-
+        val size = with(LocalDensity.current) { 31.sp.toDp() * scale }
         val outline = backgroundColor == Color.Black
 
-        Box(contentAlignment = Alignment.Center, modifier = modifier.padding(padding)) {
-            Box(
-                Modifier
-                    .size(size)
-                    .background(
-                        color = backgroundColor,
-                        shape = shape
-                    )
-                    .then(
-                        if (outline) {
-                            Modifier.border(1.5.dp * scale, textColor, shape = shape)
-                        } else {
-                            Modifier
-                        }
-                    )
-            )
-            {}
-
-            val fontSize = when {
-                text.length < 3 -> 16.sp
-                text.length == 3 -> 14.sp
-                else -> 12.sp
-            } * scale
-
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier
+                .padding(padding)
+                .requiredSize(size)
+                .clip(shape)
+                .background(backgroundColor, shape)
+                .then(
+                    if (outline) Modifier.border(1.5.dp * scale, textColor, shape)
+                    else Modifier
+                )
+        ) {
             Text(
-                text,
+                text = text,
+                modifier = Modifier.padding(horizontal = 2.dp * scale),
                 textAlign = TextAlign.Center,
-                fontSize = fontSize,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Visible,
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 8.sp * scale,
+                    maxFontSize = 16.sp * scale,
+                ),
                 fontWeight = FontWeight.Bold,
                 color = textColor
             )
