@@ -32,6 +32,7 @@ import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.ui.components.LineIcon
 import io.github.mirancz.libreinfo.ui.components.Container
 
 class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
