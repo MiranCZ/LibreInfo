@@ -19,8 +19,8 @@ class SettingsActivity : NavigationActivity(R.string.settings) {
             NavigationItem(R.drawable.download, R.string.updating_settings, UpdatingSettingsActivity::class)
         }
 
-        @Suppress("KotlinConstantConditions")
-        if (BuildConfig.DEBUG) {
+        @Suppress("SimplifyBooleanWithConstants", "KotlinConstantConditions")
+        if (BuildConfig.BUILD_TYPE != "release") {
             NavigationItem(R.drawable.code, "dev options", DevSettingsActivity::class)
         }
     }

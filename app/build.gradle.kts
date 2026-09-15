@@ -128,6 +128,15 @@ android {
                 signingConfigs.getByName("release") else null
         }
     }
+
+    sourceSets {
+        // dev-only activities (dev settings, perf tests) should be reachable in staging too.
+        // Must come after buildTypes, since the staging source set is created with its build type.
+        getByName("staging") {
+            manifest.srcFile("src/debug/AndroidManifest.xml")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

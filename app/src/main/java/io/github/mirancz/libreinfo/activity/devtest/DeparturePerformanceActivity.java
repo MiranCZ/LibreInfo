@@ -42,7 +42,7 @@ public class DeparturePerformanceActivity extends BaseActivity {
             new Thread(() -> {
                 IdStorage storage = AppContainer.INSTANCE.getStorageProvider().getBlocking(IdStorage.class);
 
-                long ms = System.currentTimeMillis();
+                long ns = System.nanoTime();
 
                 Map<Integer, Long> took = new HashMap<>();
 
@@ -51,12 +51,12 @@ public class DeparturePerformanceActivity extends BaseActivity {
 
                 for (int i = 0; i < 3; i++) {
                     for (Stop stop : storage.stopStorage().getAllStops()) {
-                        long startMs = System.currentTimeMillis();
+                        long startNs = System.nanoTime();
                         var result = OfflineDepartures.getOffline(storage, stop.id.internal());
-                        long tookMs = System.currentTimeMillis()-startMs;
+                        long tookNs = System.nanoTime()-startNs;
 
                         if (!result.isEmpty()) {
-                            took.put(stop.id.internal(), Math.min(took.getOrDefault(stop.id, Long.MAX_VALUE), tookMs));
+                            took.put(stop.id.internal(), Math.min(took.getOrDefault(stop.id.internal(), Long.MAX_VALUE), tookNs));
                         }
 
                         processed++;
@@ -67,9 +67,9 @@ public class DeparturePerformanceActivity extends BaseActivity {
                     }
                 }
 
-                long msTotal = System.currentTimeMillis() - ms;
+                long nsTotal = System.nanoTime() - ns;
 
-                String resultText = "Whole test took: "+msTotal+"ms\n";
+                String resultText = "Whole test took: "+formatNs(nsTotal)+"ms\n";
 
                 long min = Long.MAX_VALUE;
                 int minStop = -1;
@@ -102,14 +102,19 @@ public class DeparturePerformanceActivity extends BaseActivity {
                 String minStopS = storage.stopStorage().getStop(StopId.internal(minStop)).name;
                 String maxStopS = storage.stopStorage().getStop(StopId.internal(maxStop)).name;
 
-                resultText += "\nAverage: " +Math.round(average*100)/100+"ms";
-                resultText += "\nMedian: " +values.get(values.size()/2)+"ms\n";
-                resultText += "\nMaximum took: " +max+"ms ("+maxStopS+")";
-                resultText += "\nMinimum took: " +min+"ms ("+minStopS+")";
+                resultText += "\nAverage: " +formatNs(Math.round(average*100)/100)+"ms";
+                resultText += "\nMedian: " +formatNs(values.get(values.size()/2))+"ms\n";
+                resultText += "\nMaximum took: " +formatNs(max)+"ms ("+maxStopS+")";
+                resultText += "\nMinimum took: " +formatNs(min)+"ms ("+minStopS+")";
 
                 String finalResultText = resultText;
                 runOnUiThread(() -> text.setText(finalResultText));
             }).start();
         });
     }
+
+    private static String formatNs(long ns) {
+        return String.format("%.2f", (ns/1_000_000d));
+    }
+
 }
