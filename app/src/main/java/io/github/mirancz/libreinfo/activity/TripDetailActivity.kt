@@ -69,6 +69,7 @@ import io.github.mirancz.libreinfo.ui.components.LineIcon
 import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
+import io.github.mirancz.libreinfo.parsing.types.TimeMark
 import io.github.mirancz.libreinfo.parsing.types.VehicleInfo
 import io.github.mirancz.libreinfo.util.DelayUtil.getDelayColor
 import io.github.mirancz.libreinfo.util.DeparturesSettings
@@ -220,6 +221,16 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
             stops = stopsList.toTypedArray<RouteStop?>()
         }
 
+        val timedStops = ArrayList<TimedStop>()
+
+        for ((i, stop) in stops.withIndex()) {
+
+            val mode = if (i == stops.size - 1) TimeMark.TimeMode.TERMINUS else TimeMark.TimeMode.NORMAL
+
+            timedStops.add(TimedStop(stop, TimeMark(stop.stopTime(), mode, null, false)))
+
+        }
+
         val lineRoute = storage.apiStorage.getLineIdAndRoute(tripId)
 
         val tripInfoData = TripInfoData(
@@ -231,7 +242,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
             vehicleInfo,
             headsign,
             routeInfoText,
-            stops
+            timedStops.toTypedArray()
         )
         return tripInfoData
     }
@@ -380,26 +391,26 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
         var alreadyMet = true
 
         return data.stops.mapIndexed { i, stop ->
-            val stopId = stop.stopId.toInt()
+            val stopId = stop.stop.stopId.toInt()
 
-            if (vehicleInfo == VehicleInfo.NONE && !stop.departure().isBefore(Time.now())) {
+            if (vehicleInfo == VehicleInfo.NONE && !stop.time.delayedDeparture.isBefore(Time.now())) {
                 alreadyMet = false
             }
 
             val leavingStop =
-                stop.equals(vehicleInfo.lastStop) && (nowMs - vehicleInfo.lastModifiedAt) < leavingStopWindowMs
+                stop.stop.equals(vehicleInfo.lastStop) && (nowMs - vehicleInfo.lastModifiedAt) < leavingStopWindowMs
 
             val isTransitionStop =
-                i != 0 && data.stops[i - 1].equals(vehicleInfo.lastStop) && !leavingStop
+                i != 0 && data.stops[i - 1].stop.equals(vehicleInfo.lastStop) && !leavingStop
 
             val currentDelay = if (alreadyMet) {
                 // TODO fix vehicles waiting at stops in the API
                 // FIXME multiple stops
-                vehicleInfo.previousStops.firstOrNull { stop.equals(it.stop) }?.delay ?: -1
+                vehicleInfo.previousStops.firstOrNull { stop.stop.equals(it.stop) }?.delay ?: -1
             } else {
                 delay
             }
-            stop.setDelay(currentDelay)
+            stop.time.delay = currentDelay
 
             val renderState = StopRenderState(
                 index = i,
@@ -413,9 +424,9 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
             )
 
             if (currentDelay > 0 && !alreadyMet) {
-                delay = stop.stopTime.getLoweredDelay()
+                delay = stop.time.getLoweredDelay()
             }
-            if (stop.equals(vehicleInfo.lastStop)) {
+            if (stop.stop.equals(vehicleInfo.lastStop)) {
                 alreadyMet = false
             }
 
@@ -514,10 +525,10 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
             )
 
             if (state.currentDelay != -1) {
-                DepartureTimeText(stop.stopTime, isLastStop = state.isLast, alpha = textAlpha)
+                DepartureTimeText(stop.time, isLastStop = state.isLast, alpha = textAlpha)
             } else {
                 Text(
-                    text = stop.stopTime.formatWithoutDelay(!state.isLast),
+                    text = stop.time.formattedString,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = textAlpha),
                 )
             }
@@ -526,17 +537,18 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
 
     @Composable
     private fun DepartureTimeText(
-        stopTime: StopTime,
+        timeMark: TimeMark,
         isLastStop: Boolean,
         alpha: Float = 1f,
     ) {
         val depSettings = LocalDeparturesSettings.current
 
-        val arrival = stopTime.getArrival(false)
-        val departure = stopTime.getDeparture(false)
-        val delay = stopTime.delay
+        val arrival = timeMark.arrival
+        val departure = timeMark.departure
+        val delay = timeMark.delay ?: 0
 
-        if (stopTime.immediateDeparture() || isLastStop) {
+
+        if (timeMark.immediateDeparture() || isLastStop) {
             val time = arrival.addMinutes(delay).format()
 
             var delayStr = ""
@@ -566,7 +578,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
             return
         }
 
-        val loweredDelay = stopTime.loweredDelay
+        val loweredDelay = timeMark.loweredDelay
         val arrivalText = arrival.addMinutes(delay).format()
         val departureText = departure.addMinutes(loweredDelay).format()
 
@@ -673,6 +685,8 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
         }
     }
 
+    private data class TimedStop(val stop: RouteStop, val time: TimeMark)
+
     private data class TripInfoData(
         val tripId: Int,
         val highlightedStopId: Int,
@@ -682,7 +696,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
         val vehicleInfo: VehicleInfo,
         val headsign: String,
         val routeInfoText: String,
-        val stops: Array<RouteStop>
+        val stops: Array<TimedStop>
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

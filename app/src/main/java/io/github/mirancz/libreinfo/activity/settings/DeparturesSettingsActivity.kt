@@ -242,7 +242,10 @@ class DeparturesSettingsActivity : KBaseActivity(R.string.departures_settings) {
 
         for (entry in entries) {
             val stopTime = StopTime(Time.now().addMinutes(entry.minutesFromNow-entry.delayMinutes))
-            val timeMark = TimeMark(stopTime, entry.certain, false)
+
+            val delay: Int? = if (entry.certain) entry.delayMinutes else null
+
+            val timeMark = TimeMark(stopTime, TimeMark.TimeMode.NORMAL,delay, false)
 
             val vehicleInfo = if (entry.certain) {
                 VehicleInfo(0, entry.delayMinutes)

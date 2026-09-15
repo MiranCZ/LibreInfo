@@ -597,7 +597,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         val stopDelays = stopDelays.stopDelays
 
         fun alreadyLeft(entry: DepartureEntry): Boolean {
-            return entry.timeMark.time().isBefore(Time.now()) && !entry.timeMark.leaving
+            return entry.timeMark.delayedDeparture.isBefore(Time.now()) && !entry.timeMark.leaving
         }
 
         Container(
@@ -733,8 +733,8 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                         val delay: Int = vehicleInfo.delay()
                         val color: Int = vehicleInfo.delayColor
 
-                        departure.timeMark.stopTime.delay = delay
-                        val arrivalText: String = departure.timeMark.getFormattedString(30, true)
+                        departure.timeMark.delay = delay
+                        val arrivalText: String = departure.timeMark.getFormattedDepartureString(30, true)
 
 
                         Spacer(Modifier.weight(1f))
@@ -763,7 +763,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
                             fontSize = 14.sp
                         )
                     } else {
-                        val arrivalText: String = departure.timeMark.getFormattedString(30, false)
+                        val arrivalText: String = departure.timeMark.getFormattedDepartureString(30, false)
 
                         Spacer(Modifier.weight(1f))
                         Text(text = arrivalText, fontSize = 14.sp)

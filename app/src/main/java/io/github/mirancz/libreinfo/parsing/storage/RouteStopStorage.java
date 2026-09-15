@@ -107,7 +107,7 @@ public class RouteStopStorage implements AppStorage {
         Time arrival = new Time(routeStops.get(), routeStops.get());
         Time departure = new Time(routeStops.get(), routeStops.get());
 
-        return new RouteStop(stopId, tripId, postId, sequence, arrival, departure);
+        return new RouteStop(routeId, stopId, tripId, postId, sequence, arrival, departure);
     }
 
     private RouteStop[] getRouteStopsParsedInternal(short stopId) throws IOException {
@@ -116,25 +116,10 @@ public class RouteStopStorage implements AppStorage {
 
         RouteStop[] results = new RouteStop[routes.length];
 
-        // bulk-reading like this saves a LOT of time
         for (int i = 0, routesLength = routes.length; i < routesLength; i++) {
             int routeId = routes[i];
-            long pos = (long) (ROUTE_STOP_SIZE_BYTES) * routeId;
-            if (pos > Integer.MAX_VALUE) {
-                throw new IllegalStateException("File too large!");
-            }
 
-            routeStops.position((int) pos);
-
-            short sid = routeStops.getShort();
-            int tripId = routeStops.getInt();
-            short postId = routeStops.getShort();
-            short sequence = routeStops.getShort();
-
-            Time arrival = new Time(routeStops.get(), routeStops.get());
-            Time departure = new Time(routeStops.get(), routeStops.get());
-
-            results[i] = new RouteStop(sid, tripId, postId, sequence, arrival, departure);
+            results[i] = parseStop(routeId);
         }
         return results;
     }
