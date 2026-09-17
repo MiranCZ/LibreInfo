@@ -10,31 +10,38 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
+/** The [state] to render (`null` for nothing) and whether switching to it should [animate] */
+data class DisplayedLoadState<out T>(val state: LoadState<T>?, val animate: Boolean)
+
 /**
  * Smooths the [LoadState.Loading] phase so the loading UI never "glitches" in and out for loads that
  * resolve almost immediately
  *
- *  - For the first [delayMs] of loading nothing is shown (returns `null`), so a fast load skips the
+ *  - For the first [delayMs] of loading nothing is shown (`null`), so a fast load skips the
  *    shimmer UI entirely instead of flashing it for like two frames
  *  - Once the shimmer UI does appear it stays for at least [minShowMs], so it never blinks away the
  *    instant after it showed up
- *
- * Returns the [LoadState] that should currently be rendered, or `null` while nothing should be shown.
+ *  - A load that resolves within [instantMs] shouldn't be animated in, so the app doesn't look slower
  */
 @Composable
 fun <T> rememberDelayedLoadState(
     state: LoadState<T>,
     delayMs: Long = 200L,
     minShowMs: Long = 400L,
-): LoadState<T>? {
+    instantMs: Long = 20L,
+): DisplayedLoadState<T> {
     // Start blank only when we begin in a loading state; an already-resolved state shows immediately
     var display by remember { mutableStateOf(state.takeUnless { it is LoadState.Loading }) }
+    var animate by remember { mutableStateOf(true) }
 
+    var loadingSince by remember { mutableStateOf<Long?>(null) }
     var shownAt by remember { mutableStateOf<Long?>(null) }
 
     LaunchedEffect(state) {
         when (state) {
             is LoadState.Loading -> {
+                loadingSince = SystemClock.elapsedRealtime()
+                animate = true
                 display = null
                 shownAt = null
                 delay(delayMs.milliseconds)
@@ -47,11 +54,14 @@ fun <T> rememberDelayedLoadState(
                     val remaining = minShowMs - (SystemClock.elapsedRealtime() - shown)
                     if (remaining > 0) delay(remaining.milliseconds)
                 }
+                // `null` loadingSince means the load resolved before the loading effect even ran, so don't animate
+                animate = loadingSince.let { it != null && SystemClock.elapsedRealtime() - it >= instantMs }
+                loadingSince = null
                 shownAt = null
                 display = state
             }
         }
     }
 
-    return display
+    return DisplayedLoadState(display, animate)
 }

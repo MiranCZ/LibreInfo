@@ -8,6 +8,8 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -316,8 +318,8 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         loading: @Composable () -> Unit = { Loading() },
         content: @Composable (T) -> Unit,
     ) {
-        val display = rememberDelayedLoadState(loadState)
-        Crossfade(targetState = display, modifier = modifier) { state ->
+        val (display, animate) = rememberDelayedLoadState(loadState)
+        Crossfade(targetState = display, modifier = modifier, animationSpec = if (animate) tween() else snap()) { state ->
             when (state) {
                 null -> {}
                 is LoadState.Loading -> loading()
