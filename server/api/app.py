@@ -77,11 +77,18 @@ def find_connections():
         return jsonify({"error": "fromStop and toStop are required"})
 
     params = {"fromPlace": "jmk_"+ from_stop, "toPlace": "jmk_"+ to_stop}
-    if (time := request.args.get("time")):
+    if time := request.args.get("time"):
         params["time"] = time  # ISO-8601; MOTIS defaults to now if omitted
     if request.args.get("arriveBy") == "true":
         params["arriveBy"] = "true"
 
+    max_itineraries = 10
+
+    num = request.args.get("numItineraries", max_itineraries, type=int)
+    params["numItineraries"] = str(max(1, min(num, max_itineraries)))
+
+    if cursor := request.args.get("pageCursor"):
+        params["pageCursor"] = cursor  # from a previous response; other params must stay the same
 
     try:
         resp = motis.get(f"{MOTIS_URL}{MOTIS_PLAN_PATH}", params=params, timeout=20)

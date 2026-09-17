@@ -66,5 +66,7 @@ def translate_plan(plan: dict) -> dict:
                 "legs": [_trim_leg(leg) for leg in it.get("legs", [])],
             }
             for it in plan.get("itineraries", [])
-        ]
+        ],
+        "previousPageCursor": plan.get("previousPageCursor"),
+        "nextPageCursor": plan.get("nextPageCursor"),
     }
