@@ -301,12 +301,27 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         loading: @Composable () -> Unit = { Loading() },
         content: @Composable (T) -> Unit,
     ) {
-        val display = rememberDelayedLoadState(result.state)
+        AsyncContent(result.state, result.retry, modifier, loading, content)
+    }
+
+    /**
+     * Renders [loadState] like the [LoadResult] overload does, for loads not driven by
+     * [io.github.mirancz.libreinfo.util.load.rememberLoad] (e.g. paging), calling [onRetry] on retry.
+     */
+    @Composable
+    fun <T> AsyncContent(
+        loadState: LoadState<T>,
+        onRetry: () -> Unit,
+        modifier: Modifier = Modifier,
+        loading: @Composable () -> Unit = { Loading() },
+        content: @Composable (T) -> Unit,
+    ) {
+        val display = rememberDelayedLoadState(loadState)
         Crossfade(targetState = display, modifier = modifier) { state ->
             when (state) {
                 null -> {}
                 is LoadState.Loading -> loading()
-                is LoadState.Error -> ErrorWidget(state.error, onRetry = result.retry)
+                is LoadState.Error -> ErrorWidget(state.error, onRetry = onRetry)
                 is LoadState.Success -> content(state.data)
             }
         }

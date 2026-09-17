@@ -31,6 +31,9 @@ internal data class VehicleLegUi(
 ) : LegUi
 
 internal data class ConnectionUi(
+    val key: String,
+    /** Whether this is the connection closest to the searched time, which the list opens at. */
+    val isClosest: Boolean,
     val depTime: String,
     val arrTime: String,
     val durationMin: Int,
@@ -38,17 +41,32 @@ internal data class ConnectionUi(
     val legs: List<LegUi>,
 )
 
-internal fun buildConnectionUi(connection: Connection, storage: IdStorage, now: DateTime): ConnectionUi {
+internal fun buildConnectionUi(
+    connection: Connection,
+    storage: IdStorage,
+    now: DateTime,
+    isClosest: Boolean,
+): ConnectionUi {
     val parts = connection.legs
     val legs = parts.mapIndexed { i, part -> buildLeg(part, i, parts, storage) }
 
     return ConnectionUi(
+        key = connectionKey(connection, legs),
+        isClosest = isClosest,
         depTime = connection.departure.toTimeString(),
         arrTime = connection.arrival.toTimeString(),
         durationMin = minutesBetween(connection.departure, connection.arrival),
         countdownMin = minutesUntil(connection.departure, now),
         legs = legs,
     )
+}
+
+/** The same trips, boarded at the same stops, between the same times make the same connection. */
+private fun connectionKey(connection: Connection, legs: List<LegUi>): String {
+    val rides = legs.filterIsInstance<VehicleLegUi>()
+        .joinToString(",") { "${it.tripId}@${it.boardStopInternalId}" }
+
+    return "${connection.departure.toLocalDateTime()}|${connection.arrival.toLocalDateTime()}|$rides"
 }
 
 private fun buildLeg(part: ConnectionLeg, index: Int, parts: List<ConnectionLeg>, storage: IdStorage): LegUi {

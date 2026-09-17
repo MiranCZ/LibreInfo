@@ -11,8 +11,6 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import io.github.mirancz.libreinfo.exception.AppException
-import io.github.mirancz.libreinfo.util.AppLog
-import io.github.mirancz.libreinfo.R
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
@@ -46,18 +44,8 @@ fun <T> rememberLoad(vararg keys: Any?, block: suspend () -> T): LoadResult<T> {
         } catch (e: CancellationException) {
             // let the coroutine cancel cleanly when the screen leaves composition
             throw e
-        } catch (e: AppException) {
-            LoadState.Error(e)
         } catch (e: Throwable) {
-            // Unwrap an AppException carried as a cause (e.g. StorageInitException) so the real,
-            // user-facing message survives instead of a generic one.
-            val wrapped = generateSequence(e) { it.cause }.filterIsInstance<AppException>().firstOrNull()
-            if (wrapped != null) {
-                LoadState.Error(wrapped)
-            } else {
-                AppLog.e("rememberLoad", "Unexpected error while loading", e)
-                LoadState.Error(AppException(R.string.generic_error, e))
-            }
+            LoadState.Error(e.toAppException())
         }
     }
 

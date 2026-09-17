@@ -1,6 +1,8 @@
 package io.github.mirancz.libreinfo.activity
 
+import android.app.Application
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -11,7 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,25 +27,45 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import com.valentinilk.shimmer.Shimmer
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
-import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
-import io.github.mirancz.libreinfo.parsing.types.DateTime
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
-import io.github.mirancz.libreinfo.util.load.rememberLoad
-import io.github.mirancz.libreinfo.util.request.RequestHelper
+import io.github.mirancz.libreinfo.util.load.toAppException
+import io.github.mirancz.libreinfo.util.load.toLoadState
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.ui.components.LineIcon
 import io.github.mirancz.libreinfo.ui.components.Container
+import androidx.paging.LoadState as PagingLoadState
 
 class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
+
+    internal class ConnectionResultsViewModel(
+        application: Application,
+        fromStop: Stop,
+        toStop: Stop,
+        departureTime: String,
+        isArrival: Boolean,
+    ) : ViewModel() {
+        val connections = Pager(PagingConfig(pageSize = 10, prefetchDistance = 4, enablePlaceholders = false)) {
+            ConnectionPagingSource(application, fromStop, toStop, departureTime, isArrival)
+        }.flow.cachedIn(viewModelScope)
+    }
 
     @Composable
     override fun CreateElements() {
@@ -49,27 +74,80 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
         val departureTime = intent.getStringExtra("departureTime")!!
         val isArrival = intent.getBooleanExtra("isArrival", false)
 
-        val context = LocalContext.current
-
-        val result = rememberLoad(fromStop, toStop, departureTime, isArrival) {
-            val storage = AppContainer.storageProvider.getInstance()
-            val obj = RequestHelper.findConnections(context, fromStop, toStop, departureTime, isArrival)
-            val now = DateTime.now()
-            obj.connections.map { element ->
-                buildConnectionUi(element.map(storage), storage, now)
-            }
+        val vm = viewModel {
+            ConnectionResultsViewModel(application, fromStop, toStop, departureTime, isArrival)
         }
+        val connections = vm.connections.collectAsLazyPagingItems()
 
-        AsyncContent(result, loading = { ConnectionsShimmer() }) { connections ->
-            if (connections.isEmpty()) {
+        AsyncContent(
+            connections.loadState.refresh.toLoadState(),
+            onRetry = connections::retry,
+            loading = { ConnectionsShimmer() },
+        ) {
+            if (connections.itemCount == 0) {
                 NothingHere()
             } else {
-                LazyColumn {
-                    items(connections) { connection ->
-                        ConnectionCard(connection)
-                    }
-                }
+                ConnectionList(connections)
             }
+        }
+    }
+
+    @Composable
+    private fun ConnectionList(connections: LazyPagingItems<ConnectionUi>) {
+        val listState = rememberClosestConnectionListState(connections)
+
+        LazyColumn(state = listState) {
+            pageLoadItem("prepend", connections.loadState.prepend, onRetry = connections::retry)
+
+            items(connections.itemCount, key = connections.itemKey { it.key }) { index ->
+                connections[index]?.let { ConnectionCard(it) }
+            }
+
+            pageLoadItem("append", connections.loadState.append, onRetry = connections::retry)
+        }
+    }
+
+    /**
+     * Creates the list state already positioned at the connection closest to the searched time, with
+     * the one before it peeking out above.
+     *
+     * Starting there, rather than scrolling there after the first frame, matters for paging: every
+     * item that gets laid out counts as viewed, so a first frame at the top of the list would load
+     * the previous page straight away.
+     */
+    @Composable
+    private fun rememberClosestConnectionListState(connections: LazyPagingItems<ConnectionUi>): LazyListState {
+        // itemSnapshotList, unlike connections[i], doesn't count as viewing the items
+        val closestIndex = connections.itemSnapshotList.indexOfFirst { it?.isClosest == true }
+        val peekOffset = with(LocalDensity.current) { 48.dp.roundToPx() }
+
+        // the initial position only applies when the state is first created (not after rotation)
+        return rememberLazyListState(
+            initialFirstVisibleItemIndex = closestIndex.coerceAtLeast(0),
+            initialFirstVisibleItemScrollOffset = -peekOffset,
+        )
+    }
+
+    /** Shows a spinner while a page before/after the loaded ones is loading, or its error. */
+    private fun LazyListScope.pageLoadItem(key: String, state: PagingLoadState, onRetry: () -> Unit) {
+        when (state) {
+            is PagingLoadState.Loading -> item(key) { PageLoadingIndicator() }
+            is PagingLoadState.Error -> item(key) {
+                ErrorWidget(state.error.toAppException(), Modifier.padding(16.dp), onRetry)
+            }
+            is PagingLoadState.NotLoading -> {}
+        }
+    }
+
+    @Composable
+    private fun PageLoadingIndicator() {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
         }
     }
 
@@ -239,7 +317,12 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
                         Dot.FILLED -> drawCircle(connectorColor, radius, Offset(cx, cy))
                         Dot.HOLLOW -> {
                             drawCircle(bg, radius, Offset(cx, cy))
-                            drawCircle(connectorColor, radius, Offset(cx, cy), style = Stroke(2.5.dp.toPx()))
+                            drawCircle(
+                                connectorColor,
+                                radius,
+                                Offset(cx, cy),
+                                style = Stroke(2.5.dp.toPx())
+                            )
                         }
 
                         Dot.NONE -> {}
@@ -310,7 +393,9 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
                                 height = 12.dp
                             )
                         }
-                        ShimmerBox(Modifier.width(40.dp).height(14.dp), shimmer)
+                        ShimmerBox(Modifier
+                            .width(40.dp)
+                            .height(14.dp), shimmer)
                     }
                 }
             }

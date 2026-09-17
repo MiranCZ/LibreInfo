@@ -238,6 +238,7 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.material.icons.extended)
     implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.paging.compose)
 
     implementation(libs.work.runtime)
 

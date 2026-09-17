@@ -3,6 +3,7 @@ package io.github.mirancz.libreinfo.util.request
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.exception.AppException
@@ -129,11 +130,14 @@ object RequestHelper {
         fromStop: Stop,
         toStop: Stop,
         time: String?,
-        isArrival: Boolean
+        isArrival: Boolean,
+        cursor: String? = null
     ): ConnectionsResponse {
+        val cursorParam = cursor?.let { "&pageCursor=${Uri.encode(it)}" } ?: ""
+
         return makeOwnRequest(
             context,
-            "findConnections?fromStop=${fromStop.parentStation}&toStop=${toStop.parentStation}&time=$time&arriveBy=$isArrival"
+            "findConnections?fromStop=${fromStop.parentStation}&toStop=${toStop.parentStation}&time=$time&arriveBy=$isArrival$cursorParam"
         )
     }
 
