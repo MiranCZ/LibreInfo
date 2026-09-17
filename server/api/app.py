@@ -85,17 +85,59 @@ def find_connections():
     max_itineraries = 10
 
     num = request.args.get("numItineraries", max_itineraries, type=int)
-    params["numItineraries"] = str(max(1, min(num, max_itineraries)))
+    num = max(1, min(num, max_itineraries))
 
     if cursor := request.args.get("pageCursor"):
         params["pageCursor"] = cursor  # from a previous response; other params must stay the same
+    else:
+        num = (num + 1) // 2  # a fresh search fetches a page on each side of `time`, split between them
+    params["numItineraries"] = str(num)
 
     try:
-        resp = motis.get(f"{MOTIS_URL}{MOTIS_PLAN_PATH}", params=params, timeout=20)
-        resp.raise_for_status()
+        result = _fetch_plan(params)
     except requests.RequestException as e:
         return jsonify({"error": f"routing backend unavailable {e}"})
 
-    return jsonify(translate_plan(resp.json()))
+    if "pageCursor" not in params:
+        result = _with_other_side(params, result)
+    return jsonify(result)
+
+
+def _fetch_plan(params: dict) -> dict:
+    resp = motis.get(f"{MOTIS_URL}{MOTIS_PLAN_PATH}", params=params, timeout=20)
+    resp.raise_for_status()
+    return translate_plan(resp.json())
+
+
+def _with_other_side(params: dict, page: dict) -> dict:
+    """A fresh search only extends one way from `time` (later for departures, earlier for
+    arrivals), so also fetch the adjacent page on the other side to make the list scrollable both ways."""
+    arrive_by = "arriveBy" in params
+    cursor = page["nextPageCursor"] if arrive_by else page["previousPageCursor"]
+    other = {"connections": []}
+    if cursor:
+        try:
+            other = _fetch_plan({**params, "pageCursor": cursor})
+        except requests.RequestException:
+            pass  # still return the main page, it's just one-directional
+
+    if arrive_by:
+        connections = page["connections"] + other["connections"]
+        closest = len(page["connections"]) - 1
+        prev_cursor = page["previousPageCursor"]
+        next_cursor = other["nextPageCursor"]
+    else:
+        connections = other["connections"] + page["connections"]
+        closest = len(other["connections"])
+        prev_cursor = other["previousPageCursor"]
+        next_cursor = page["nextPageCursor"]
+
+    return {
+        "connections": connections,
+        "previousPageCursor": prev_cursor,
+        "nextPageCursor": next_cursor,
+        # index of the connection nearest the requested time, for the initial scroll position
+        "closestIndex": max(0, min(closest, len(connections) - 1)),
+    }
 
 
