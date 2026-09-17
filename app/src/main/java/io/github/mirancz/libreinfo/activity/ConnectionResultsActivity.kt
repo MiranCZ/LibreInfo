@@ -47,12 +47,13 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
         val fromStop = intent.getParcelableExtra<Stop>("fromStop")!!
         val toStop = intent.getParcelableExtra<Stop>("toStop")!!
         val departureTime = intent.getStringExtra("departureTime")!!
+        val isArrival = intent.getBooleanExtra("isArrival", false)
 
         val context = LocalContext.current
 
-        val result = rememberLoad(fromStop, toStop, departureTime) {
+        val result = rememberLoad(fromStop, toStop, departureTime, isArrival) {
             val storage = AppContainer.storageProvider.getInstance()
-            val obj = RequestHelper.findConnections(context, fromStop, toStop, departureTime)
+            val obj = RequestHelper.findConnections(context, fromStop, toStop, departureTime, isArrival)
             val now = DateTime.now()
             obj.connections.map { element ->
                 buildConnectionUi(element.map(storage), storage, now)

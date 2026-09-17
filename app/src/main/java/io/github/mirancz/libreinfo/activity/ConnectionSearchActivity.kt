@@ -60,10 +60,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
+import io.github.mirancz.libreinfo.parsing.types.stop.Stop
 import io.github.mirancz.libreinfo.ui.components.AppButton
 import io.github.mirancz.libreinfo.ui.components.ConfirmDialog
 import io.github.mirancz.libreinfo.ui.components.Container
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.ui.components.RadioButtonHorizontalSelection
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -81,6 +82,7 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
         var fromStop by mutableStateOf<Stop?>(null)
         var toStop by mutableStateOf<Stop?>(null)
         var departureDateTime: LocalDateTime? by mutableStateOf(null)
+        var isArrival: Boolean by mutableStateOf(false)
     }
 
     @Composable
@@ -108,14 +110,15 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
 
         if (showTimePicker) {
             @Suppress("AssignedValueIsNeverRead")
-            // linter is just lying here, setting `showTimePicker``DOES have side effects
+            // linter is just lying here, setting `showTimePicker` DOES have side effects
             TimePickerDialog(
                 initialDateTime = vm.departureDateTime ?: LocalDateTime.now(),
                 onDismiss = {
                     showTimePicker = false
                 },
-                onConfirm = { dateTime ->
+                onConfirm = { dateTime, isArrival ->
                     vm.departureDateTime = dateTime
+                    vm.isArrival = isArrival
                     showTimePicker = false
                 }
             )
@@ -145,8 +148,10 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
 
                     Spacer(Modifier.width(8.dp))
 
+                    val textId = if (vm.isArrival) R.string.arrival else R.string.departure
+
                     Text(
-                        stringResource(R.string.departure) + " ",
+                        stringResource(textId) + " ",
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.extendedColors.onSurfaceMedium,
                     )
@@ -177,6 +182,7 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
                     IconButton(
                         onClick = {
                             vm.departureDateTime = null
+                            vm.isArrival = false
                         },
                     ) {
                         Icon(
@@ -324,7 +330,7 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
     @Composable
     private fun TimePickerDialog(
         initialDateTime: LocalDateTime,
-        onConfirm: (LocalDateTime) -> Unit,
+        onConfirm: (LocalDateTime, Boolean) -> Unit,
         onDismiss: () -> Unit,
     ) {
         val today = remember { LocalDate.now() }
@@ -337,6 +343,8 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
         // should probably be `ceilDiv` but then the hour would need to be moved in certain cases
         var minuteIndex by remember { mutableStateOf(initialDateTime.minute / 5) }
 
+        var isArrival by remember { mutableStateOf(false) }
+
 
         ConfirmDialog(
             stringResource(R.string.connection_date_time),
@@ -344,48 +352,60 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
             stringResource(R.string.confirm),
             onDismiss,
             onConfirm = {
-                onConfirm(LocalDateTime.of(dates[dateIndex], LocalTime.of(hour, minuteIndex * 5)))
+                onConfirm(LocalDateTime.of(dates[dateIndex], LocalTime.of(hour, minuteIndex * 5)), isArrival)
             },
         ) {
+            Column {
+                RadioButtonHorizontalSelection(
+                    initialValueIndex = if (isArrival) 0 else 1,
+                    options = listOf(stringResource(R.string.arrival), stringResource(R.string.departure))
+                ) { i ->
+                    isArrival = (i == 0)
+                }
 
-            Box(Modifier.fillMaxWidth()) {
-                Box(
-                    Modifier
-                        .align(Alignment.Center)
-                        .fillMaxWidth()
-                        .height(WHEEL_ITEM_HEIGHT)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.extendedColors.surfaceHighlight.copy(alpha = 0.6f))
-                )
-
-                Row(
-                    Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    WheelPicker(dateLabels, startIndex = 1, modifier = Modifier.weight(2f)) { dateIndex = it }
-
-                    WheelPicker(
-                        (0..<24).toList(),
-                        Modifier.weight(1f),
-                        infinite = true,
-                        startIndex = initialDateTime.hour,
-                        formatter = { "%02d".format(it) }
-                    ) { hour = it }
-                    Text(
-                        ":",
-                        color = MaterialTheme.extendedColors.onSurfaceMedium,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Medium
+                Box(Modifier.fillMaxWidth()) {
+                    Box(
+                        Modifier
+                            .align(Alignment.Center)
+                            .fillMaxWidth()
+                            .height(WHEEL_ITEM_HEIGHT)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.extendedColors.surfaceHighlight.copy(alpha = 0.6f))
                     )
 
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        WheelPicker(
+                            dateLabels,
+                            startIndex = 1,
+                            modifier = Modifier.weight(2f)
+                        ) { dateIndex = it }
 
-                    WheelPicker(
-                        (0..<60 step 5).toList(),
-                        Modifier.weight(1f),
-                        infinite = true,
-                        startIndex = initialDateTime.minute / 5,
-                        formatter = { "%02d".format(it) }
-                    ) { minuteIndex = it }
+                        WheelPicker(
+                            (0..<24).toList(),
+                            Modifier.weight(1f),
+                            infinite = true,
+                            startIndex = initialDateTime.hour,
+                            formatter = { "%02d".format(it) }
+                        ) { hour = it }
+                        Text(
+                            ":",
+                            color = MaterialTheme.extendedColors.onSurfaceMedium,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+
+
+                        WheelPicker(
+                            (0..<60 step 5).toList(),
+                            Modifier.weight(1f),
+                            infinite = true,
+                            startIndex = initialDateTime.minute / 5,
+                            formatter = { "%02d".format(it) }
+                        ) { minuteIndex = it }
+                    }
                 }
             }
         }
@@ -484,6 +504,7 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
             intent.putExtra("fromStop", from)
             intent.putExtra("toStop", to)
             intent.putExtra("departureTime", time)
+            intent.putExtra("isArrival", vm.isArrival)
         }
     }
 

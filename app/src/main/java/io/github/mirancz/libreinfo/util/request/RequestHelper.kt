@@ -128,11 +128,12 @@ object RequestHelper {
         context: Context,
         fromStop: Stop,
         toStop: Stop,
-        time: String?
+        time: String?,
+        isArrival: Boolean
     ): ConnectionsResponse {
         return makeOwnRequest(
             context,
-            "findConnections?fromStop=${fromStop.parentStation}&toStop=${toStop.parentStation}&time=$time"
+            "findConnections?fromStop=${fromStop.parentStation}&toStop=${toStop.parentStation}&time=$time&arriveBy=$isArrival"
         )
     }
 

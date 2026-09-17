@@ -39,6 +39,7 @@
     <string name="departure_time">Čas odjezdu</string>
     <string name="connection_date_time">Datum a čas</string>
     <string name="departure">Odjezd</string>
+    <string name="arrival">Příjezd</string>
     <string name="date_yesterday">Včera</string>
     <string name="date_today">Dnes</string>
     <string name="date_tomorrow">Zítra</string>
