@@ -1,18 +1,32 @@
 package io.github.mirancz.libreinfo.activity
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import com.valentinilk.shimmer.Shimmer
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -93,50 +107,100 @@ class EventsActivity : KBaseActivity(R.string.events) {
 
     @Composable
     fun Event(item: Event) {
-
         val times = DateTime.toShortenedInformedString(item.from, item.to)
 
+        val collapsible =
+            item.content.isNotBlank() && (item.content.lines().size > 3 || item.content.length > 150)
+
+        var expanded by remember(item) { mutableStateOf(false) }
+
+        val chevronRotation = animateFloatAsState(
+            targetValue = if (expanded) 180f else 0f, label = "eventChevron"
+        )
+
+        val toggle = { expanded = !expanded }
+
+        // while collapsed the whole card is one big target. Once expanded only the header is, so
+        // that links in the description stay tappable and reading it can't collapse it by accident
+        val cardModifier =
+            if (collapsible && !expanded) Modifier.clickable(onClick = toggle) else Modifier
+
+        val headerModifier = if (collapsible && expanded) {
+            Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(onClick = toggle)
+        } else Modifier
+
         Container(
-            Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            Modifier.padding(horizontal = 16.dp, vertical = 8.dp), innerPadding = 0.dp
         ) {
-            Column {
-                Text(item.title, fontSize = 18.sp, fontWeight = FontWeight.Black)
+            Column(cardModifier) {
+                Column(headerModifier.padding(16.dp)) {
+                    Text(item.title, fontSize = 18.sp, fontWeight = FontWeight.Black)
 
-                Row(Modifier.padding(top = 8.dp)) {
-                    Text(times[0], fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Row(Modifier.padding(top = 8.dp)) {
+                        Text(times[0], fontWeight = FontWeight.Bold, fontSize = 15.sp)
 
-                    if (times.size > 1) {
-                        Text(" - ", fontWeight = FontWeight.Normal, fontSize = 15.sp)
-                        Text(times[1], fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        if (times.size > 1) {
+                            Text(" - ", fontWeight = FontWeight.Normal, fontSize = 15.sp)
+                            Text(times[1], fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        }
+                    }
+
+                    if (item.delay != null) {
+                        Row {
+                            Text(
+                                stringResource(R.string.vehicle_delay) + " ",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                            Text(
+                                "${item.delay} min",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Red,
+                                fontSize = 15.sp
+                            )
+                        }
+                    }
+
+                    // the chevron shares its row with the line icons, so an event without lines
+                    // still keeps it pinned to the right edge
+                    if (!item.lines.isNullOrEmpty() || collapsible) {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
+                            verticalAlignment = Alignment.Bottom
+                        ) {
+                            if (item.lines != null) {
+                                LineList(item.lines, Modifier.weight(1f))
+                            } else {
+                                Spacer(Modifier.weight(1f))
+                            }
+
+                            if (collapsible) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = null,
+                                    modifier = Modifier.graphicsLayer {
+                                        rotationZ = chevronRotation.value
+                                    })
+                            }
+                        }
                     }
                 }
 
-                if (item.delay != null) {
-                    Row(Modifier.padding(bottom = 8.dp)) {
-                        Text(
-                            stringResource(R.string.vehicle_delay) + " ",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
-                        )
-                        Text(
-                            "${item.delay} min",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Red,
-                            fontSize = 15.sp
-                        )
-                    }
-                }
-
-                if (item.lines != null) {
-                    LineList(item.lines)
-                }
-
-                if (!item.content.isBlank()) {
-                    HTML(item.content, Modifier.padding(top = 12.dp))
+                if (item.content.isNotBlank()) {
+                    HTML(
+                        item.content,
+                        Modifier
+                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                            .animateContentSize(),
+                        maxLines = if (collapsible && !expanded) 3 else Int.MAX_VALUE
+                    )
                 }
             }
         }
     }
-
 
 }
