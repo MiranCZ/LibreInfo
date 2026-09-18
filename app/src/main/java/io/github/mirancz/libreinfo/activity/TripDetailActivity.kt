@@ -103,6 +103,8 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
         var storage: IdStorage? by remember { mutableStateOf(provider.getInstanceOrNull()) }
         var tripData: TripInfoData? by remember { mutableStateOf(null) }
 
+        val dataLoadedAt: Long by remember { mutableLongStateOf(System.currentTimeMillis()) }
+
         val loadResult = rememberLoad {
             val storage = provider.getInstance()
             val tripInfoData = loadAndParseTripInfoData(storage, tripId, context, highlightedStopId, vehicleId)
@@ -125,9 +127,13 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
                 val lifecycleOwner = LocalLifecycleOwner.current
                 LaunchedEffect(Unit) {
                     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                        while (true) {
-                            delay(15_000.milliseconds)
+                        val sinceLoaded = System.currentTimeMillis() - dataLoadedAt
 
+                        val delay = (10_000L - sinceLoaded).coerceAtLeast(0)
+
+                        delay(delay.milliseconds)
+
+                        while (true) {
                             withContext(Dispatchers.IO) {
                                 data = loadAndParseTripInfoData(
                                     storage,
@@ -139,6 +145,8 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
 
                                 lastUpdated = System.currentTimeMillis()
                             }
+
+                            delay(10_000.milliseconds)
                         }
                     }
                 }
