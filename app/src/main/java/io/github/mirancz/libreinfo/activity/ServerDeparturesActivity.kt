@@ -60,6 +60,7 @@ import io.github.mirancz.libreinfo.parsing.types.dto.mapLine
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
 import io.github.mirancz.libreinfo.parsing.types.response.ServerDeparturesResponse
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.DeparturesSettings
@@ -93,7 +94,7 @@ class ServerDeparturesActivity : KBaseActivity("") {
         var storage: IdStorage? by remember { mutableStateOf(provider.getInstanceOrNull()) }
 
         LaunchedEffect(Unit) {
-            if (stop.isFavourite) {
+            if (stop.isFavourite()) {
                 vm.setLiked(true)
             }
         }

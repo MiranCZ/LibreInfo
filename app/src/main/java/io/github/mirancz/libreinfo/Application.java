@@ -15,6 +15,7 @@ import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer;
 import io.github.mirancz.libreinfo.util.AppLog;
 import io.github.mirancz.libreinfo.parsing.storage.manager.StorageManager;
 import io.github.mirancz.libreinfo.util.AppUpdater;
+import io.github.mirancz.libreinfo.util.FavouriteStops;
 import io.github.mirancz.libreinfo.util.Settings;
 
 public class Application extends android.app.Application {
@@ -24,6 +25,7 @@ public class Application extends android.app.Application {
         super.onCreate();
 
         Settings.init(this);
+        FavouriteStops.init(this);
 
         setupWorkers();
 

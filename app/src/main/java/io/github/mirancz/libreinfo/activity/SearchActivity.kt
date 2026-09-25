@@ -58,6 +58,7 @@ import io.github.mirancz.libreinfo.parsing.storage.StopStorage
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.location.LocationProviderFactory
 import io.github.mirancz.libreinfo.util.request.RequestHelper
@@ -221,7 +222,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                 val res = searcher.search(
                     query,
                     sortType = sortType,
-                    isFavourite = { liked && it.isFavourite }
+                    isFavourite = { liked && it.isFavourite() }
                 )
 
                 val result = ArrayList(res.favourites)
@@ -274,7 +275,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                             .fillMaxWidth()
                     ) {
 
-                        if (item.isFavourite) {
+                        if (item.isFavourite()) {
                             Icon(
                                 painter = painterResource(R.drawable.heart_solid),
                                 contentDescription = null,

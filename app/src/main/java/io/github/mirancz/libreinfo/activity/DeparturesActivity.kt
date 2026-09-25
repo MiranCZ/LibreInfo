@@ -28,6 +28,7 @@ import io.github.mirancz.libreinfo.util.Text
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
+import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
 
 
 class DeparturesActivity : KBaseActivity("") {
@@ -48,7 +49,7 @@ class DeparturesActivity : KBaseActivity("") {
         var storage: IdStorage? by remember { mutableStateOf(provider.getInstanceOrNull()) }
 
         LaunchedEffect(Unit) {
-            if (stop.isFavourite) {
+            if (stop.isFavourite()) {
                 vm.setLiked(true)
             }
         }

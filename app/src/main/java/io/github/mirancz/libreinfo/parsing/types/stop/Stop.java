@@ -10,7 +10,6 @@ import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer;
 import io.github.mirancz.libreinfo.parsing.storage.StopMapper;
 import io.github.mirancz.libreinfo.parsing.types.Location;
 import io.github.mirancz.libreinfo.util.AppInputStream;
-import io.github.mirancz.libreinfo.util.PreferencesHolder;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,23 +19,18 @@ import java.util.Objects;
 public final class Stop implements Parcelable {
 
 
-    public static Stop NONE = new Stop(StopId.NONE, "UNKNOWN", "UNKNOWN", Location.NONE, PreferencesHolder.NONE);
+    public static Stop NONE = new Stop(StopId.NONE, "UNKNOWN", "UNKNOWN", Location.NONE);
 
     public final StopId id;
     public final String name;
     public final String parentStation;
     public final Location location;
-    private final PreferencesHolder favStops;
 
-    private boolean favourite;
-
-    public Stop(StopId id, String name, String parentStation, Location location, PreferencesHolder favStops) {
+    public Stop(StopId id, String name, String parentStation, Location location) {
         this.id = id;
         this.name = name;
         this.parentStation = parentStation;
         this.location = location;
-        this.favStops = favStops;
-        this.favourite = favStops.getBoolean(id.internal(), false);
     }
 
     public static final Creator<Stop> CREATOR = new Creator<Stop>() {
@@ -52,17 +46,17 @@ public final class Stop implements Parcelable {
         }
     };
 
-    public static List<Stop> parseStops(AppInputStream is, PreferencesHolder favStops, StopMapper mapper) throws IOException {
+    public static List<Stop> parseStops(AppInputStream is, StopMapper mapper) throws IOException {
         List<Stop> result = new ArrayList<>();
 
         while (is.readBoolean()) {
-            result.add(parse(is, favStops, mapper));
+            result.add(parse(is, mapper));
         }
 
         return result;
     }
 
-    public static Stop parse(AppInputStream is, PreferencesHolder favStops, StopMapper mapper) throws IOException {
+    public static Stop parse(AppInputStream is, StopMapper mapper) throws IOException {
         int stopId = is.readInt();
 
         String name = is.readString();
@@ -74,20 +68,7 @@ public final class Stop implements Parcelable {
         StopId id = new StopId(stopId,mapper.getOriginal(stopId));
 
         // TODO set favourite
-        return new Stop(id, name, parentStation, new Location(lat, lon), favStops);
-    }
-
-    public void setFavourite(boolean favourite) {
-        this.favourite = favourite;
-        favStops.putBoolean(id.internal(), favourite);
-    }
-
-    public boolean isFavourite() {
-        return favourite;
-    }
-
-    public void flush() {
-        favStops.flush();
+        return new Stop(id, name, parentStation, new Location(lat, lon));
     }
 
     @Override

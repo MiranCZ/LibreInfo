@@ -13,7 +13,6 @@ import io.github.mirancz.libreinfo.parsing.storage.StopMapper
 import io.github.mirancz.libreinfo.parsing.storage.StopStorage
 import io.github.mirancz.libreinfo.parsing.storage.TripStorage
 import io.github.mirancz.libreinfo.util.AppLog
-import io.github.mirancz.libreinfo.util.PreferencesHolder
 
 class StorageBuilder(val context: Context, val consumer: ((AppStorage) -> Unit)? = null) {
 
@@ -35,14 +34,12 @@ class StorageBuilder(val context: Context, val consumer: ((AppStorage) -> Unit)?
         AppLog.d("Initializing...")
         val ms = System.currentTimeMillis()
 
-        val preferences = context.getSharedPreferences("favStops", Context.MODE_PRIVATE)
-
         val stopMapper = manager.useStopMapping(StopMapper::parse)
         onLoaded(stopMapper)
 
         val stopStorage = manager.useStops {
             StopStorage.parse(
-                it, PreferencesHolder(preferences), stopMapper
+                it, stopMapper
             )
         }
         onLoaded(stopStorage)

@@ -7,7 +7,6 @@ import io.github.mirancz.libreinfo.parsing.types.stop.Stop;
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId;
 import io.github.mirancz.libreinfo.util.AppInputStream;
 import io.github.mirancz.libreinfo.util.search.FuzzyStopSearch;
-import io.github.mirancz.libreinfo.util.PreferencesHolder;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -15,10 +14,10 @@ import java.util.List;
 
 public class StopStorage implements AppStorage {
 
-    public static StopStorage parse(AppInputStream is, PreferencesHolder favStops, StopMapper mapper) throws AppException {
+    public static StopStorage parse(AppInputStream is, StopMapper mapper) throws AppException {
         List<Stop> stops;
         try {
-            stops = Stop.parseStops(is, favStops, mapper);
+            stops = Stop.parseStops(is, mapper);
         } catch (IOException e) {
             throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }

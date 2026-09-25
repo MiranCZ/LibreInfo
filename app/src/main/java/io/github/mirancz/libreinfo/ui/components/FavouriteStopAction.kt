@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.parsing.types.stop.setFavourite
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
 
 class StopViewModel : ViewModel() {
@@ -44,7 +45,6 @@ fun FavouriteStopAction(stop: Stop) {
     IconButton(onClick = {
         vm.toggleLiked()
         stop.setFavourite(liked)
-        stop.flush()
     }) {
         if (liked) {
             Icon(
