@@ -3,11 +3,14 @@ package io.github.mirancz.libreinfo.parsing.types
 import android.os.Parcelable
 import androidx.core.text.HtmlCompat
 import io.github.mirancz.libreinfo.parsing.types.serial.IsoDateTimeSerializer
+import io.github.mirancz.libreinfo.parsing.types.serial.NullableDateTimeParceler
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.TypeParceler
 import kotlinx.serialization.Serializable
 
 @Serializable
 @Parcelize
+@TypeParceler<DateTime?, NullableDateTimeParceler>()
 data class NewsEntry(
     val title: String,
     val content: String,

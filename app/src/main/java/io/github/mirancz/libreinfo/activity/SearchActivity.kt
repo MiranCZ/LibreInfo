@@ -61,6 +61,7 @@ import io.github.mirancz.libreinfo.parsing.types.stop.Stop
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.location.LocationProviderFactory
 import io.github.mirancz.libreinfo.util.request.RequestHelper
+import io.github.mirancz.libreinfo.util.location.toAndroidLoc
 import io.github.mirancz.libreinfo.util.search.FuzzyStopSearch
 import io.github.mirancz.libreinfo.util.search.SortType
 import kotlinx.coroutines.Dispatchers

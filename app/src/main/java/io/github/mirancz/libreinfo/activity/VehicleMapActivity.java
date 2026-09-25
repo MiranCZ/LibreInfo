@@ -38,6 +38,7 @@ import io.github.mirancz.libreinfo.parsing.types.Vehicle;
 import io.github.mirancz.libreinfo.parsing.types.dto.VehicleDTO;
 import io.github.mirancz.libreinfo.util.AppJsonKt;
 import io.github.mirancz.libreinfo.util.AppLog;
+import io.github.mirancz.libreinfo.util.location.LocationExt;
 import io.github.mirancz.libreinfo.util.request.RequestHelper;
 import io.github.mirancz.libreinfo.util.request.VehicleWebsocket;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -235,7 +236,7 @@ public class VehicleMapActivity extends BaseActivity {
 
                 SymbolOptions def = new SymbolOptions().withIconImage("stop_icon").withIconSize(1f).withIconAnchor("bottom");
                 for (Post post : storage.postStorage().getAllPosts()) {
-                    SymbolOptions options = def.withLatLng(post.location().toLatLng());
+                    SymbolOptions options = def.withLatLng(LocationExt.toLatLng(post.location()));
                     stopLayer.create(options);
                 }
 

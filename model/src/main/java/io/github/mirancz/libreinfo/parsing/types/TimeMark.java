@@ -1,6 +1,6 @@
 package io.github.mirancz.libreinfo.parsing.types;
 
-import androidx.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.Objects;

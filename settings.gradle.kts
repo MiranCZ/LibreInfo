@@ -23,5 +23,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "LibreInfo"
-include(":app")
+include(":app", ":model")
  

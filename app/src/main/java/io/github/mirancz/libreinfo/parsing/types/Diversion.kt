@@ -1,14 +1,15 @@
 package io.github.mirancz.libreinfo.parsing.types
 
 import android.os.Parcelable
-import com.google.gson.JsonObject
-import io.github.mirancz.libreinfo.parsing.storage.LineStorage
+import io.github.mirancz.libreinfo.parsing.types.serial.DateTimeParceler
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.TypeParceler
 
 /**
  * This class is not [Serializable], see [io.github.mirancz.libreinfo.parsing.types.dto.DiversionDTO] instead
  */
 @Parcelize
+@TypeParceler<DateTime, DateTimeParceler>()
 data class Diversion(
     val id: Int?,
     val title: String,

@@ -1,11 +1,6 @@
 package io.github.mirancz.libreinfo.parsing.types;
 
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import androidx.annotation.NonNull;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -14,28 +9,9 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public record DateTime(int day, int month, int year, int hours, int minutes) implements Parcelable {
+public record DateTime(int day, int month, int year, int hours, int minutes) {
 
     public static final DateTime NONE = new DateTime(-1, -1, -1, -1, -1);
-
-
-    private DateTime(Parcel in) {
-        this(in.readInt(), in.readInt(),in.readInt(),in.readInt(),in.readInt());
-    }
-
-    public static final Creator<DateTime> CREATOR = new Creator<>() {
-        @Override
-        public DateTime createFromParcel(Parcel in) {
-            if (in.readByte() == 0) return NONE;
-
-            return new DateTime(in);
-        }
-
-        @Override
-        public DateTime[] newArray(int size) {
-            return new DateTime[size];
-        }
-    };
 
     public static DateTime now() {
         LocalDateTime now = LocalDateTime.now();
@@ -138,7 +114,6 @@ public record DateTime(int day, int month, int year, int hours, int minutes) imp
         return LocalDateTime.of(year, month, day, hours, minutes);
     }
 
-    @NonNull
     @Override
     public String toString() {
         return String.format(Locale.getDefault(),"%02d.%02d.%d %02d:%02d", day, month, year, hours, minutes);
@@ -150,25 +125,5 @@ public record DateTime(int day, int month, int year, int hours, int minutes) imp
 
     public String toTimeString() {
         return String.format(Locale.getDefault(),"%02d:%02d", hours, minutes);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(@NonNull Parcel dest, int flags) {
-        if (this == NONE) {
-            dest.writeByte((byte)0);
-            return;
-        }
-        dest.writeByte((byte)1);
-
-        dest.writeInt(day);
-        dest.writeInt(month);
-        dest.writeInt(year);
-        dest.writeInt(hours);
-        dest.writeInt(minutes);
     }
 }

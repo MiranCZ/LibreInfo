@@ -231,6 +231,8 @@ secrets {
 
 dependencies {
 
+    implementation(project(":model"))
+
     implementation(platform(libs.compose.bom))
     androidTestImplementation(platform(libs.compose.bom))
 
