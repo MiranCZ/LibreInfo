@@ -63,7 +63,7 @@ public class LineStorage implements AppStorage {
              nameToAlias.put(alias.lineDisplayName(), alias);
         }
 
-        this.aliases.sort(Comparator.comparing(l -> l.getSortKey(this)));
+        this.aliases.sort(Comparator.comparing(l -> l.getSortKey(this::getOptionalAlias)));
     }
 
     public LineAlias getAlias(int id) {

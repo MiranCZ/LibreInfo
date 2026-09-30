@@ -6,6 +6,7 @@ import androidx.paging.PagingState
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.DateTime
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.util.load.toAppException
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import kotlinx.coroutines.Dispatchers
@@ -18,8 +19,8 @@ import kotlin.coroutines.cancellation.CancellationException
  */
 internal class ConnectionPagingSource(
     private val context: Context,
-    private val fromStop: Stop,
-    private val toStop: Stop,
+    private val fromStopId: Int,
+    private val toStopId: Int,
     private val time: String,
     private val isArrival: Boolean,
 ) : PagingSource<String, ConnectionUi>() {
@@ -37,6 +38,9 @@ internal class ConnectionPagingSource(
 
     private suspend fun loadPage(cursor: String?): LoadResult.Page<String, ConnectionUi> {
         val storage = AppContainer.storageProvider.getInstance()
+        val fromStop = storage.stopStorage.getStop(StopId.internal(fromStopId))
+        val toStop = storage.stopStorage.getStop(StopId.internal(toStopId))
+
         val response = RequestHelper.findConnections(context, fromStop, toStop, time, isArrival, cursor)
         val now = DateTime.now()
 

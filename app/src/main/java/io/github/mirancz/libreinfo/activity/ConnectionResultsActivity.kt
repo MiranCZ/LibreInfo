@@ -57,25 +57,25 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
 
     internal class ConnectionResultsViewModel(
         application: Application,
-        fromStop: Stop,
-        toStop: Stop,
+        fromStopId: Int,
+        toStopId: Int,
         departureTime: String,
         isArrival: Boolean,
     ) : ViewModel() {
         val connections = Pager(PagingConfig(pageSize = 10, prefetchDistance = 4, enablePlaceholders = false)) {
-            ConnectionPagingSource(application, fromStop, toStop, departureTime, isArrival)
+            ConnectionPagingSource(application, fromStopId, toStopId, departureTime, isArrival)
         }.flow.cachedIn(viewModelScope)
     }
 
     @Composable
     override fun CreateElements() {
-        val fromStop = intent.getParcelableExtra<Stop>("fromStop")!!
-        val toStop = intent.getParcelableExtra<Stop>("toStop")!!
+        val fromStopId = intent.getIntExtra("fromStop", -1)
+        val toStopId = intent.getIntExtra("toStop", -1)
         val departureTime = intent.getStringExtra("departureTime")!!
         val isArrival = intent.getBooleanExtra("isArrival", false)
 
         val vm = viewModel {
-            ConnectionResultsViewModel(application, fromStop, toStop, departureTime, isArrival)
+            ConnectionResultsViewModel(application, fromStopId, toStopId, departureTime, isArrival)
         }
         val connections = vm.connections.collectAsLazyPagingItems()
 

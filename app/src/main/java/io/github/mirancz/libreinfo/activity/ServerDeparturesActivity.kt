@@ -60,6 +60,7 @@ import io.github.mirancz.libreinfo.parsing.types.dto.mapLine
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
 import io.github.mirancz.libreinfo.parsing.types.response.ServerDeparturesResponse
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.DelayUtil
@@ -86,15 +87,17 @@ class ServerDeparturesActivity : KBaseActivity("") {
 
     @Composable
     override fun CreateElements() {
-        val stop = intent.getParcelableExtra<Stop>("stop")!!
+//        val stop = intent.getParcelableExtra<Stop>("stop")!!
         val context = LocalContext.current
         val vm: StopViewModel = viewModel()
 
         val provider = AppContainer.storageProvider
         var storage: IdStorage? by remember { mutableStateOf(provider.getInstanceOrNull()) }
+        var stop by remember { mutableStateOf(Stop.NONE)}
 
-        LaunchedEffect(Unit) {
-            if (stop.isFavourite()) {
+        LaunchedEffect(stop) {
+            val local = stop
+            if (local.isFavourite()) {
                 vm.setLiked(true)
             }
         }
@@ -105,7 +108,16 @@ class ServerDeparturesActivity : KBaseActivity("") {
         var refreshTick by remember { mutableIntStateOf(0) }
 
         val result = rememberLoad(refreshTick) {
-            storage = provider.getInstance()
+            val _storage = provider.getInstance()
+            storage = _storage
+
+            val stopId = intent.getIntExtra("stop", -1)
+
+            stop = if (stopId != -1) {
+                _storage.stopStorage.getStop(StopId.internal(stopId))
+            } else {
+                Stop.NONE
+            }
 
             if (refreshTick > 0) {
                 try {
@@ -128,8 +140,8 @@ class ServerDeparturesActivity : KBaseActivity("") {
                 vm.setRefreshing(true)
                 refreshTick++
             }) {
-                AsyncContent(result, loading = { DeparturesShimmer(storage) }) { departures ->
-                    Departures(departures, storage!!, delays)
+                AsyncContent(result, loading = { DeparturesShimmer(stop, storage) }) { departures ->
+                    Departures(departures,stop.id.internal(), storage!!, delays)
                 }
             }
         }
@@ -139,24 +151,28 @@ class ServerDeparturesActivity : KBaseActivity("") {
         actions: @Composable (RowScope.() -> Unit),
         content: @Composable (() -> Unit)
     ) {
-        val stop = intent.getParcelableExtra<Stop>("stop")!!
+        // FIXME not ideal at all; should be resolved later in refactoring
+//        val stop = intent.getParcelableExtra<Stop>("stop")!!
+//
+//        name = Text.literal(stop.name)
 
-        name = Text.literal(stop.name)
+        val stopId = intent.getIntExtra("stop", -1)
 
         super.setBaseContent({
             actions()
-            FavouriteStopAction(stop)
+
+            // FIXME not ideal at all; should be resolved later in refactoring
+            FavouriteStopAction(StopId(stopId, -1))
         }, content)
     }
 
     @Composable
     private fun Departures(
         departures: ServerDeparturesResponse,
+        stopId: Int,
         storage: IdStorage,
         delays: RouteDelaysResponse?
     ) {
-        val stop = intent.getParcelableExtra<Stop>("stop")!!
-
         val error = departures.metadata?.error
         LaunchedEffect(error) {
             if (!error.isNullOrBlank()) showSnackBar(error, SnackBarType.ERROR)
@@ -186,7 +202,7 @@ class ServerDeparturesActivity : KBaseActivity("") {
             }
 
             items(departures.posts) { post ->
-                ServerPost(post, storage, stop, delays)
+                ServerPost(post, storage, stopId, delays)
             }
         }
     }
@@ -195,7 +211,7 @@ class ServerDeparturesActivity : KBaseActivity("") {
     private fun ServerPost(
         post: ServerPostDTO,
         storage: IdStorage,
-        stop: Stop,
+        stopId: Int,
         delays: RouteDelaysResponse?
     ) {
         val depSettings = LocalDeparturesSettings.current
@@ -209,7 +225,7 @@ class ServerDeparturesActivity : KBaseActivity("") {
                 DeparturePostHeader(post.name, Modifier.padding(bottom = 4.dp))
 
                 for (departure in post.departures.take(depSettings.maxEntries)) {
-                    ServerDepartureRow(departure, storage, stop, delays)
+                    ServerDepartureRow(departure, storage, stopId, delays)
                 }
             }
         }
@@ -219,7 +235,7 @@ class ServerDeparturesActivity : KBaseActivity("") {
     private fun ServerDepartureRow(
         departure: ServerDepartureDTO,
         storage: IdStorage,
-        stop: Stop,
+        stopId: Int,
         delays: RouteDelaysResponse?
     ) {
         val depSettings = LocalDeparturesSettings.current
@@ -235,7 +251,7 @@ class ServerDeparturesActivity : KBaseActivity("") {
         if (tripId >= 0) {
             modifier = modifier.clickable(null, ripple()) {
                 startActivity(TripDetailActivity::class) { intent: Intent ->
-                    intent.putExtra("stopId", stop.id.internal)
+                    intent.putExtra("stopId", stopId)
                     intent.putExtra("tripId", tripId)
                 }
             }
@@ -338,8 +354,7 @@ class ServerDeparturesActivity : KBaseActivity("") {
     }
 
     @Composable
-    private fun DeparturesShimmer(storage: IdStorage?) {
-        val stop = intent.getParcelableExtra<Stop>("stop")!!
+    private fun DeparturesShimmer(stop: Stop, storage: IdStorage?) {
         val shimmer = rememberActivityShimmer()
 
         val entries: List<String?> =

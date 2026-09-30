@@ -255,7 +255,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                                 if (intent.getBooleanExtra(EXTRA_PICKER_MODE, false)) {
                                     setResult(
                                         RESULT_OK,
-                                        Intent().apply { putExtra(EXTRA_RESULT_STOP, item) })
+                                        Intent().apply { putExtra(EXTRA_RESULT_STOP, item.id.internal()) })
                                     finish()
                                 } else {
                                     // read on click so a source change mid-session applies right away
@@ -266,7 +266,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                                     startActivity(target) { i ->
                                         i.putExtra(
                                             "stop",
-                                            item
+                                            item.id.internal()
                                         )
                                     }
                                 }

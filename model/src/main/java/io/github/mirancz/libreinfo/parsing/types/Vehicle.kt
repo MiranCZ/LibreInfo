@@ -1,15 +1,7 @@
 package io.github.mirancz.libreinfo.parsing.types
 
-import android.content.Context
-import android.os.Parcelable
-import android.text.SpannableString
-import io.github.mirancz.libreinfo.parsing.types.dto.VehicleType
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
-import io.github.mirancz.libreinfo.util.DelayUtil
-import kotlinx.parcelize.Parcelize
-import java.util.function.Supplier
 
-@Parcelize
 data class Vehicle(
     val id: Int,
     val connectedIds: List<Int>?,
@@ -28,7 +20,7 @@ data class Vehicle(
     val finalStop: Stop,
     val finalDestinationName: String?,
     val inactive: Boolean?
-) : Parcelable {
+) {
 
     fun getVehicleNumbersString(): String {
         var res = id.toString() + ""
@@ -46,14 +38,6 @@ data class Vehicle(
         if (finalDestinationName != null) return finalDestinationName
 
         return finalStop.name
-    }
-
-    fun getDelaySpan(context: Context?): SpannableString {
-        return DelayUtil.getDelaySpan(context, delay!!)
-    }
-
-    fun getDelayColor(): Int {
-        return DelayUtil.getDelayColor(delay!!)
     }
 
 }

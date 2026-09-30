@@ -501,8 +501,8 @@ class ConnectionSearchActivity : KBaseActivity(R.string.connection_search) {
             .truncatedTo(ChronoUnit.SECONDS)
             .toString()
         startActivity(ConnectionResultsActivity::class) { intent ->
-            intent.putExtra("fromStop", from)
-            intent.putExtra("toStop", to)
+            intent.putExtra("fromStop", from.id.internal())
+            intent.putExtra("toStop", to.id.internal())
             intent.putExtra("departureTime", time)
             intent.putExtra("isArrival", vm.isArrival)
         }

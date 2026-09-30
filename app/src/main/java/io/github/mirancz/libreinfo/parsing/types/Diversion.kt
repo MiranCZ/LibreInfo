@@ -2,6 +2,7 @@ package io.github.mirancz.libreinfo.parsing.types
 
 import android.os.Parcelable
 import io.github.mirancz.libreinfo.parsing.types.serial.DateTimeParceler
+import io.github.mirancz.libreinfo.parsing.types.serial.LineAliasParceler
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.TypeParceler
 
@@ -10,6 +11,7 @@ import kotlinx.parcelize.TypeParceler
  */
 @Parcelize
 @TypeParceler<DateTime, DateTimeParceler>()
+@TypeParceler<LineAlias, LineAliasParceler>()
 data class Diversion(
     val id: Int?,
     val title: String,

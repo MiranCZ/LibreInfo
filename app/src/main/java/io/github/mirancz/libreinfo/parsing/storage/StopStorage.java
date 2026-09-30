@@ -4,6 +4,7 @@ import io.github.mirancz.libreinfo.R;
 import io.github.mirancz.libreinfo.exception.AppException;
 import io.github.mirancz.libreinfo.exception.ErrorType;
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop;
+import io.github.mirancz.libreinfo.parsing.types.stop.StopExtKt;
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId;
 import io.github.mirancz.libreinfo.util.AppInputStream;
 import io.github.mirancz.libreinfo.util.search.FuzzyStopSearch;
@@ -17,7 +18,7 @@ public class StopStorage implements AppStorage {
     public static StopStorage parse(AppInputStream is, StopMapper mapper) throws AppException {
         List<Stop> stops;
         try {
-            stops = Stop.parseStops(is, mapper);
+            stops = StopExtKt.parseStops(is, mapper);
         } catch (IOException e) {
             throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
         }
@@ -37,10 +38,10 @@ public class StopStorage implements AppStorage {
         this.idToStop = new Stop[mapper.internalStopsLength()];
         this.mapper = mapper;
 
-        Arrays.fill(idToStop, Stop.NONE);
+        Arrays.fill(idToStop, Stop.Companion.getNONE());
 
         for (Stop stop : stops) {
-            idToStop[stop.id.internal()] = stop;
+            idToStop[stop.getId().internal()] = stop;
         }
 
         this.searcher = new FuzzyStopSearch(stops);
@@ -60,7 +61,7 @@ public class StopStorage implements AppStorage {
 
     private Stop getInternalStop(int id) {
         if (id < 0 || id >= idToStop.length) {
-            return Stop.NONE;
+            return Stop.Companion.getNONE();
         }
 
         return idToStop[id];

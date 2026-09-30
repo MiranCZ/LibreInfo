@@ -52,11 +52,11 @@ public class DeparturePerformanceActivity extends BaseActivity {
                 for (int i = 0; i < 3; i++) {
                     for (Stop stop : storage.stopStorage().getAllStops()) {
                         long startNs = System.nanoTime();
-                        var result = OfflineDepartures.getOffline(storage, stop.id.internal());
+                        var result = OfflineDepartures.getOffline(storage, stop.getId().internal());
                         long tookNs = System.nanoTime()-startNs;
 
                         if (!result.isEmpty()) {
-                            took.put(stop.id.internal(), Math.min(took.getOrDefault(stop.id.internal(), Long.MAX_VALUE), tookNs));
+                            took.put(stop.getId().internal(), Math.min(took.getOrDefault(stop.getId().internal(), Long.MAX_VALUE), tookNs));
                         }
 
                         processed++;
@@ -99,8 +99,8 @@ public class DeparturePerformanceActivity extends BaseActivity {
 
                 Collections.sort(values);
 
-                String minStopS = storage.stopStorage().getStop(StopId.internal(minStop)).name;
-                String maxStopS = storage.stopStorage().getStop(StopId.internal(maxStop)).name;
+                String minStopS = storage.stopStorage().getStop(StopId.internal(minStop)).getName();
+                String maxStopS = storage.stopStorage().getStop(StopId.internal(maxStop)).getName();
 
                 resultText += "\nAverage: " +formatNs(Math.round(average*100)/100)+"ms";
                 resultText += "\nMedian: " +formatNs(values.get(values.size()/2))+"ms\n";

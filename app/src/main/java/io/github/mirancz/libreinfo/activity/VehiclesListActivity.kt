@@ -111,16 +111,16 @@ class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
                         )
                     }
                     Row(Modifier.weight(2f)) {
-                        if (item.course != null) {
-                            Text(item.course, fontSize = 14.sp, fontWeight = FontWeight.Light)
+                        item.course?.let { course ->
+                            Text(course, fontSize = 14.sp, fontWeight = FontWeight.Light)
                         }
                     }
 
-                    if (item.delay != null) {
+                    item.delay?.let { delay ->
                         Text(
-                            DelayUtil.getDelayText(context, item.delay),
+                            DelayUtil.getDelayText(context, delay),
                             fontSize = 14.sp,
-                            color = Color(DelayUtil.getDelayColor(item.delay))
+                            color = Color(DelayUtil.getDelayColor(delay))
                         )
                     }
                 }

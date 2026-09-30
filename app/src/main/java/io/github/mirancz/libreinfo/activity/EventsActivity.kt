@@ -172,8 +172,9 @@ class EventsActivity : KBaseActivity(R.string.events) {
                                 .padding(top = 8.dp),
                             verticalAlignment = Alignment.Bottom
                         ) {
-                            if (item.lines != null) {
-                                LineList(item.lines, Modifier.weight(1f))
+                            val lines = item.lines
+                            if (lines != null) {
+                                LineList(lines, Modifier.weight(1f))
                             } else {
                                 Spacer(Modifier.weight(1f))
                             }

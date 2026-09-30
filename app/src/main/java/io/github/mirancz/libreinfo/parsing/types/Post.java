@@ -70,7 +70,7 @@ public record Post(Stop stop, int postID, String name, Location location) implem
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeInt(stop.id.internal());
+        dest.writeInt(stop.getId().internal());
         dest.writeInt(postID);
     }
 }

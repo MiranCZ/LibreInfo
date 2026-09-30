@@ -1,5 +1,7 @@
 package io.github.mirancz.libreinfo.activity.bottomsheet;
 
+import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +15,9 @@ import androidx.fragment.app.Fragment;
 
 import io.github.mirancz.libreinfo.R;
 import io.github.mirancz.libreinfo.activity.base.BaseActivity;
+import io.github.mirancz.libreinfo.parsing.types.LineAlias;
 import io.github.mirancz.libreinfo.parsing.types.Vehicle;
+import io.github.mirancz.libreinfo.util.DelayUtil;
 
 public class VehicleInfoBottomSheet extends Fragment {
 
@@ -48,13 +52,13 @@ public class VehicleInfoBottomSheet extends Fragment {
 
         // TODO maybe cache this
         vehicleLineIcon.removeAllViews();
-        vehicleLineIcon.addView(vehicle.getLine().createLineIconView(vehicleLineIcon, parent));
+        vehicleLineIcon.addView(createLineIconView(vehicle.getLine(), vehicleLineIcon, parent));
 
         vehicleHeading.setText(vehicle.getFinalStopText());
 
         TextView nextStop = view.findViewById(R.id.vehicle_next_stop);
 
-        nextStop.setText(vehicle.getLastStop().name);
+        nextStop.setText(vehicle.getLastStop().getName());
 
         TextView delayText = view.findViewById(R.id.vehicle_delay);
 
@@ -64,6 +68,29 @@ public class VehicleInfoBottomSheet extends Fragment {
         }
 
         delayText.setVisibility(View.VISIBLE);
-        delayText.setText(vehicle.getDelaySpan(parent));
+        delayText.setText(DelayUtil.getDelaySpan(parent, vehicle.getDelay()));
     }
+
+
+    public View createLineIconView(LineAlias alias, ViewGroup parent, Context context) {
+        View itemView = LayoutInflater.from(context).inflate(R.layout.line_icon_layout, parent , false);
+        TextView title = itemView.findViewById(R.id.line_name);
+        title.setText(alias.lineDisplayName());
+        title.setTextColor(alias.textColor());
+
+        View view = itemView.findViewById(R.id.icon_container);
+        GradientDrawable back = (GradientDrawable) view.getBackground();
+        back.setColor(alias.backgroundColor());
+
+        // hardcoded outline around black background
+        if (alias.backgroundColor() == -16777216) {
+            back.setStroke(4, alias.textColor());
+        } else {
+            back.setStroke(0, alias.backgroundColor());
+        }
+
+        return itemView;
+    }
+
+
 }
