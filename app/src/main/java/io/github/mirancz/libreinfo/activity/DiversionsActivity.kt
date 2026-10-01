@@ -65,7 +65,15 @@ import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.ui.components.LineIcon
 import io.github.mirancz.libreinfo.ui.components.AppButton
 import io.github.mirancz.libreinfo.ui.components.AppSwitch
+import io.github.mirancz.libreinfo.ui.components.AppTextField
+import io.github.mirancz.libreinfo.ui.components.AsyncContent
 import io.github.mirancz.libreinfo.ui.components.Container
+import io.github.mirancz.libreinfo.ui.components.Divider
+import io.github.mirancz.libreinfo.ui.components.EventHeader
+import io.github.mirancz.libreinfo.ui.components.NothingHere
+import io.github.mirancz.libreinfo.ui.components.ShimmerLineIcon
+import io.github.mirancz.libreinfo.ui.components.ShimmerText
+import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 import io.github.mirancz.libreinfo.util.AppSettings
 import kotlin.random.Random
 
@@ -262,7 +270,10 @@ class DiversionsActivity : KBaseActivity(R.string.diversions) {
                 }
 
 
-                AppTextField(value, placeHolder = stringResource(R.string.search), onValueChange = { value = it })
+                AppTextField(
+                    value,
+                    placeHolder = stringResource(R.string.search),
+                    onValueChange = { value = it })
 
                 Row(
                     modifier = Modifier

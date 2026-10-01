@@ -26,6 +26,11 @@ import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.parsing.types.DateTime
 import io.github.mirancz.libreinfo.parsing.types.NewsEntry
+import io.github.mirancz.libreinfo.ui.components.AsyncContent
+import io.github.mirancz.libreinfo.ui.components.NothingHere
+import io.github.mirancz.libreinfo.ui.components.ShimmerBox
+import io.github.mirancz.libreinfo.ui.components.ShimmerText
+import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 
 // TODO pagination
 class NewsActivity : KBaseActivity(R.string.news) {

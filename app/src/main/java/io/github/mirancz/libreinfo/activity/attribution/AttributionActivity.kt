@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.ui.components.Container
+import io.github.mirancz.libreinfo.ui.components.Divider
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
 
 class AttributionActivity : KBaseActivity(R.string.data_sources) {

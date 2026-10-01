@@ -42,6 +42,7 @@ import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.ui.components.AppButton
 import io.github.mirancz.libreinfo.ui.components.AppSwitch
 import io.github.mirancz.libreinfo.ui.components.Container
+import io.github.mirancz.libreinfo.ui.components.Divider
 
 class UpdatingSettingsActivity : KBaseActivity(R.string.updating_settings) {
 

@@ -24,12 +24,15 @@ import io.github.mirancz.libreinfo.parsing.types.stop.Stop
 import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.util.OfflineDepartures
-import io.github.mirancz.libreinfo.util.Text
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
+import io.github.mirancz.libreinfo.ui.components.AsyncContent
+import io.github.mirancz.libreinfo.ui.components.DepartureEntryShimmer
+import io.github.mirancz.libreinfo.ui.components.NothingHere
+import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 
 
 class DeparturesActivity : KBaseActivity("") {
@@ -173,7 +176,11 @@ class DeparturesActivity : KBaseActivity("") {
 
         LazyColumn {
             items(entries) { postName ->
-                DepartureEntryShimmer(shimmer, postName = postName, repeat = departuresSettings.maxEntries)
+                DepartureEntryShimmer(
+                    shimmer,
+                    postName = postName,
+                    repeat = departuresSettings.maxEntries
+                )
             }
         }
     }

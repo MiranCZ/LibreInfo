@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.mirancz.libreinfo.ui.components.Divider
 import kotlin.reflect.KClass
 
 private val LocalInternetAvailable = compositionLocalOf { false }

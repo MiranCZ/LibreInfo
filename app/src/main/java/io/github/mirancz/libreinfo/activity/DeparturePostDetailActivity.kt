@@ -30,6 +30,11 @@ import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
+import io.github.mirancz.libreinfo.ui.components.AsyncContent
+import io.github.mirancz.libreinfo.ui.components.DepartureDetail
+import io.github.mirancz.libreinfo.ui.components.DepartureEntryRowShimmer
+import io.github.mirancz.libreinfo.ui.components.DeparturePostHeader
+import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 
 class DeparturePostDetailActivity : KBaseActivity("") {
 
@@ -78,7 +83,23 @@ class DeparturePostDetailActivity : KBaseActivity("") {
 
         AsyncContent(result, loading = { DepartureDetailShimmer(post) }) { res ->
             CompositionLocalProvider(LocalDeparturesSettings provides departuresSettings) {
-                DepartureDetail(res.first, res.second.apiStorage, stopDelays)
+                DepartureDetail(
+                    res.first,
+                    res.second.apiStorage,
+                    stopDelays
+                ) { vehicleInfo, stopId, tripId ->
+                    startActivity(TripDetailActivity::class) { intent ->
+                        if (vehicleInfo.hasDelay()) {
+                            intent.putExtra("delay", vehicleInfo.delay())
+                        }
+                        if (vehicleInfo.hasId()) {
+                            intent.putExtra("vehicleId", vehicleInfo.id())
+                        }
+
+                        intent.putExtra("stopId", stopId)
+                        intent.putExtra("tripId", tripId)
+                    }
+                }
             }
         }
     }

@@ -58,7 +58,6 @@ import io.github.mirancz.libreinfo.parsing.storage.CalendarStorage
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.parsing.types.LineAlias
 import io.github.mirancz.libreinfo.parsing.types.RouteStop
-import io.github.mirancz.libreinfo.parsing.types.StopTime
 import io.github.mirancz.libreinfo.parsing.types.Time
 import io.github.mirancz.libreinfo.parsing.types.Trip
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId
@@ -71,6 +70,11 @@ import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.TimeMark
 import io.github.mirancz.libreinfo.parsing.types.VehicleInfo
+import io.github.mirancz.libreinfo.ui.components.AsyncContent
+import io.github.mirancz.libreinfo.ui.components.ShimmerBox
+import io.github.mirancz.libreinfo.ui.components.ShimmerLineIcon
+import io.github.mirancz.libreinfo.ui.components.ShimmerText
+import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 import io.github.mirancz.libreinfo.util.DelayUtil.getDelayColor
 import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
@@ -117,7 +121,7 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
 
         AsyncContent(loadResult, loading = { TripDetailShimmer() }) { res ->
             val storage = res.first
-            var data by remember{ mutableStateOf(res.second) }
+            var data by remember { mutableStateOf(res.second) }
             var lastUpdated: Long? by remember { mutableStateOf(null) }
 
             // FIXME don't update on finished routes
@@ -300,9 +304,11 @@ class TripDetailActivity : KBaseActivity(R.string.trip) {
                 .padding(start = 8.dp, end = 4.dp)) {
                 ShimmerText(shimmer, widthFraction = 0.7f, variance = 0.2f)
             }
-            ShimmerBox(Modifier
-                .width(50.dp)
-                .height(14.dp), shimmer)
+            ShimmerBox(
+                Modifier
+                    .width(50.dp)
+                    .height(14.dp), shimmer
+            )
         }
     }
 

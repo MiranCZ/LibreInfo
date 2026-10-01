@@ -3,125 +3,59 @@ package io.github.mirancz.libreinfo.activity.base
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.text.TextUtils
-import android.text.method.LinkMovementMethod
-import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.snap
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.viewinterop.NoOpUpdate
 import androidx.lifecycle.lifecycleScope
-import com.valentinilk.shimmer.Shimmer
-import com.valentinilk.shimmer.ShimmerBounds
-import com.valentinilk.shimmer.rememberShimmer
-import com.valentinilk.shimmer.shimmer
-import kotlinx.coroutines.launch
+import io.github.mirancz.libreinfo.BuildConfig
+import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.DeparturePostDetailActivity
 import io.github.mirancz.libreinfo.activity.TripDetailActivity
 import io.github.mirancz.libreinfo.activity.base.snackbar.CustomSnackBarVisuals
 import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
-import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.exception.AppException
-import io.github.mirancz.libreinfo.parsing.storage.ApiStorage
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
-import io.github.mirancz.libreinfo.parsing.types.DateTime
-import io.github.mirancz.libreinfo.parsing.types.Diversion
-import io.github.mirancz.libreinfo.parsing.types.LineAlias
 import io.github.mirancz.libreinfo.parsing.types.Post
-import io.github.mirancz.libreinfo.parsing.types.Time
 import io.github.mirancz.libreinfo.parsing.types.departure.Departure
-import io.github.mirancz.libreinfo.parsing.types.departure.DepartureEntry
+import io.github.mirancz.libreinfo.ui.components.Departure
+import io.github.mirancz.libreinfo.ui.components.ErrorWidget
 import io.github.mirancz.libreinfo.ui.theme.AppTheme
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
-import io.github.mirancz.libreinfo.util.HtmlHelper
-import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.util.Text
-import io.github.mirancz.libreinfo.util.load.LoadResult
-import io.github.mirancz.libreinfo.util.load.LoadState
-import io.github.mirancz.libreinfo.util.load.rememberDelayedLoadState
-import io.github.mirancz.libreinfo.BuildConfig
-import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.ui.components.AppButton
-import io.github.mirancz.libreinfo.ui.components.Container
-import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
-import io.github.mirancz.libreinfo.ui.components.LineIcon
+import kotlinx.coroutines.launch
 import java.util.function.Consumer
-import kotlin.random.Random
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -149,60 +83,67 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         }
     }
 
-    open fun setBaseContent(actions: @Composable RowScope.() -> Unit = {}, content: @Composable () -> Unit) {
+    open fun setBaseContent(
+        actions: @Composable RowScope.() -> Unit = {},
+        content: @Composable () -> Unit
+    ) {
         setContent {
             AppTheme {
                 val context = LocalContext.current
 
                 Box {
-                Scaffold(
-                    snackbarHost = { SnackbarHost(hostState = snackBarHostState) { data ->
-                        val customVisuals = data.visuals as? CustomSnackBarVisuals
+                    Scaffold(
+                        snackbarHost = {
+                            SnackbarHost(hostState = snackBarHostState) { data ->
+                                val customVisuals = data.visuals as? CustomSnackBarVisuals
 
-                        val type = customVisuals?.type ?: SnackBarType.INFO
+                                val type = customVisuals?.type ?: SnackBarType.INFO
 
-                        val backgroundColor = when (type) {
-                            SnackBarType.SUCCESS -> MaterialTheme.extendedColors.successContainer
-                            SnackBarType.ERROR -> MaterialTheme.colorScheme.errorContainer
-                            SnackBarType.INFO -> MaterialTheme.extendedColors.infoContainer
-                        }
-
-                        Snackbar(
-                            snackbarData = data,
-                            containerColor = backgroundColor,
-                            contentColor = MaterialTheme.colorScheme.onSurface
-                        )
-                    } },
-                    topBar = {
-                        TopAppBar(
-                            title = {
-                                Text(
-                                    text = name.getName(context),
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 20.sp,
-                                    modifier = Modifier.padding(start = 8.dp)
-                                )
-                            },
-                            navigationIcon = {
-                                if (parentActivityIntent != null) {
-                                    IconButton(onClick = { onBackPressed() }) {
-                                        Icon(
-                                            painterResource(R.drawable.chevron_left),
-                                            "Go back",
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
+                                val backgroundColor = when (type) {
+                                    SnackBarType.SUCCESS -> MaterialTheme.extendedColors.successContainer
+                                    SnackBarType.ERROR -> MaterialTheme.colorScheme.errorContainer
+                                    SnackBarType.INFO -> MaterialTheme.extendedColors.infoContainer
                                 }
-                            },
-                            actions = actions
-                        )
+
+                                Snackbar(
+                                    snackbarData = data,
+                                    containerColor = backgroundColor,
+                                    contentColor = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        },
+                        topBar = {
+                            TopAppBar(
+                                title = {
+                                    Text(
+                                        text = name.getName(context),
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 20.sp,
+                                        modifier = Modifier.padding(start = 8.dp)
+                                    )
+                                },
+                                navigationIcon = {
+                                    if (parentActivityIntent != null) {
+                                        IconButton(onClick = { onBackPressed() }) {
+                                            Icon(
+                                                painterResource(R.drawable.chevron_left),
+                                                "Go back",
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+                                },
+                                actions = actions
+                            )
+                        }
+                    ) { innerPadding ->
+                        Box(Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()) {
+                            content()
+                            BottomOverlay(Modifier.align(Alignment.BottomCenter))
+                        }
                     }
-                ) { innerPadding ->
-                    Box(Modifier.padding(innerPadding).fillMaxSize()) {
-                        content()
-                        BottomOverlay(Modifier.align(Alignment.BottomCenter))
-                    }
-                }
 
                     @Suppress("SimplifyBooleanWithConstants", "KotlinConstantConditions")
                     if (BuildConfig.BUILD_TYPE != "release") {
@@ -223,7 +164,9 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         // Slides the strip along the diagonal so its center sits over the corner.
         val shift = 22.dp
 
-        Box(modifier.size(corner).clipToBounds()) {
+        Box(modifier
+            .size(corner)
+            .clipToBounds()) {
             Box(
                 Modifier
                     .align(Alignment.Center)
@@ -252,7 +195,8 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
      * Optional content pinned to the bottom of the screen, floating over [CreateElements].
      */
     @Composable
-    open fun BottomOverlay(modifier: Modifier) {}
+    open fun BottomOverlay(modifier: Modifier) {
+    }
 
     fun startActivity(clazz: KClass<out Activity>) {
         startActivity(clazz) {}
@@ -293,590 +237,31 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         return result
     }
 
-    /**
-     * Renders [result] as the appropriate state: [loading] while in flight, [ErrorWidget] (with a
-     * working retry button) on failure, and [content] on success.
-     */
-    @Composable
-    fun <T> AsyncContent(
-        result: LoadResult<T>,
-        modifier: Modifier = Modifier,
-        loading: @Composable () -> Unit = { Loading() },
-        content: @Composable (T) -> Unit,
-    ) {
-        AsyncContent(result.state, result.retry, modifier, loading, content)
-    }
 
-    /**
-     * Renders [loadState] like the [LoadResult] overload does, for loads not driven by
-     * [io.github.mirancz.libreinfo.util.load.rememberLoad] (e.g. paging), calling [onRetry] on retry.
-     */
-    @Composable
-    fun <T> AsyncContent(
-        loadState: LoadState<T>,
-        onRetry: () -> Unit,
-        modifier: Modifier = Modifier,
-        loading: @Composable () -> Unit = { Loading() },
-        content: @Composable (T) -> Unit,
-    ) {
-        val (display, animate) = rememberDelayedLoadState(loadState)
-        Crossfade(targetState = display, modifier = modifier, animationSpec = if (animate) tween() else snap()) { state ->
-            when (state) {
-                null -> {}
-                is LoadState.Loading -> loading()
-                is LoadState.Error -> ErrorWidget(state.error, onRetry = onRetry)
-                is LoadState.Success -> content(state.data)
-            }
-        }
-    }
-
-    @Composable
-    fun ErrorWidget(error: AppException, modifier: Modifier = Modifier, onRetry: (() -> Unit)? = null) {
-        val context = LocalContext.current
-        val type = error.type
-
-        Box(modifier.fillMaxWidth()) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                        painter = painterResource(type.icon),
-                        "error",
-                        tint = MaterialTheme.colorScheme.error
-                )
-
-                Text(stringResource(type.title), fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    error.getPrettyText(context),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Normal,
-                    textAlign = TextAlign.Center
-                )
-
-
-                if (onRetry != null && type.retryable) {
-                    AppButton(
-                        onClick = onRetry,
-                        modifier = Modifier.padding(top = 16.dp).fillMaxWidth(0.5f),
-                    ) {
-                        Text(
-                            stringResource(R.string.retry),
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 16.sp
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    fun Divider(modifier: Modifier = Modifier) {
-        HorizontalDivider(modifier)
-    }
-
-    @Composable
-    fun LineList(lines: List<LineAlias>, modifier: Modifier = Modifier) {
-        FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (line in lines) {
-                LineIcon(line = line, padding = 0.dp)
-            }
-        }
-    }
-
-    @Composable
-    fun EventHeader(item: Diversion, content: @Composable ColumnScope.() -> Unit = {}) {
-        Column {
-            Text(
-                text = item.title,
-                fontWeight = FontWeight.Black,
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            if (item.from != DateTime.NONE) {
-                Row {
-                    Text(
-                        "Od: ",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Normal
-                    )
-                    Text(
-                        item.from.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-            if (item.to != DateTime.NONE) {
-                Row {
-                    Text(
-                        "Do: ",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Normal
-                    )
-                    Text(
-                        item.to.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            if (item.lines != null) {
-                LineList(item.lines, Modifier.padding(top = 8.dp))
-            }
-
-            content()
-        }
-    }
-
-    /**
-     * Renders [htmlString] into a [TextView].
-     *
-     * [maxLines] clips the text to that many lines and ellipsizes it. The ellipsis is only ever
-     * drawn by a `StaticLayout`, and `TextView` switches to a `DynamicLayout` as soon as its text
-     * is a [android.text.Spannable] - which attaching a movement method forces it to be. A
-     * `DynamicLayout` ignores `maxLines` completely and `TextView` falls back to just cropping its
-     * own height, so the text ends up clipped with no ellipsis. Hence, the movement method is only
-     * attached while the text is shown in full; links inside a clipped preview are not tappable.
-     */
-    @Composable
-    fun HTML(
-        htmlString: String,
-        modifier: Modifier = Modifier,
-        maxLines: Int = Int.MAX_VALUE,
-        update: (TextView) -> Unit = NoOpUpdate
-    ) {
-        val parsed = remember(htmlString) { HtmlHelper.parseHtml(htmlString) }
-        val clipped = maxLines != Int.MAX_VALUE
-
-        AndroidView(
-            modifier = modifier,
-            factory = { context -> TextView(context) },
-            update = { view ->
-                view.movementMethod = if (clipped) null else LinkMovementMethod.getInstance()
-                view.maxLines = maxLines
-                view.ellipsize = if (clipped) TextUtils.TruncateAt.END else null
-
-                // has to come after the movement method - TextView decides how to buffer the text,
-                // and with that which layout class to use, while the text is being set
-                view.text = parsed
-
-                update(view)
-            }
-        )
-    }
-
-    @Composable
-    fun rememberActivityShimmer() = rememberShimmer(ShimmerBounds.Window)
-
-    @Composable
-    fun ShimmerBox(modifier: Modifier, shimmer: Shimmer, shape: Shape = RoundedCornerShape(4.dp)) {
-        Box(modifier.shimmer(shimmer).background(MaterialTheme.extendedColors.shimmer, shape))
-    }
-
-    @Composable
-    fun ShimmerText(shimmer: Shimmer, widthFraction: Float = 0.85f, variance: Float = 0.15f, height: Dp = 14.dp) {
-        val width = remember { (widthFraction + Random.nextFloat() * variance - variance / 2f).coerceIn(0.1f, 1f) }
-        ShimmerBox(Modifier.fillMaxWidth(width).height(height), shimmer)
-    }
-
-    @Composable
-    fun ShimmerLineIcon(shimmer: Shimmer) {
-        ShimmerBox(Modifier.size(32.dp), shimmer, shape = RoundedCornerShape(8.dp))
-    }
-
-    @Composable
-    fun Loading() {
-        Box(Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(Modifier.size(80.dp), strokeWidth = 6.dp)
-        }
-    }
-
-    @Composable
-    fun NothingHere(text: String = stringResource(R.string.nothing_here)) {
-        Container(Modifier.padding(16.dp)) {
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text(
-                    text,
-                    fontWeight = FontWeight.Medium,
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-        }
-    }
-
-    @Composable
-    fun AppTextField(
-        value: String,
-        modifier: Modifier = Modifier,
-        onValueChange: (String) -> Unit = {},
-        placeHolder: String = "",
-        focusRequester: FocusRequester = remember { FocusRequester() },
-        leadingIcon: @Composable (() -> Unit)? = null,
-        trailingIcon: @Composable (() -> Unit)? = null,
-        color: Color = MaterialTheme.colorScheme.surfaceContainer,
-        readOnly: Boolean = false,
-    ) {
-        TextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = modifier
-                .fillMaxWidth()
-                .focusRequester(focusRequester),
-            placeholder = { Text(placeHolder) },
-            shape = RoundedCornerShape(8.dp),
-            leadingIcon = leadingIcon,
-            singleLine = true,
-            trailingIcon = trailingIcon,
-            readOnly = readOnly,
-            colors = TextFieldDefaults.colors()
-                .copy(
-                    unfocusedContainerColor = color,
-                    focusedContainerColor = color,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                )
-        )
-    }
-
-
-    @Composable
-    fun <T> AppDropdown(
-        selected: T,
-        options: List<T>,
-        onSelect: (T) -> Unit,
-        modifier: Modifier = Modifier,
-        color: Color = MaterialTheme.colorScheme.surfaceContainer,
-        displayString: (T) -> String = { it.toString() },
-    ) {
-        var expanded by remember { mutableStateOf(false) }
-        val accentColor = MaterialTheme.colorScheme.primary
-
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = it },
-            modifier = modifier,
-        ) {
-            AppTextField(
-                value = displayString(selected),
-                modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                onValueChange = {},
-                placeHolder = "",
-                trailingIcon = {
-                    CompositionLocalProvider(LocalContentColor provides accentColor) {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded)
-                    }
-                },
-                color = color,
-                readOnly = true,
-            )
-
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                containerColor = color,
-                shape = RoundedCornerShape(12.dp),
-                shadowElevation = 4.dp,
-            ) {
-                options.forEach { option ->
-                    val isSelected = option == selected
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                displayString(option),
-                                fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
-                            )
-                        },
-                        trailingIcon = if (isSelected) ({
-                            Icon(
-                                Icons.Default.Check,
-                                contentDescription = null,
-                                tint = accentColor,
-                                modifier = Modifier.size(16.dp),
-                            )
-                        }) else null,
-                        onClick = {
-                            onSelect(option)
-                            expanded = false
-                        },
-                    )
-                }
-            }
-        }
-    }
-
-
+    // TODO eventually remove wrapper
     @Composable
     fun Departure(departure: Departure, post: Post?) {
-        val content: @Composable BoxScope.() -> Unit = {
-            Column(Modifier.padding(vertical = 8.dp, horizontal = 6.dp)) {
-                DeparturePostHeader(departure.name, Modifier.padding(bottom = 4.dp))
-                val depSettings = LocalDeparturesSettings.current
-                for (dep in departure.entries.take(depSettings.maxEntries)) {
-                    DepartureEntry(dep)
-                }
-            }
-        }
-        val mod = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        if (post != null) {
-            Container({
+        Departure(
+            departure,
+            post,
+            onHeaderClick = {
                 startActivity(DeparturePostDetailActivity::class) {
                     it.putExtra("post", post)
                 }
-            }, innerPadding = 0.dp, modifier = mod, content = content)
-        } else {
-            Container(innerPadding = 0.dp, modifier = mod, content = content)
-        }
-    }
-
-    @Composable
-    fun DepartureDetail(departure: Departure, apiStorage: ApiStorage, stopDelays: StopDelaysResponse) {
-        val color = MaterialTheme.colorScheme.surfaceContainer
-        val stopDelays = stopDelays.stopDelays
-
-        fun alreadyLeft(entry: DepartureEntry): Boolean {
-            return entry.timeMark.delayedDeparture.isBefore(Time.now()) && !entry.timeMark.leaving
-        }
-
-        Container(
-            innerPadding = 0.dp,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            val first = departure.entries.indexOfFirst { entry -> !alreadyLeft(entry) }
-            val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = first)
-
-            LazyColumn(
-                Modifier.padding(vertical = 8.dp, horizontal = 6.dp),
-                state = lazyListState
-            ) {
-                stickyHeader {
-                    DeparturePostHeader(
-                        departure.name, Modifier
-                            .background(color)
-                            .clickable(interactionSource = null, indication = null) {})
+            }
+        ) { vehicleInfo, stopId, tripId ->
+            startActivity(TripDetailActivity::class) { intent ->
+                if (vehicleInfo.hasDelay()) {
+                    intent.putExtra("delay", vehicleInfo.delay())
                 }
-                items(departure.entries) { entry ->
-                    val alreadyLeft = alreadyLeft(entry)
-
-                    var modifier: Modifier = Modifier
-
-                    if (alreadyLeft) {
-                        modifier = modifier.alpha(0.35f)
-                    }
-                    val lineRoute = apiStorage.getLineIdAndRoute(entry.tripId)
-
-                    val lineId = lineRoute.left
-                    val routeId = lineRoute.right
-
-                    var showDelay = !alreadyLeft
-                    if (alreadyLeft) {
-                        var delay = -1
-
-                        val delays = stopDelays[lineId]
-                        if (delays != null) {
-                            val delayEntry = delays[routeId]
-
-                            if (delayEntry != null) {
-                                delay = delayEntry.delay
-                            }
-                        }
-                        entry.vehicleInfo.setDelay(delay)
-
-                        showDelay = delay != -1
-                    }
-
-                    DepartureEntry(entry, modifier, showDelay)
+                if (vehicleInfo.hasId()) {
+                    intent.putExtra("vehicleId", vehicleInfo.id())
                 }
+
+                intent.putExtra("stopId", stopId)
+                intent.putExtra("tripId", tripId)
             }
         }
     }
-
-    @Composable
-    fun DeparturePostHeader(name: String, modifier: Modifier = Modifier) {
-        Column(modifier) {
-            Text(
-                name,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 8.dp)
-            )
-
-            Divider(Modifier
-                .padding(horizontal = 10.dp)
-                .padding(top = 4.dp))
-        }
-    }
-
-
-    @Composable
-    fun DepartureEntry(departure: DepartureEntry, modifier: Modifier = Modifier, showDelay: Boolean = true) {
-        val vehicleInfo = departure.vehicleInfo
-        val depSettings = LocalDeparturesSettings.current
-
-        Box(
-            modifier
-                .padding(horizontal = 8.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .clickable(null, ripple(), onClick = {
-                    startActivity(
-                        TripDetailActivity::class
-                    ) { intent: Intent ->
-                        if (vehicleInfo.hasDelay()) {
-                            intent.putExtra("delay", vehicleInfo.delay())
-                        }
-                        if (vehicleInfo.hasId()) {
-                            intent.putExtra("vehicleId", vehicleInfo.id())
-                        }
-
-                        intent.putExtra("stopId", departure.stopId)
-                        intent.putExtra("tripId", departure.tripId)
-                    }
-                })
-                .padding(horizontal = 8.dp)
-        ) {
-            Row(Modifier.fillMaxWidth()) {
-                Row(Modifier.weight(3f), verticalAlignment = Alignment.CenterVertically) {
-                    LineIcon(line = departure.line)
-                    Text(
-                        departure.finalStop,
-                        fontSize = 14.sp,
-                        maxLines = 1,
-                        softWrap = false,
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .padding(start = 4.dp)
-                            .weight(1f)
-                            .basicMarquee(iterations = Int.MAX_VALUE)
-                    )
-                }
-
-                if (departure.lowFloor && depSettings.showLowFloor) {
-                    Icon(
-                        painter = painterResource(R.drawable.wheelchair_regular),
-                        "lowfloor",
-                        Modifier
-                            .size(20.dp)
-                            .align(Alignment.CenterVertically),
-                        tint = MaterialTheme.extendedColors.onSurfaceMedium
-                    )
-                }
-
-                Row(
-                    Modifier
-                        .weight(1f)
-                        .align(Alignment.CenterVertically)
-                ) {
-                    if (vehicleInfo.hasDelay() && showDelay) {
-                        val delay: Int = vehicleInfo.delay()
-                        val color: Int = vehicleInfo.delayColor
-
-                        departure.timeMark.delay = delay
-                        val arrivalText: String = departure.timeMark.getFormattedDepartureString(30, true)
-
-
-                        Spacer(Modifier.weight(1f))
-
-                        if (delay > 0) {
-                            when (depSettings.delayRender) {
-                                DelayRenderType.PARENTHESES -> {
-                                    Text(" ($delay) ", color = Color(color), fontSize = 14.sp)
-                                }
-                                DelayRenderType.BOX -> {
-                                    Surface(
-                                        color = Color(color).copy(alpha = 0.2f),
-                                        shape = RoundedCornerShape(4.dp),
-                                        modifier = Modifier.padding(end = 4.dp)
-                                    ) {
-                                        Text(" +$delay ", color = Color(color), fontSize = 14.sp)
-                                    }
-                                }
-                                else -> {}
-                            }
-                        }
-
-                        Text(
-                            arrivalText,
-                            color = Color(color),
-                            fontSize = 14.sp
-                        )
-                    } else {
-                        val arrivalText: String = departure.timeMark.getFormattedDepartureString(30, false)
-
-                        Spacer(Modifier.weight(1f))
-                        Text(text = arrivalText, fontSize = 14.sp)
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    fun DepartureEntryShimmer(shimmer: Shimmer, postName: String?, repeat: Int = 5,) {
-        Container(
-            innerPadding = 0.dp,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Column(Modifier.padding(vertical = 8.dp, horizontal = 6.dp)) {
-                Column(Modifier.padding(bottom = 4.dp)) {
-                    Crossfade(targetState = postName) { name ->
-                        if (name != null) {
-                            Text(
-                                name,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp)
-                                    .padding(top = 8.dp)
-                            )
-                        } else {
-                            Box(Modifier.padding(horizontal = 16.dp).padding(top = 8.dp)) {
-                                ShimmerText(
-                                    shimmer,
-                                    height = 18.dp,
-                                    widthFraction = 0.4f,
-                                    variance = 0.15f
-                                )
-                            }
-                        }
-                    }
-                    Divider(Modifier.padding(horizontal = 10.dp).padding(top = 4.dp))
-                }
-
-                repeat(repeat) {
-                    DepartureEntryRowShimmer(shimmer)
-                }
-            }
-        }
-    }
-
-    @Composable
-    fun DepartureEntryRowShimmer(shimmer: Shimmer) {
-        Row(
-            Modifier
-                .padding(horizontal = 16.dp, vertical = 4.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                Modifier.weight(3f),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                ShimmerLineIcon(shimmer)
-                Spacer(Modifier.width(4.dp))
-                ShimmerText(shimmer, widthFraction = 0.55f, variance = 0.2f)
-            }
-            Row(
-                Modifier.weight(1f),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Spacer(Modifier.weight(1f))
-                ShimmerText(shimmer, widthFraction = 0.85f, variance = 0.1f)
-            }
-        }
-    }
-
-
 
 }

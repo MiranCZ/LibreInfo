@@ -45,12 +45,18 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.valentinilk.shimmer.Shimmer
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop
 import io.github.mirancz.libreinfo.util.load.toAppException
 import io.github.mirancz.libreinfo.util.load.toLoadState
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.ui.components.AsyncContent
 import io.github.mirancz.libreinfo.ui.components.LineIcon
 import io.github.mirancz.libreinfo.ui.components.Container
+import io.github.mirancz.libreinfo.ui.components.ErrorWidget
+import io.github.mirancz.libreinfo.ui.components.NothingHere
+import io.github.mirancz.libreinfo.ui.components.ShimmerBox
+import io.github.mirancz.libreinfo.ui.components.ShimmerLineIcon
+import io.github.mirancz.libreinfo.ui.components.ShimmerText
+import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 import androidx.paging.LoadState as PagingLoadState
 
 class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
@@ -393,9 +399,11 @@ class ConnectionResultsActivity : KBaseActivity(R.string.connection_results) {
                                 height = 12.dp
                             )
                         }
-                        ShimmerBox(Modifier
-                            .width(40.dp)
-                            .height(14.dp), shimmer)
+                        ShimmerBox(
+                            Modifier
+                                .width(40.dp)
+                                .height(14.dp), shimmer
+                        )
                     }
                 }
             }

@@ -1,0 +1,326 @@
+package io.github.mirancz.libreinfo.ui.components
+
+import android.content.Intent
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.valentinilk.shimmer.Shimmer
+import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.DeparturePostDetailActivity
+import io.github.mirancz.libreinfo.activity.TripDetailActivity
+import io.github.mirancz.libreinfo.activity.base.KBaseActivity
+import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
+import io.github.mirancz.libreinfo.parsing.storage.ApiStorage
+import io.github.mirancz.libreinfo.parsing.types.Post
+import io.github.mirancz.libreinfo.parsing.types.Time
+import io.github.mirancz.libreinfo.parsing.types.departure.Departure
+import io.github.mirancz.libreinfo.parsing.types.departure.DepartureEntry
+import io.github.mirancz.libreinfo.parsing.types.departure.VehicleInfo
+import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
+import io.github.mirancz.libreinfo.ui.theme.extendedColors
+import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
+
+@Composable
+fun DeparturePostHeader(
+    name: String, modifier: Modifier = Modifier
+) {
+    Column(modifier) {
+        Text(
+            name,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(top = 8.dp)
+        )
+
+        Divider(
+            Modifier
+                .padding(horizontal = 10.dp)
+                .padding(top = 4.dp)
+        )
+    }
+}
+
+@Composable
+fun DepartureEntryRowShimmer(shimmer: Shimmer) {
+    Row(
+        Modifier
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            Modifier.weight(3f), verticalAlignment = Alignment.CenterVertically
+        ) {
+            ShimmerLineIcon(shimmer)
+            Spacer(Modifier.width(4.dp))
+            ShimmerText(shimmer, widthFraction = 0.55f, variance = 0.2f)
+        }
+        Row(
+            Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically
+        ) {
+            Spacer(Modifier.weight(1f))
+            ShimmerText(shimmer, widthFraction = 0.85f, variance = 0.1f)
+        }
+    }
+}
+
+@Composable
+fun DepartureEntryShimmer(shimmer: Shimmer, postName: String?, repeat: Int = 5) {
+    Container(
+        innerPadding = 0.dp, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Column(Modifier.padding(vertical = 8.dp, horizontal = 6.dp)) {
+            Column(Modifier.padding(bottom = 4.dp)) {
+                Crossfade(targetState = postName) { name ->
+                    if (name != null) {
+                        Text(
+                            name,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(top = 8.dp)
+                        )
+                    } else {
+                        Box(
+                            Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(top = 8.dp)
+                        ) {
+                            ShimmerText(
+                                shimmer, height = 18.dp, widthFraction = 0.4f, variance = 0.15f
+                            )
+                        }
+                    }
+                }
+                Divider(
+                    Modifier
+                        .padding(horizontal = 10.dp)
+                        .padding(top = 4.dp)
+                )
+            }
+
+            repeat(repeat) {
+                DepartureEntryRowShimmer(shimmer)
+            }
+        }
+    }
+}
+
+@Composable
+fun DepartureEntry(
+    departure: DepartureEntry,
+    modifier: Modifier = Modifier,
+    showDelay: Boolean = true,
+    onClick: (VehicleInfo, Int, Int) -> Unit
+) {
+    val vehicleInfo = departure.vehicleInfo
+    val depSettings = LocalDeparturesSettings.current
+
+    Box(
+        modifier
+            .padding(horizontal = 8.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(null, ripple(), onClick = {
+                onClick(vehicleInfo, departure.stopId, departure.tripId)
+            })
+            .padding(horizontal = 8.dp)
+    ) {
+        Row(Modifier.fillMaxWidth()) {
+            Row(Modifier.weight(3f), verticalAlignment = Alignment.CenterVertically) {
+                LineIcon(line = departure.line)
+                Text(
+                    departure.finalStop,
+                    fontSize = 14.sp,
+                    maxLines = 1,
+                    softWrap = false,
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(start = 4.dp)
+                        .weight(1f)
+                        .basicMarquee(iterations = Int.MAX_VALUE)
+                )
+            }
+
+            if (departure.lowFloor && depSettings.showLowFloor) {
+                Icon(
+                    painter = painterResource(R.drawable.wheelchair_regular),
+                    "lowfloor",
+                    Modifier
+                        .size(20.dp)
+                        .align(Alignment.CenterVertically),
+                    tint = MaterialTheme.extendedColors.onSurfaceMedium
+                )
+            }
+
+            Row(
+                Modifier
+                    .weight(1f)
+                    .align(Alignment.CenterVertically)
+            ) {
+                if (vehicleInfo.hasDelay() && showDelay) {
+                    val delay: Int = vehicleInfo.delay()
+                    val color: Int = vehicleInfo.delayColor
+
+                    departure.timeMark.delay = delay
+                    val arrivalText: String =
+                        departure.timeMark.getFormattedDepartureString(30, true)
+
+
+                    Spacer(Modifier.weight(1f))
+
+                    if (delay > 0) {
+                        when (depSettings.delayRender) {
+                            DelayRenderType.PARENTHESES -> {
+                                Text(" ($delay) ", color = Color(color), fontSize = 14.sp)
+                            }
+
+                            DelayRenderType.BOX -> {
+                                Surface(
+                                    color = Color(color).copy(alpha = 0.2f),
+                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
+                                    modifier = Modifier.padding(end = 4.dp)
+                                ) {
+                                    Text(" +$delay ", color = Color(color), fontSize = 14.sp)
+                                }
+                            }
+
+                            else -> {}
+                        }
+                    }
+
+                    Text(
+                        arrivalText, color = Color(color), fontSize = 14.sp
+                    )
+                } else {
+                    val arrivalText: String =
+                        departure.timeMark.getFormattedDepartureString(30, false)
+
+                    Spacer(Modifier.weight(1f))
+                    Text(text = arrivalText, fontSize = 14.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DepartureDetail(
+    departure: Departure,
+    apiStorage: ApiStorage,
+    stopDelays: StopDelaysResponse,
+    onEntryClick: (VehicleInfo, Int, Int) -> Unit
+) {
+    val color = MaterialTheme.colorScheme.surfaceContainer
+    val stopDelays = stopDelays.stopDelays
+
+    fun alreadyLeft(entry: DepartureEntry): Boolean {
+        return entry.timeMark.delayedDeparture.isBefore(Time.now()) && !entry.timeMark.leaving
+    }
+
+    Container(
+        innerPadding = 0.dp, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        val first = departure.entries.indexOfFirst { entry -> !alreadyLeft(entry) }
+        val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = first)
+
+        LazyColumn(
+            Modifier.padding(vertical = 8.dp, horizontal = 6.dp), state = lazyListState
+        ) {
+            stickyHeader {
+                DeparturePostHeader(
+                    departure.name,
+                    Modifier
+                        .background(color)
+                        .clickable(interactionSource = null, indication = null) {})
+            }
+            items(departure.entries) { entry ->
+                val alreadyLeft = alreadyLeft(entry)
+
+                var modifier: Modifier = Modifier
+
+                if (alreadyLeft) {
+                    modifier = modifier.alpha(0.35f)
+                }
+                val lineRoute = apiStorage.getLineIdAndRoute(entry.tripId)
+
+                val lineId = lineRoute.left
+                val routeId = lineRoute.right
+
+                var showDelay = !alreadyLeft
+                if (alreadyLeft) {
+                    var delay = -1
+
+                    val delays = stopDelays[lineId]
+                    if (delays != null) {
+                        val delayEntry = delays[routeId]
+
+                        if (delayEntry != null) {
+                            delay = delayEntry.delay
+                        }
+                    }
+                    entry.vehicleInfo.setDelay(delay)
+
+                    showDelay = delay != -1
+                }
+
+                DepartureEntry(
+                    entry, modifier, showDelay, onEntryClick
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun Departure(
+    departure: Departure,
+    post: Post?,
+    onHeaderClick: () -> Unit = {},
+    onEntryClick: (VehicleInfo, Int, Int) -> Unit
+) {
+    val content: @Composable BoxScope.() -> Unit = {
+        Column(Modifier.padding(vertical = 8.dp, horizontal = 6.dp)) {
+            DeparturePostHeader(departure.name, Modifier.padding(bottom = 4.dp))
+            val depSettings = LocalDeparturesSettings.current
+            for (dep in departure.entries.take(depSettings.maxEntries)) {
+                DepartureEntry(dep, onClick = onEntryClick)
+            }
+        }
+    }
+    val mod = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    if (post != null) {
+        Container(onHeaderClick, innerPadding = 0.dp, modifier = mod, content = content)
+    } else {
+        Container(innerPadding = 0.dp, modifier = mod, content = content)
+    }
+}

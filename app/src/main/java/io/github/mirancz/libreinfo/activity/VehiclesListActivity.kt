@@ -32,8 +32,13 @@ import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.ui.components.AsyncContent
 import io.github.mirancz.libreinfo.ui.components.LineIcon
 import io.github.mirancz.libreinfo.ui.components.Container
+import io.github.mirancz.libreinfo.ui.components.NothingHere
+import io.github.mirancz.libreinfo.ui.components.ShimmerBox
+import io.github.mirancz.libreinfo.ui.components.ShimmerLineIcon
+import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 
 class VehiclesListActivity : KBaseActivity(R.string.vehicles) {
 

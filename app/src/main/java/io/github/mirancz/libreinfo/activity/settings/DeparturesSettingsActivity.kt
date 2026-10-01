@@ -2,22 +2,18 @@ package io.github.mirancz.libreinfo.activity.settings
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,11 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.util.AppSettings
@@ -47,8 +41,12 @@ import io.github.mirancz.libreinfo.parsing.types.departure.VehicleInfo
 import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.ui.components.AppDropdown
 import io.github.mirancz.libreinfo.ui.components.AppSwitch
 import io.github.mirancz.libreinfo.ui.components.CountdownConfirmDialog
+import io.github.mirancz.libreinfo.ui.components.DepartureEntryShimmer
+import io.github.mirancz.libreinfo.ui.components.Divider
+import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 
 class DeparturesSettingsActivity : KBaseActivity(R.string.departures_settings) {
 

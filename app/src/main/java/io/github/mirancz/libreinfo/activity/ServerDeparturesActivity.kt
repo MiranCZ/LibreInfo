@@ -62,11 +62,15 @@ import io.github.mirancz.libreinfo.parsing.types.response.ServerDeparturesRespon
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
+import io.github.mirancz.libreinfo.ui.components.AsyncContent
+import io.github.mirancz.libreinfo.ui.components.DepartureEntryShimmer
+import io.github.mirancz.libreinfo.ui.components.DeparturePostHeader
+import io.github.mirancz.libreinfo.ui.components.NothingHere
+import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
-import io.github.mirancz.libreinfo.util.Text
 import io.github.mirancz.libreinfo.util.load.LoadState
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
@@ -141,7 +145,7 @@ class ServerDeparturesActivity : KBaseActivity("") {
                 refreshTick++
             }) {
                 AsyncContent(result, loading = { DeparturesShimmer(stop, storage) }) { departures ->
-                    Departures(departures,stop.id.internal(), storage!!, delays)
+                    Departures(departures, stop.id.internal(), storage!!, delays)
                 }
             }
         }
@@ -362,7 +366,11 @@ class ServerDeparturesActivity : KBaseActivity("") {
 
         LazyColumn {
             items(entries) { postName ->
-                DepartureEntryShimmer(shimmer, postName = postName, repeat = departuresSettings.maxEntries)
+                DepartureEntryShimmer(
+                    shimmer,
+                    postName = postName,
+                    repeat = departuresSettings.maxEntries
+                )
             }
         }
     }

@@ -2,9 +2,12 @@ package io.github.mirancz.libreinfo.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Text
@@ -20,6 +23,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.valentinilk.shimmer.Shimmer
 import io.github.mirancz.libreinfo.parsing.types.LineAlias
 
 // TODO refactor signature
@@ -71,5 +75,22 @@ fun LineIcon(
             color = textColor
         )
     }
+}
+
+@Composable
+fun LineList(lines: List<LineAlias>, modifier: Modifier = Modifier) {
+    FlowRow(
+        modifier, horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        for (line in lines) {
+            LineIcon(line = line, padding = 0.dp)
+        }
+    }
+}
+
+@Composable
+fun ShimmerLineIcon(shimmer: Shimmer) {
+    ShimmerBox(Modifier.size(32.dp), shimmer, shape = RoundedCornerShape(8.dp))
 }
 
