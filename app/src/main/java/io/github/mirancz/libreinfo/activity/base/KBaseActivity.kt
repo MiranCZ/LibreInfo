@@ -49,6 +49,8 @@ import io.github.mirancz.libreinfo.exception.AppException
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.Post
 import io.github.mirancz.libreinfo.parsing.types.departure.Departure
+import io.github.mirancz.libreinfo.ui.AppRoot
+import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.Departure
 import io.github.mirancz.libreinfo.ui.components.ErrorWidget
 import io.github.mirancz.libreinfo.ui.theme.AppTheme
@@ -72,14 +74,7 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setBaseContent {
-            val error = AppContainer.storageProvider.error();
-
-            if (error != null) {
-                // surface a fatal startup/data-init failure
-                ErrorWidget(error)
-            } else {
-                CreateElements()
-            }
+            CreateElements()
         }
     }
 
@@ -88,72 +83,12 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         content: @Composable () -> Unit
     ) {
         setContent {
-            AppTheme {
-                val context = LocalContext.current
-
-                Box {
-                    Scaffold(
-                        snackbarHost = {
-                            SnackbarHost(hostState = snackBarHostState) { data ->
-                                val customVisuals = data.visuals as? CustomSnackBarVisuals
-
-                                val type = customVisuals?.type ?: SnackBarType.INFO
-
-                                val backgroundColor = when (type) {
-                                    SnackBarType.SUCCESS -> MaterialTheme.extendedColors.successContainer
-                                    SnackBarType.ERROR -> MaterialTheme.colorScheme.errorContainer
-                                    SnackBarType.INFO -> MaterialTheme.extendedColors.infoContainer
-                                }
-
-                                Snackbar(
-                                    snackbarData = data,
-                                    containerColor = backgroundColor,
-                                    contentColor = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        },
-                        topBar = {
-                            TopAppBar(
-                                title = {
-                                    Text(
-                                        text = name.getName(context),
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 20.sp,
-                                        modifier = Modifier.padding(start = 8.dp)
-                                    )
-                                },
-                                navigationIcon = {
-                                    if (parentActivityIntent != null) {
-                                        IconButton(onClick = { onBackPressed() }) {
-                                            Icon(
-                                                painterResource(R.drawable.chevron_left),
-                                                "Go back",
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                    }
-                                },
-                                actions = actions
-                            )
-                        }
-                    ) { innerPadding ->
-                        Box(Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize()) {
-                            content()
-                            BottomOverlay(Modifier.align(Alignment.BottomCenter))
-                        }
-                    }
-
-                    @Suppress("SimplifyBooleanWithConstants", "KotlinConstantConditions")
-                    if (BuildConfig.BUILD_TYPE != "release") {
-                        DevRibbon(
-                            Modifier
-                                .align(Alignment.BottomEnd)
-                                .navigationBarsPadding()
-                        )
-                    }
-                }
+            AppRoot {
+                ScreenScaffold(
+                    name.getName(this),
+                    onBack = if (parentActivityIntent != null) ::onBackPressed else null,
+                    actions
+                ) { content() }
             }
         }
     }
