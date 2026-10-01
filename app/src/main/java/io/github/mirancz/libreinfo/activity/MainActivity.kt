@@ -1,5 +1,6 @@
 package io.github.mirancz.libreinfo.activity
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -49,10 +50,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.devtest.DeparturePerformanceActivity
@@ -64,6 +67,7 @@ import io.github.mirancz.libreinfo.activity.settings.SettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.UpdatingSettingsActivity
 import io.github.mirancz.libreinfo.nav.NavRoute
 import io.github.mirancz.libreinfo.nav.NavState
+import io.github.mirancz.libreinfo.parsing.types.NewsEntry
 import io.github.mirancz.libreinfo.ui.AppRoot
 import io.github.mirancz.libreinfo.ui.NavigationScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AppButton
@@ -76,6 +80,8 @@ import io.github.mirancz.libreinfo.util.AppUpdater
 import io.github.mirancz.libreinfo.util.UpdateHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlin.reflect.typeOf
 
 class MainActivity : ComponentActivity() {
 
@@ -172,6 +178,14 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
 
         composable<NavRoute.Settings.Location> { LocationSettingsScreen(state) }
 
+
+        composable<NavRoute.News> { NewsScreen(state) }
+
+        // FIXME pass only IDs instead
+        composable<NavRoute.News.Detail>(
+            typeMap = mapOf(typeOf<NewsEntry>() to serializableNavType<NewsEntry>())
+        ) { NewsDetailScreen(state, it.toRoute<NavRoute.News.Detail>().entry) }
+
         @Suppress("SimplifyBooleanWithConstants", "KotlinConstantConditions")
         if (BuildConfig.BUILD_TYPE != "release") {
             composable<NavRoute.Settings.Dev> { DevSettingsScreen(state) }
@@ -185,7 +199,6 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
         activity<NavRoute.ConnectionSearch> { activityClass = ConnectionSearchActivity::class }
         activity<NavRoute.VehiclesList> { activityClass = VehiclesListActivity::class }
         activity<NavRoute.Diversions> { activityClass = DiversionsActivity::class }
-        activity<NavRoute.News> { activityClass = NewsActivity::class }
         activity<NavRoute.About> { activityClass = AboutActivity::class }
 
         activity<NavRoute.Settings.Departures> { activityClass = DeparturesSettingsActivity::class }
@@ -193,6 +206,20 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
 
     }
 }
+
+// FIXME pass only IDs instead
+inline fun <reified T : Any> serializableNavType(isNullable: Boolean = false) =
+    object : NavType<T>(isNullable) {
+        override fun get(bundle: Bundle, key: String): T? =
+            bundle.getString(key)?.let { Json.decodeFromString(it) }
+
+        override fun put(bundle: Bundle, key: String, value: T) =
+            bundle.putString(key, Json.encodeToString(value))
+
+        override fun parseValue(value: String): T = Json.decodeFromString(Uri.decode(value))
+
+        override fun serializeAsValue(value: T): String = Uri.encode(Json.encodeToString(value))
+    }
 
 @Composable
 fun UpdateOverlay(modifier: Modifier = Modifier) {

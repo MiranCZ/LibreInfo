@@ -1,5 +1,6 @@
 package io.github.mirancz.libreinfo.nav
 
+import io.github.mirancz.libreinfo.parsing.types.NewsEntry
 import kotlinx.serialization.Serializable
 
 
@@ -27,7 +28,10 @@ sealed interface NavRoute {
     data object Diversions : NavRoute
 
     @Serializable
-    data object News : NavRoute
+    data object News : NavRoute {
+        @Serializable
+        data class Detail(val entry: NewsEntry) : NavRoute
+    }
 
     @Serializable
     data object Settings : NavRoute {
