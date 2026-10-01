@@ -53,8 +53,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.devtest.DeparturePerformanceActivity
+import io.github.mirancz.libreinfo.activity.devtest.LineListActivity
 import io.github.mirancz.libreinfo.activity.settings.DeparturesSettingsActivity
-import io.github.mirancz.libreinfo.activity.settings.DevSettingsActivity
+import io.github.mirancz.libreinfo.activity.settings.DevSettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.LocationSettingsActivity
 import io.github.mirancz.libreinfo.activity.settings.SettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.UpdatingSettingsActivity
@@ -159,6 +161,14 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
 
         composable<NavRoute.Settings> { SettingsScreen(state) }
 
+        @Suppress("SimplifyBooleanWithConstants", "KotlinConstantConditions")
+        if (BuildConfig.BUILD_TYPE != "release") {
+            composable<NavRoute.Settings.Dev> { DevSettingsScreen(state) }
+
+            activity<NavRoute.Settings.Dev.LineList> { activityClass = LineListActivity::class }
+            activity<NavRoute.Settings.Dev.DeparturePerformance> { activityClass = DeparturePerformanceActivity::class }
+        }
+
         activity<NavRoute.Search> { activityClass = SearchActivity::class }
         activity<NavRoute.VehicleMap> { activityClass = VehicleMapActivity::class }
         activity<NavRoute.ConnectionSearch> { activityClass = ConnectionSearchActivity::class }
@@ -170,7 +180,6 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
         activity<NavRoute.Settings.Departures> { activityClass = DeparturesSettingsActivity::class }
         activity<NavRoute.Settings.Location> { activityClass = LocationSettingsActivity::class }
         activity<NavRoute.Settings.Updates> { activityClass = UpdatingSettingsActivity::class }
-        activity<NavRoute.Settings.Dev> { activityClass = DevSettingsActivity::class }
 
     }
 }

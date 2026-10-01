@@ -42,7 +42,15 @@ sealed interface NavRoute {
         data object Updates : NavRoute
 
         @Serializable
-        data object Dev : NavRoute
+        data object Dev : NavRoute {
+
+            @Serializable
+            data object LineList : NavRoute
+
+            @Serializable
+            data object DeparturePerformance : NavRoute
+
+        }
     }
 
     @Serializable
