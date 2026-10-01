@@ -1,0 +1,171 @@
+package io.github.mirancz.libreinfo.activity.settings
+
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.nav.NavState
+import io.github.mirancz.libreinfo.ui.ScreenScaffold
+import io.github.mirancz.libreinfo.ui.components.AppButton
+import io.github.mirancz.libreinfo.ui.components.Container
+import io.github.mirancz.libreinfo.ui.components.Divider
+import io.github.mirancz.libreinfo.ui.components.SettingSwitch
+import io.github.mirancz.libreinfo.util.AppSettings
+import io.github.mirancz.libreinfo.util.PermissionHelper
+
+object LocationSettingsScreen {
+    fun shouldSortByDistance() = AppSettings.Location.distanceSort
+}
+
+@Composable
+fun LocationSettingsScreen(state: NavState) {
+    val context = LocalContext.current
+    val activity = LocalActivity.current ?: throw IllegalStateException("Activity is null")
+
+    var locationEnabled by remember { mutableStateOf(PermissionHelper.locationEnabled(context))}
+    var fineLocationEnabled by remember { mutableStateOf(PermissionHelper.permissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION))}
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { results: Map<String, Boolean> ->
+        fineLocationEnabled = results.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)
+
+        locationEnabled = results.getOrDefault(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            false
+        ) || fineLocationEnabled
+
+
+        val requestedBefore = AppSettings.Location.locationPermissionsRequested
+
+        AppSettings.Location.locationPermissionsRequested = true
+
+        if (!locationEnabled) {
+            val showRationale = ActivityCompat.shouldShowRequestPermissionRationale(
+                activity, Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+
+            // likely permanently denied -> need to direct to settings
+            if (!showRationale && requestedBefore) {
+                val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
+                }
+                context.startActivity(intent)
+            }
+        }
+    }
+
+    val launchPermissionDialog = {
+        launcher.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        )
+    }
+
+    ScreenScaffold(stringResource(R.string.location), onBack = state.onBack) {
+
+        Column {
+            if (!locationEnabled) {
+                AllowLocationCard(
+                    R.string.allow_location_text,
+                    R.string.allow_location,
+                    launchPermissionDialog
+                )
+            } else if (!fineLocationEnabled) {
+                AllowLocationCard(
+                    R.string.allow_fine_location_text,
+                    R.string.allow_fine_location,
+                    launchPermissionDialog
+                )
+            }
+
+
+            if (!locationEnabled) {
+                Box(Modifier.consumeClicks().alpha(0.5f)) {
+                    SettingsCard()
+                }
+            } else {
+                SettingsCard()
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun AllowLocationCard(
+    @StringRes description: Int,
+    @StringRes allow: Int,
+    launchPermissionDialog: () -> Unit
+) {
+    Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Column {
+            Text(
+                stringResource(description),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            AppButton(
+                color = MaterialTheme.colorScheme.primary, onClick = {
+                    launchPermissionDialog()
+                }, modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(allow))
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsCard() {
+    Row {
+        SettingSwitch(stringResource(R.string.sort_stops_by_distance), AppSettings.Location::distanceSort)
+        Divider()
+    }
+}
+
+
+private fun Modifier.consumeClicks(pass: PointerEventPass = PointerEventPass.Initial) =
+    this.then(
+        Modifier.pointerInput(pass) {
+            awaitEachGesture {
+                val down = awaitFirstDown(pass = pass)
+                down.consume()
+                waitForUpOrCancellation(pass)
+            }
+        }
+    )

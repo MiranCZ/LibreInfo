@@ -49,7 +49,7 @@ import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.data.DelaysDataHolder
 import io.github.mirancz.libreinfo.activity.settings.DepartureSource
-import io.github.mirancz.libreinfo.activity.settings.LocationSettingsActivity
+import io.github.mirancz.libreinfo.activity.settings.LocationSettingsScreen
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.AppSettings
 import io.github.mirancz.libreinfo.exception.RequestException
@@ -148,7 +148,7 @@ class SearchActivity : KBaseActivity(R.string.departures) {
         val context = LocalContext.current
 
         val dataResult = rememberLoad {
-            val location = if (LocationSettingsActivity.shouldSortByDistance()) {
+            val location = if (LocationSettingsScreen.shouldSortByDistance()) {
                 LocationProviderFactory.create(context).getLastKnownLocation()
             } else null
 

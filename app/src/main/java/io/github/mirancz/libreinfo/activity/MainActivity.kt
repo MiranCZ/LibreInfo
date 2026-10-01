@@ -57,7 +57,7 @@ import io.github.mirancz.libreinfo.activity.devtest.DeparturePerformanceActivity
 import io.github.mirancz.libreinfo.activity.devtest.LineListActivity
 import io.github.mirancz.libreinfo.activity.settings.DeparturesSettingsActivity
 import io.github.mirancz.libreinfo.activity.settings.DevSettingsScreen
-import io.github.mirancz.libreinfo.activity.settings.LocationSettingsActivity
+import io.github.mirancz.libreinfo.activity.settings.LocationSettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.SettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.UpdatingSettingsActivity
 import io.github.mirancz.libreinfo.nav.NavRoute
@@ -161,6 +161,8 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
 
         composable<NavRoute.Settings> { SettingsScreen(state) }
 
+        composable<NavRoute.Settings.Location> { LocationSettingsScreen(state) }
+
         @Suppress("SimplifyBooleanWithConstants", "KotlinConstantConditions")
         if (BuildConfig.BUILD_TYPE != "release") {
             composable<NavRoute.Settings.Dev> { DevSettingsScreen(state) }
@@ -178,7 +180,6 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
         activity<NavRoute.About> { activityClass = AboutActivity::class }
 
         activity<NavRoute.Settings.Departures> { activityClass = DeparturesSettingsActivity::class }
-        activity<NavRoute.Settings.Location> { activityClass = LocationSettingsActivity::class }
         activity<NavRoute.Settings.Updates> { activityClass = UpdatingSettingsActivity::class }
 
     }
