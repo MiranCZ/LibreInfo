@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -46,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
@@ -140,22 +142,29 @@ fun HomeScreen(onNavigate: (NavRoute) -> Unit) {
 
 @Composable
 fun AppNavHost(nav: NavHostController = rememberNavController()) {
+    val decelerateQuad = Easing { 1f - (1f - it) * (1f - it) }
+    val accelerateQuad = Easing { it * it }
+    val accelerateCubic = Easing { it * it * it }
+
     NavHost(
         nav, startDestination = NavRoute.Home,
         enterTransition = {
-            scaleIn(initialScale = 0.9f, animationSpec = tween(340)) +
-            fadeIn(animationSpec = tween(350))
+            scaleIn(tween(240, easing = decelerateQuad), initialScale = 0.9f) +
+                    fadeIn(tween(240, easing = decelerateQuad), initialAlpha = 0.25f)
         },
-        exitTransition = { fadeOut(animationSpec = tween(300)) },
-        popEnterTransition = {
-            fadeIn(animationSpec = tween(300))
-        },
+        exitTransition = { fadeOut(tween(220, easing = accelerateQuad)) },
+        popEnterTransition = { fadeIn(tween(150, easing = decelerateQuad)) },
         popExitTransition = {
-            scaleOut(targetScale = 0.9f, animationSpec = tween(340)) +
-            fadeOut(animationSpec = tween(350))
+            scaleOut(tween(140, easing = accelerateCubic), targetScale = 0.8f) +
+                    fadeOut(tween(140, easing = accelerateCubic), targetAlpha = 0.25f)
         },
     ) {
-        val state = NavState(nav::navigate, nav::popBackStack)
+        val state = NavState(nav::navigate) {
+            // prevents from being able to step back multiple times whilst exit animation is playing
+            if (nav.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED) {
+                nav.popBackStack()
+            }
+        }
 
         composable<NavRoute.Home> { HomeScreen(onNavigate = nav::navigate) }
 
