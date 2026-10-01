@@ -3,6 +3,7 @@ package io.github.mirancz.libreinfo.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -10,6 +11,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -69,6 +72,24 @@ fun AppRoot(content: @Composable () -> Unit) {
     }
 }
 
+@Composable
+fun NavigationScreenScaffold(
+    title: String,
+    onBack: (() -> Unit)?,
+    actions: @Composable RowScope.() -> Unit = {},
+    bottomOverlay: @Composable BoxScope.() -> Unit = {},
+    content: @Composable () -> Unit,
+) {
+    ScreenScaffold(title, onBack, actions, bottomOverlay) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+        ) {
+            content()
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -241,6 +241,7 @@ dependencies {
     implementation(libs.material.icons.extended)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.paging.compose)
+    implementation("androidx.navigation:navigation-compose:2.9.0")
 
     implementation(libs.work.runtime)
 
