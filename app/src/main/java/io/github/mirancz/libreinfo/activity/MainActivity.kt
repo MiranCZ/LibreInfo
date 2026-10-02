@@ -68,6 +68,7 @@ import io.github.mirancz.libreinfo.activity.settings.SettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.UpdatingSettingsActivity
 import io.github.mirancz.libreinfo.nav.NavRoute
 import io.github.mirancz.libreinfo.nav.NavState
+import io.github.mirancz.libreinfo.parsing.types.Diversion
 import io.github.mirancz.libreinfo.parsing.types.NewsEntry
 import io.github.mirancz.libreinfo.ui.AppRoot
 import io.github.mirancz.libreinfo.ui.NavigationScreenScaffold
@@ -185,6 +186,12 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
         composable<NavRoute.VehiclesList> { VehiclesListScreen(state) }
         composable<NavRoute.Events> { EventsScreen(state) }
 
+        composable<NavRoute.Diversions> { DiversionsScreen(state) }
+
+        composable<NavRoute.Diversions.Detail>(
+            typeMap = mapOf(typeOf<Diversion>() to serializableNavType<Diversion>())
+        ) { DiversionDetailScreen(state, it.toRoute<NavRoute.Diversions.Detail>().diversion) }
+
         // FIXME pass only IDs instead
         composable<NavRoute.News.Detail>(
             typeMap = mapOf(typeOf<NewsEntry>() to serializableNavType<NewsEntry>())
@@ -201,7 +208,6 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
         activity<NavRoute.Search> { activityClass = SearchActivity::class }
         activity<NavRoute.VehicleMap> { activityClass = VehicleMapActivity::class }
         activity<NavRoute.ConnectionSearch> { activityClass = ConnectionSearchActivity::class }
-        activity<NavRoute.Diversions> { activityClass = DiversionsActivity::class }
 
         activity<NavRoute.Settings.Departures> { activityClass = DeparturesSettingsActivity::class }
         activity<NavRoute.Settings.Updates> { activityClass = UpdatingSettingsActivity::class }

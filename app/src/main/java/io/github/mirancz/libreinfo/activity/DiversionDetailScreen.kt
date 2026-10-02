@@ -1,6 +1,9 @@
 package io.github.mirancz.libreinfo.activity
 
 import android.util.TypedValue
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -8,26 +11,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.parsing.types.Diversion
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.nav.NavState
+import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.ui.components.EventHeader
 import io.github.mirancz.libreinfo.ui.components.HTML
-import io.github.mirancz.libreinfo.ui.components.NothingHere
 
-class DiversionInfoActivity : KBaseActivity(R.string.diversions) {
-    @Composable
-    override fun CreateElements() {
-        val diversion = intent.getParcelableExtra<Diversion>("diversion")
-
+@Composable
+fun DiversionDetailScreen(state: NavState, diversion: Diversion) {
+    ScreenScaffold(stringResource(R.string.diversions), onBack = state.onBack) {
         val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
-        if (diversion != null) {
+
+        Column(Modifier.verticalScroll(rememberScrollState())) {
             Container(
                 Modifier
                     .padding(horizontal = 16.dp)
-                    .verticalScroll(rememberScrollState())
             ) {
                 EventHeader(diversion) {
                     HTML(diversion.content, Modifier.padding(top = 16.dp)) { tv ->
@@ -36,11 +38,10 @@ class DiversionInfoActivity : KBaseActivity(R.string.diversions) {
                     }
 
                 }
+
             }
-        } else {
-            NothingHere()
+
+            Spacer(Modifier.height(8.dp))
         }
     }
-
-
 }
