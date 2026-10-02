@@ -58,6 +58,10 @@ sealed interface NavRoute {
     }
 
     @Serializable
-    data object About : NavRoute
+    data object About : NavRoute {
+
+        @Serializable
+        data object Attribution : NavRoute
+    }
 
 }

@@ -11,16 +11,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.mirancz.libreinfo.activity.attribution.AttributionActivity
-import io.github.mirancz.libreinfo.activity.base.NavigationActivity
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.nav.NavRoute
+import io.github.mirancz.libreinfo.nav.NavState
+import io.github.mirancz.libreinfo.ui.NavigationScreenScaffold
+import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.ui.components.Divider
+import io.github.mirancz.libreinfo.ui.components.NavigationItem
 
-class AboutActivity : NavigationActivity(R.string.about) {
-    @Composable
-    override fun CreateNavigation() {
+@Composable
+fun AboutScreen(state: NavState) {
+    NavigationScreenScaffold(stringResource(R.string.about), onBack = state.onBack) {
         Container(Modifier.padding(vertical = 16.dp)) {
             Column {
                 Text(
@@ -38,6 +41,9 @@ class AboutActivity : NavigationActivity(R.string.about) {
             }
         }
 
-        NavigationItem(R.drawable.heart_solid, R.string.data_sources, AttributionActivity::class)
+        NavigationItem(
+            R.drawable.heart_solid,
+            R.string.data_sources
+        ) { state.onNavigate(NavRoute.About.Attribution) }
     }
 }

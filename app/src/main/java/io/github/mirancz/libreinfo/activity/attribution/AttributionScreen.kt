@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -26,16 +27,16 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.nav.NavState
+import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.ui.components.Divider
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
 
-class AttributionActivity : KBaseActivity(R.string.data_sources) {
-
-    @Composable
-    override fun CreateElements() {
+@Composable
+fun AttributionScreen(state: NavState) {
+    ScreenScaffold(stringResource(R.string.data_sources), onBack = state.onBack) {
         // TODO click into a dedicated screen with more detailed description or something
         Column(Modifier.verticalScroll(rememberScrollState())) {
             AttributionItem(
@@ -114,104 +115,103 @@ class AttributionActivity : KBaseActivity(R.string.data_sources) {
             )
         }
     }
+}
 
-    @Composable
-    fun AttributionItem(
-        name: String,
-        description: String,
-        @DrawableRes iconId: Int,
-        copyright: String? = null,
-        license: String? = null,
-        licenseUrl: String? = null,
-        note: String? = null,
-        sourceUrl: String? = null,
-        modified: Boolean = false,
-        licensePrefix: Boolean = true,
-    ) {
-        Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Column() {
-                Row(
-                    Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        name,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Black,
-                        modifier = Modifier.weight(1f)
-                    )
+@Composable
+fun AttributionItem(
+    name: String,
+    description: String,
+    @DrawableRes iconId: Int,
+    copyright: String? = null,
+    license: String? = null,
+    licenseUrl: String? = null,
+    note: String? = null,
+    sourceUrl: String? = null,
+    modified: Boolean = false,
+    licensePrefix: Boolean = true,
+) {
+    Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Column() {
+            Row(
+                Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    name,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.weight(1f)
+                )
 
-                    Image(
-                        painter = painterResource(id = iconId),
-                        contentDescription = "$name icon",
-                        modifier = Modifier.height(48.dp).width(96.dp),
-                        contentScale = ContentScale.Fit
-                    )
-                }
+                Image(
+                    painter = painterResource(id = iconId),
+                    contentDescription = "$name icon",
+                    modifier = Modifier.height(48.dp).width(96.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
 
-                Divider()
+            Divider()
 
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        description,
-                        modifier = Modifier.padding(top = 4.dp, end = 8.dp).weight(1f)
-                    )
-                }
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    description,
+                    modifier = Modifier.padding(top = 4.dp, end = 8.dp).weight(1f)
+                )
+            }
 
-                if (copyright != null || licenseUrl != null || note != null || sourceUrl != null) {
-                    LicenseLine(
-                        copyright,
-                        license,
-                        licenseUrl,
-                        note,
-                        sourceUrl,
-                        modified,
-                        licensePrefix
-                    )
-                }
+            if (copyright != null || licenseUrl != null || note != null || sourceUrl != null) {
+                LicenseLine(
+                    copyright,
+                    license,
+                    licenseUrl,
+                    note,
+                    sourceUrl,
+                    modified,
+                    licensePrefix
+                )
             }
         }
     }
+}
 
-    @Composable
-    fun LicenseLine(
-        copyright: String?,
-        license: String?,
-        licenseUrl: String?,
-        note: String?,
-        sourceUrl: String?,
-        modified: Boolean,
-        licensePrefix: Boolean,
-    ) {
-        val linkStyle = TextLinkStyles(
-            SpanStyle(
-                color = MaterialTheme.colorScheme.primary,
-                textDecoration = TextDecoration.Underline
-            )
+@Composable
+fun LicenseLine(
+    copyright: String?,
+    license: String?,
+    licenseUrl: String?,
+    note: String?,
+    sourceUrl: String?,
+    modified: Boolean,
+    licensePrefix: Boolean,
+) {
+    val linkStyle = TextLinkStyles(
+        SpanStyle(
+            color = MaterialTheme.colorScheme.primary,
+            textDecoration = TextDecoration.Underline
         )
+    )
 
-        Text(
-            buildAnnotatedString {
-                copyright?.let { append("© $it · ") }
-                if (license != null && licenseUrl != null) {
-                    if (licensePrefix) {
-                        append("Licencováno pod ")
-                    }
-                    withLink(LinkAnnotation.Url(licenseUrl, linkStyle)) { append(license) }
+    Text(
+        buildAnnotatedString {
+            copyright?.let { append("© $it · ") }
+            if (license != null && licenseUrl != null) {
+                if (licensePrefix) {
+                    append("Licencováno pod ")
                 }
-                note?.let { append(it) }
-                if (modified) {
-                    append(" · Upraveno")
-                }
-                sourceUrl?.let {
-                    append(" · ")
-                    withLink(LinkAnnotation.Url(it, linkStyle)) { append("Zdroj") }
-                }
-            },
-            fontSize = 12.sp,
-            color = MaterialTheme.extendedColors.onSurfaceMedium,
-            modifier = Modifier.padding(top = 8.dp)
-        )
-    }
-
+                withLink(LinkAnnotation.Url(licenseUrl, linkStyle)) { append(license) }
+            }
+            note?.let { append(it) }
+            if (modified) {
+                append(" · Upraveno")
+            }
+            sourceUrl?.let {
+                append(" · ")
+                withLink(LinkAnnotation.Url(it, linkStyle)) { append("Zdroj") }
+            }
+        },
+        fontSize = 12.sp,
+        color = MaterialTheme.extendedColors.onSurfaceMedium,
+        modifier = Modifier.padding(top = 8.dp)
+    )
 }

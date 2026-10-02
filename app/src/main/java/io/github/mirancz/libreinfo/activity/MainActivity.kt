@@ -58,6 +58,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.attribution.AttributionScreen
 import io.github.mirancz.libreinfo.activity.devtest.DeparturePerformanceActivity
 import io.github.mirancz.libreinfo.activity.devtest.LineListActivity
 import io.github.mirancz.libreinfo.activity.settings.DeparturesSettingsActivity
@@ -178,8 +179,9 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
 
         composable<NavRoute.Settings.Location> { LocationSettingsScreen(state) }
 
-
         composable<NavRoute.News> { NewsScreen(state) }
+        composable<NavRoute.About> { AboutScreen(state) }
+        composable<NavRoute.About.Attribution> { AttributionScreen(state) }
 
         // FIXME pass only IDs instead
         composable<NavRoute.News.Detail>(
@@ -199,7 +201,6 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
         activity<NavRoute.ConnectionSearch> { activityClass = ConnectionSearchActivity::class }
         activity<NavRoute.VehiclesList> { activityClass = VehiclesListActivity::class }
         activity<NavRoute.Diversions> { activityClass = DiversionsActivity::class }
-        activity<NavRoute.About> { activityClass = AboutActivity::class }
 
         activity<NavRoute.Settings.Departures> { activityClass = DeparturesSettingsActivity::class }
         activity<NavRoute.Settings.Updates> { activityClass = UpdatingSettingsActivity::class }
