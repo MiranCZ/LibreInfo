@@ -199,7 +199,7 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
         activity<NavRoute.Search> { activityClass = SearchActivity::class }
         activity<NavRoute.VehicleMap> { activityClass = VehicleMapActivity::class }
         activity<NavRoute.ConnectionSearch> { activityClass = ConnectionSearchActivity::class }
-        activity<NavRoute.VehiclesList> { activityClass = VehiclesListActivity::class }
+        composable<NavRoute.VehiclesList> { VehiclesListScreen(state) }
         activity<NavRoute.Diversions> { activityClass = DiversionsActivity::class }
 
         activity<NavRoute.Settings.Departures> { activityClass = DeparturesSettingsActivity::class }

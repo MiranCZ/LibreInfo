@@ -1,0 +1,172 @@
+package io.github.mirancz.libreinfo.activity
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.valentinilk.shimmer.Shimmer
+import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
+import io.github.mirancz.libreinfo.parsing.types.Vehicle
+import io.github.mirancz.libreinfo.ui.theme.extendedColors
+import io.github.mirancz.libreinfo.util.DelayUtil
+import io.github.mirancz.libreinfo.util.load.rememberLoad
+import io.github.mirancz.libreinfo.util.request.RequestHelper
+import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.nav.NavState
+import io.github.mirancz.libreinfo.ui.ScreenScaffold
+import io.github.mirancz.libreinfo.ui.components.AsyncContent
+import io.github.mirancz.libreinfo.ui.components.LineIcon
+import io.github.mirancz.libreinfo.ui.components.Container
+import io.github.mirancz.libreinfo.ui.components.NothingHere
+import io.github.mirancz.libreinfo.ui.components.ShimmerBox
+import io.github.mirancz.libreinfo.ui.components.ShimmerLineIcon
+import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
+
+@Composable
+fun VehiclesListScreen(state: NavState) {
+    ScreenScaffold(stringResource(R.string.vehicles), onBack = state.onBack) {
+        val context = LocalContext.current
+
+        val vehicles = rememberLoad {
+            val storage = AppContainer.storageProvider.getInstance()
+            RequestHelper.getVehicles(context).vehicles.map { it.map(storage) }
+                .sortedBy { vehicle -> vehicle.line.id }
+        }
+
+        AsyncContent(vehicles, loading = { VehicleListShimmer() }) { vehicleList ->
+            if (vehicleList.isEmpty()) {
+                NothingHere()
+            } else {
+                LazyColumn {
+                    items(vehicleList) { vehicle ->
+                        VehicleEntry(vehicle)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun VehicleListShimmer() {
+    val shimmer = rememberActivityShimmer()
+    LazyColumn {
+        items(6) { VehicleEntryShimmer(shimmer) }
+    }
+}
+
+@Composable
+private fun VehicleEntryShimmer(shimmer: Shimmer) {
+    Container(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Column {
+            Row(Modifier.fillMaxWidth()) {
+                ShimmerBox(Modifier.weight(1f).height(14.dp), shimmer)
+                Spacer(Modifier.width(8.dp))
+                ShimmerBox(Modifier.weight(2f).height(14.dp), shimmer)
+                Spacer(Modifier.width(8.dp))
+                ShimmerBox(Modifier.width(40.dp).height(14.dp), shimmer)
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                ShimmerLineIcon(shimmer)
+                Spacer(Modifier.width(12.dp))
+                ShimmerBox(Modifier.weight(1f).height(20.dp), shimmer)
+            }
+            Spacer(Modifier.height(8.dp))
+            ShimmerBox(Modifier.fillMaxWidth(0.4f).height(14.dp), shimmer)
+        }
+    }
+}
+
+@Composable
+private fun VehicleEntry(item: Vehicle) {
+    val context = LocalContext.current
+
+    Container(
+        onClick = {
+            // TODO add on-click
+        },
+        Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Column() {
+            Row(Modifier.fillMaxWidth()) {
+                Row(Modifier.weight(1f)) {
+                    Text(
+                        item.getVehicleNumbersString(),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Row(Modifier.weight(2f)) {
+                    item.course?.let { course ->
+                        Text(course, fontSize = 14.sp, fontWeight = FontWeight.Light)
+                    }
+                }
+
+                item.delay?.let { delay ->
+                    Text(
+                        DelayUtil.getDelayText(context, delay),
+                        fontSize = 14.sp,
+                        color = Color(DelayUtil.getDelayColor(delay))
+                    )
+                }
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth()
+            ) {
+                Row(Modifier.weight(1f)) {
+                    LineIcon(line = item.line, padding = 0.dp)
+                    Text(
+                        item.getFinalStopText(),
+                        fontSize = 20.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .padding(start = 12.dp)
+                    )
+                }
+
+                Icon(
+                    painter = painterResource(R.drawable.wheelchair_regular),
+                    "lowfloor",
+                    Modifier
+                        .size(20.dp)
+                        .align(Alignment.CenterVertically),
+                    tint = MaterialTheme.extendedColors.onSurfaceMedium
+                )
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    item.lastStop.name,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 14.sp
+                )
+            }
+        }
+    }
+}
