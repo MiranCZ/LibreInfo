@@ -60,7 +60,7 @@ import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.attribution.AttributionScreen
 import io.github.mirancz.libreinfo.activity.devtest.DeparturePerformanceActivity
-import io.github.mirancz.libreinfo.activity.devtest.LineListActivity
+import io.github.mirancz.libreinfo.activity.devtest.LineListScreen
 import io.github.mirancz.libreinfo.activity.settings.DeparturesSettingsActivity
 import io.github.mirancz.libreinfo.activity.settings.DevSettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.LocationSettingsScreen
@@ -192,7 +192,7 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
         if (BuildConfig.BUILD_TYPE != "release") {
             composable<NavRoute.Settings.Dev> { DevSettingsScreen(state) }
 
-            activity<NavRoute.Settings.Dev.LineList> { activityClass = LineListActivity::class }
+            composable<NavRoute.Settings.Dev.LineList> { LineListScreen(state) }
             activity<NavRoute.Settings.Dev.DeparturePerformance> { activityClass = DeparturePerformanceActivity::class }
         }
 

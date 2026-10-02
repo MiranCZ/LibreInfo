@@ -10,19 +10,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.nav.NavState
+import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.ui.components.LineList
 
-class LineListActivity : KBaseActivity(R.string.dev_settings) {
-    @Composable
-    override fun CreateElements() {
+@Composable
+fun LineListScreen(state: NavState) {
+    ScreenScaffold(stringResource(R.string.dev_settings), onBack = state.onBack) {
         // TODO get only line storage?
 
         var storage: IdStorage? by remember { mutableStateOf(AppContainer.storageProvider.getInstanceOrNull()) }
@@ -45,6 +47,4 @@ class LineListActivity : KBaseActivity(R.string.dev_settings) {
             }
         }
     }
-
-
 }
