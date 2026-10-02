@@ -182,6 +182,8 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
         composable<NavRoute.News> { NewsScreen(state) }
         composable<NavRoute.About> { AboutScreen(state) }
         composable<NavRoute.About.Attribution> { AttributionScreen(state) }
+        composable<NavRoute.VehiclesList> { VehiclesListScreen(state) }
+        composable<NavRoute.Events> { EventsScreen(state) }
 
         // FIXME pass only IDs instead
         composable<NavRoute.News.Detail>(
@@ -199,7 +201,6 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
         activity<NavRoute.Search> { activityClass = SearchActivity::class }
         activity<NavRoute.VehicleMap> { activityClass = VehicleMapActivity::class }
         activity<NavRoute.ConnectionSearch> { activityClass = ConnectionSearchActivity::class }
-        composable<NavRoute.VehiclesList> { VehiclesListScreen(state) }
         activity<NavRoute.Diversions> { activityClass = DiversionsActivity::class }
 
         activity<NavRoute.Settings.Departures> { activityClass = DeparturesSettingsActivity::class }
