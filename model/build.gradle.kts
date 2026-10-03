@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 // Plain data types shared by every layer. Pure JVM: no Android, no storage, no networking.
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serizalization)
 }
 
 java {
@@ -17,4 +18,6 @@ kotlin {
 
 dependencies {
     testImplementation(libs.junit)
+
+    api(libs.kotlinx.serialization.json)
 }

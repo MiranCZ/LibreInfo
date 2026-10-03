@@ -1,6 +1,9 @@
 package io.github.mirancz.libreinfo.util
 
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 
 data class DeparturesSettings(
@@ -9,6 +12,9 @@ data class DeparturesSettings(
     val maxEntries: Int = 5
 ) {
     companion object {
+        var current by mutableStateOf(fromPrefs())
+            private set
+
         fun fromPrefs() = DeparturesSettings(
             delayRender = AppSettings.Departures.delayRender,
             showLowFloor = AppSettings.Departures.showLowFloor,

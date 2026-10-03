@@ -90,8 +90,8 @@ object RequestHelper {
     }
 
     @Throws(RequestException::class)
-    fun getRouteDelays(context: Context, force: Boolean = false): RouteDelaysResponse {
-        return makeOwnCachedRequest(context, "routeDelays", 5, force)
+    fun getRouteDelays(context: Context, cacheTtl: Int = 30, force: Boolean = false): RouteDelaysResponse {
+        return makeOwnCachedRequest(context, "routeDelays", cacheTtl, force)
     }
 
     @JvmStatic

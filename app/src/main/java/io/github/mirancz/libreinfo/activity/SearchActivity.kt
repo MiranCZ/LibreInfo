@@ -1,7 +1,6 @@
 package io.github.mirancz.libreinfo.activity
 
 import android.content.Intent
-import android.location.Location
 import android.os.Bundle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -36,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,33 +46,109 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.SearchActivity.SearchViewModel
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
-import io.github.mirancz.libreinfo.activity.data.DelaysDataHolder
-import io.github.mirancz.libreinfo.activity.settings.DepartureSource
 import io.github.mirancz.libreinfo.activity.settings.LocationSettingsScreen
-import io.github.mirancz.libreinfo.ui.theme.extendedColors
-import io.github.mirancz.libreinfo.util.AppSettings
 import io.github.mirancz.libreinfo.exception.RequestException
+import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.parsing.storage.StopStorage
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
+import io.github.mirancz.libreinfo.parsing.types.Location
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
 import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
+import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AppTextField
 import io.github.mirancz.libreinfo.ui.components.AsyncContent
 import io.github.mirancz.libreinfo.ui.components.Divider
 import io.github.mirancz.libreinfo.ui.components.ShimmerBox
 import io.github.mirancz.libreinfo.ui.components.ShimmerText
 import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
+import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.location.LocationProviderFactory
-import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.util.location.toAndroidLoc
+import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.util.search.FuzzyStopSearch
 import io.github.mirancz.libreinfo.util.search.SortType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import kotlin.math.ceil
+
+@Serializable
+sealed interface SearchOption {
+    sealed interface StopOrLocation : SearchOption
+    sealed interface StopOrPOI : SearchOption
+
+    @Serializable
+    data class PickedStop(val stop: Stop) : StopOrLocation, StopOrPOI
+
+
+    @Serializable
+    data class UserLocation(val location: Location) : StopOrLocation
+
+
+    @Serializable
+    data class POI(val location: Location, val name: String) : StopOrPOI
+}
+
+@Serializable
+data class SearchKinds(val stops: Boolean, val locations: Boolean, val pois: Boolean) {
+    companion object {
+        fun of(type: Class<out SearchOption>) = SearchKinds(
+            stops = type.isAssignableFrom(SearchOption.PickedStop::class.java),
+            locations = type.isAssignableFrom(SearchOption.UserLocation::class.java),
+            pois = type.isAssignableFrom(SearchOption.POI::class.java),
+        )
+    }
+}
+
+@Composable
+inline fun <reified T : SearchOption> SearchScreen(state: NavState, prefetchDelays: Boolean = false, noinline onPick: (T) -> Unit) {
+    SearchScreen(state, SearchKinds.of(T::class.java), prefetchDelays) { onPick(it as T) }
+}
+
+@PublishedApi
+@Composable
+internal fun SearchScreen(state: NavState, kinds: SearchKinds, prefetchDelays: Boolean = false, onPick: (SearchOption) -> Unit) {
+    val context = LocalContext.current
+    if (prefetchDelays) {
+        LaunchedEffect(Unit) {
+            withContext(Dispatchers.IO) {
+                // if route delays are more than 10 seconds old, fetch new one and cache them
+                RequestHelper.getRouteDelays(context, cacheTtl = 10)
+            }
+        }
+    }
+
+    ScreenScaffold(stringResource(R.string.departures), onBack = state.onBack, actions = {
+        val vm: SearchViewModel = viewModel()
+        val liked by vm.liked
+
+        IconButton(onClick = { vm.toggleLiked() }) {
+            if (liked) {
+                Icon(
+                    painter = painterResource(R.drawable.heart_solid),
+                    contentDescription = "Unlike",
+                    tint = MaterialTheme.extendedColors.favourite,
+                    modifier = Modifier.size(32.dp)
+                )
+            } else {
+                Icon(
+                    painter = painterResource(R.drawable.heart_regular),
+                    contentDescription = "Like",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+    }) {
+        SearchableList(kinds, onPick = onPick)
+    }
+}
+
+
 
 class SearchActivity : KBaseActivity(R.string.departures) {
 
@@ -102,14 +178,38 @@ class SearchActivity : KBaseActivity(R.string.departures) {
                 showErrorSnackBar(e)
                 return@Runnable
             }
-            runOnUiThread { DelaysDataHolder.setDelays(delays) }
+//            runOnUiThread { DelaysDataHolder.setDelays(delays) }
         }).start()
     }
 
     @Composable
     @Preview
     override fun CreateElements() {
-        SearchableList()
+        SearchableList(SearchKinds(stops = true, locations = false, pois = false), onPick = { option ->
+            if (option is SearchOption.PickedStop) {
+                val item = option.stop
+
+                if (intent.getBooleanExtra(EXTRA_PICKER_MODE, false)) {
+                    setResult(
+                        RESULT_OK,
+                        Intent().apply { putExtra(EXTRA_RESULT_STOP, item.id.internal) })
+                    finish()
+                } else {
+                    // FIXME implement this
+                    // read on click so a source change mid-session applies right away
+//                    val target =
+//                        if (AppSettings.Departures.source == DepartureSource.SERVER) ServerDeparturesActivity::class
+//                        else DeparturesActivity::class
+//
+//                    startActivity(target) { i ->
+//                        i.putExtra(
+//                            "stop",
+//                            item.id.internal
+//                        )
+//                    }
+                }
+            }
+        })
     }
 
     override fun setBaseContent(
@@ -143,217 +243,204 @@ class SearchActivity : KBaseActivity(R.string.departures) {
         }, content)
     }
 
-    @Composable
-    fun SearchableList(vm: SearchViewModel = viewModel()) {
-        val context = LocalContext.current
 
-        val dataResult = rememberLoad {
-            val location = if (LocationSettingsScreen.shouldSortByDistance()) {
-                LocationProviderFactory.create(context).getLastKnownLocation()
-            } else null
+}
 
-            Pair(
-                AppContainer.storageProvider.get(StopStorage::class).searcher, location
-            )
-        }
+@Composable
+fun SearchableList(
+    kinds: SearchKinds, onPick: (SearchOption) -> Unit
+    ,vm: SearchViewModel = viewModel()) {
+    val context = LocalContext.current
 
-        var query by remember { mutableStateOf("") }
-        val focusRequester = remember { FocusRequester() }
+    val dataResult = rememberLoad {
+        val location = if (LocationSettingsScreen.shouldSortByDistance()) {
+            LocationProviderFactory.create(context).getLastKnownLocation()
+        } else null
 
-        Column(Modifier.padding(horizontal = 8.dp)) {
-            AppTextField(
-                value = query,
-                placeHolder = "Zadejte zastávku",
-                onValueChange = { query = it },
-                focusRequester = focusRequester,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(start = 4.dp)
-                            .size(24.dp),
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                },
-                trailingIcon = {
-                    if (query.isNotEmpty()) {
-                        IconButton(onClick = { query = "" }) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Clear text"
-                            )
-                        }
-                    }
-                }
-            )
-
-            AsyncContent(dataResult, loading = { StopListShimmer() }) { data ->
-                val searcher = data.first
-                val location = data.second
-
-                StopList(searcher, query, location, vm)
-            }
-        }
-
-        LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
-        }
+        Pair(
+            AppContainer.storageProvider.get(StopStorage::class).searcher, location
+        )
     }
 
-    @Composable
-    fun StopList(
-        searcher: FuzzyStopSearch,
-        query: String,
-        location: Location? = null,
-        vm: SearchViewModel = viewModel()
-    ) {
-        val liked by vm.liked
+    var query by remember { mutableStateOf("") }
+    val focusRequester = remember { FocusRequester() }
 
-        var forceRecompose by remember { mutableIntStateOf(0) }
-
-        val listState = rememberLazyListState()
-
-        var filteredItems: List<Stop> by remember { mutableStateOf(emptyList()) }
-
-        LaunchedEffect(query, forceRecompose, liked) {
-            val newItems = withContext(Dispatchers.Default) {
-                val sortType = if (location != null) {
-                    SortType.LocationBased(location)
-                } else {
-                    SortType.Alphabetical
-                }
-
-                val res = searcher.search(
-                    query,
-                    sortType = sortType,
-                    isFavourite = { liked && it.isFavourite() }
+    Column(Modifier.padding(horizontal = 8.dp)) {
+        AppTextField(
+            value = query,
+            placeHolder = "Zadejte zastávku",
+            onValueChange = { query = it },
+            focusRequester = focusRequester,
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(start = 4.dp)
+                        .size(24.dp),
+                    tint = MaterialTheme.colorScheme.primary,
                 )
-
-                val result = ArrayList(res.favourites)
-                result.addAll(res.others)
-
-                result
-            }
-
-            filteredItems = newItems
-
-            if (filteredItems.isNotEmpty()) {
-                listState.scrollToItem(0)
-            }
-        }
-
-        key(forceRecompose, liked) {
-            LazyColumn(
-                Modifier.padding(top = 8.dp),
-                state = listState
-            ) {
-                items(
-                    filteredItems,
-                    key = { it.id.internal }
-                ) { item ->
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clickable(null, ripple(), onClick = {
-                                if (intent.getBooleanExtra(EXTRA_PICKER_MODE, false)) {
-                                    setResult(
-                                        RESULT_OK,
-                                        Intent().apply { putExtra(EXTRA_RESULT_STOP, item.id.internal()) })
-                                    finish()
-                                } else {
-                                    // read on click so a source change mid-session applies right away
-                                    val target =
-                                        if (AppSettings.Departures.source == DepartureSource.SERVER) ServerDeparturesActivity::class
-                                        else DeparturesActivity::class
-
-                                    startActivity(target) { i ->
-                                        i.putExtra(
-                                            "stop",
-                                            item.id.internal()
-                                        )
-                                    }
-                                }
-                            })
-                            .padding(17.dp)
-                            .fillMaxWidth()
-                    ) {
-
-                        if (item.isFavourite()) {
-                            Icon(
-                                painter = painterResource(R.drawable.heart_solid),
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp),
-                                tint = MaterialTheme.extendedColors.favourite
-                            )
-                        } else {
-                            Icon(
-                                painter = painterResource(R.drawable.stop),
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-                        Text(
-                            text = item.name,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(start = 20.dp).weight(1f)
+            },
+            trailingIcon = {
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = { query = "" }) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Clear text"
                         )
-
-                        if (location != null) {
-                            val distance = ceil(item.location.toAndroidLoc().distanceTo(location)).toInt()
-
-                            val text = if (distance < 1_000) {
-                                "$distance m"
-                            } else {
-                                "%.1f km".format(distance.toDouble()/1000.0)
-                            }
-
-                            Text(
-                                text = text,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
                     }
-                    Divider()
                 }
             }
-        }
+        )
 
-        val lifecycleOwner = LocalLifecycleOwner.current
+        AsyncContent(dataResult, loading = { StopListShimmer() }) { data ->
+            val searcher = data.first
+            val location = data.second
 
-        // FIXME this is not optimal optimal way to refresh (but I dont really care right now)
-        // note: we are refreshing cuz favourite stops might change
-        LaunchedEffect(lifecycleOwner) {
-            lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                forceRecompose += 1
-            }
+            StopList(searcher, query, location, kinds, onPick, vm)
         }
     }
 
-    @Composable
-    fun StopListShimmer() {
-        val shimmer = rememberActivityShimmer()
-        Column(Modifier.padding(top = 8.dp)) {
-            repeat(12) {
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+}
+
+@Composable
+fun StopList(
+    searcher: FuzzyStopSearch,
+    query: String,
+    location: android.location.Location? = null,
+    kinds: SearchKinds, onPick: (SearchOption) -> Unit,
+    vm: SearchViewModel = viewModel()
+) {
+    val liked by vm.liked
+
+    var forceRecompose by remember { mutableIntStateOf(0) }
+
+    val listState = rememberLazyListState()
+
+    var filteredItems: List<Stop> by remember { mutableStateOf(emptyList()) }
+
+    LaunchedEffect(query, forceRecompose, liked) {
+        val newItems = withContext(Dispatchers.Default) {
+            val sortType = if (location != null) {
+                SortType.LocationBased(location)
+            } else {
+                SortType.Alphabetical
+            }
+
+            val res = searcher.search(
+                query,
+                sortType = sortType,
+                isFavourite = { liked && it.isFavourite() }
+            )
+
+            val result = ArrayList(res.favourites)
+            result.addAll(res.others)
+
+            result
+        }
+
+        filteredItems = newItems
+
+        if (filteredItems.isNotEmpty()) {
+            listState.scrollToItem(0)
+        }
+    }
+
+    key(forceRecompose, liked) {
+        LazyColumn(
+            Modifier.padding(top = 8.dp),
+            state = listState
+        ) {
+            items(
+                filteredItems,
+                key = { it.id.internal }
+            ) { item ->
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
+                        .clickable(null, ripple(), onClick = {
+                            onPick(SearchOption.PickedStop(item))
+                        })
                         .padding(17.dp)
                         .fillMaxWidth()
                 ) {
-                    ShimmerBox(Modifier.size(20.dp), shimmer)
-                    Spacer(Modifier.width(20.dp))
-                    ShimmerText(shimmer, widthFraction = 0.6f, variance = 0.3f, height = 16.dp)
+
+                    if (item.isFavourite()) {
+                        Icon(
+                            painter = painterResource(R.drawable.heart_solid),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.extendedColors.favourite
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(R.drawable.stop),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    Text(
+                        text = item.name,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(start = 20.dp).weight(1f)
+                    )
+
+                    if (location != null) {
+                        val distance = ceil(item.location.toAndroidLoc().distanceTo(location)).toInt()
+
+                        val text = if (distance < 1_000) {
+                            "$distance m"
+                        } else {
+                            "%.1f km".format(distance.toDouble()/1000.0)
+                        }
+
+                        Text(
+                            text = text,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 Divider()
             }
         }
     }
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    // FIXME this is not optimal optimal way to refresh (but I dont really care right now)
+    // note: we are refreshing cuz favourite stops might change
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            forceRecompose += 1
+        }
+    }
+}
+
+@Composable
+fun StopListShimmer() {
+    val shimmer = rememberActivityShimmer()
+    Column(Modifier.padding(top = 8.dp)) {
+        repeat(12) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(17.dp)
+                    .fillMaxWidth()
+            ) {
+                ShimmerBox(Modifier.size(20.dp), shimmer)
+                Spacer(Modifier.width(20.dp))
+                ShimmerText(shimmer, widthFraction = 0.6f, variance = 0.3f, height = 16.dp)
+            }
+            Divider()
+        }
+    }
 }

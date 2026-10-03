@@ -33,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -79,6 +80,8 @@ import io.github.mirancz.libreinfo.ui.components.NavigationItem
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.ApkInstaller
 import io.github.mirancz.libreinfo.util.AppUpdater
+import io.github.mirancz.libreinfo.util.DeparturesSettings
+import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.util.UpdateHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -89,7 +92,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { AppRoot { AppNavHost() } }
+        setContent {
+            AppRoot {
+                CompositionLocalProvider(LocalDeparturesSettings provides DeparturesSettings.current) {
+                    AppNavHost()
+                }
+            }
+        }
     }
 
 }
@@ -104,7 +113,7 @@ fun HomeScreen(onNavigate: (NavRoute) -> Unit) {
         NavigationItem(
             R.drawable.bus_light_full,
             R.string.departures
-        ) { onNavigate(NavRoute.Search) }
+        ) { onNavigate(NavRoute.StopSearch(prefetchDelays = true)) }
         NavigationItem(
             R.drawable.location_arrow,
             R.string.vehicle_map,
@@ -205,7 +214,30 @@ fun AppNavHost(nav: NavHostController = rememberNavController()) {
             activity<NavRoute.Settings.Dev.DeparturePerformance> { activityClass = DeparturePerformanceActivity::class }
         }
 
-        activity<NavRoute.Search> { activityClass = SearchActivity::class }
+
+        composable<NavRoute.StopSearch> {
+            val route = it.toRoute<NavRoute.StopSearch>()
+
+            SearchScreen<SearchOption.PickedStop>(state, prefetchDelays = route.prefetchDelays) { picked ->
+                nav.navigate(NavRoute.Departures(picked.stop.id.internal))
+            }
+        }
+
+        composable<NavRoute.Departures> {
+            val route = it.toRoute<NavRoute.Departures>()
+
+            DeparturesScreen(state, route.stopId)
+        }
+
+        composable<NavRoute.StopPicker>(
+            typeMap = mapOf(typeOf<SearchKinds>() to serializableNavType<SearchKinds>())
+        ) {
+            val route = it.toRoute<NavRoute.StopPicker>()
+            SearchScreen(state, route.kinds) { picked ->
+                nav.previousBackStackEntry?.savedStateHandle?.set(route.resultKey, Json.encodeToString<SearchOption>(picked))
+                state.onBack()
+            }
+        }
         activity<NavRoute.VehicleMap> { activityClass = VehicleMapActivity::class }
         activity<NavRoute.ConnectionSearch> { activityClass = ConnectionSearchActivity::class }
 

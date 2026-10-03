@@ -41,19 +41,19 @@ public class StopStorage implements AppStorage {
         Arrays.fill(idToStop, Stop.Companion.getNONE());
 
         for (Stop stop : stops) {
-            idToStop[stop.getId().internal()] = stop;
+            idToStop[stop.getId().getInternal()] = stop;
         }
 
         this.searcher = new FuzzyStopSearch(stops);
     }
 
     public Stop getStop(StopId.StopIdHolder holder) {
-        if (holder.type == StopId.StopIdType.INTERNAL) {
-            return getInternalStop(holder.id);
+        if (holder.getType() == StopId.StopIdType.INTERNAL) {
+            return getInternalStop(holder.getId());
         }
 
-        if (holder.type == StopId.StopIdType.ORIGINAL) {
-            return getOriginalStop(holder.id);
+        if (holder.getType() == StopId.StopIdType.ORIGINAL) {
+            return getOriginalStop(holder.getId());
         }
 
         throw new IllegalStateException();

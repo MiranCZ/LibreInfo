@@ -1,7 +1,9 @@
 package io.github.mirancz.libreinfo.parsing.types.stop
 
 import io.github.mirancz.libreinfo.parsing.types.Location
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Stop(
     val id: StopId,
     val name: String,

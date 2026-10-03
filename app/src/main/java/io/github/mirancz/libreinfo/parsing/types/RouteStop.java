@@ -17,7 +17,7 @@ public record RouteStop(int routeId, short stopId, int tripId, short postId, sho
     }
 
     public boolean equals(Stop stop) {
-        return stopId == stop.getId().internal();
+        return stopId == stop.getId().getInternal();
     }
 
 }

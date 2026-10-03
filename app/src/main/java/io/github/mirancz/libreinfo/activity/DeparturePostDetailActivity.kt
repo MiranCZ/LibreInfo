@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import io.github.mirancz.libreinfo.activity.base.KBaseActivity
-import io.github.mirancz.libreinfo.activity.data.DelaysDataHolder
 import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.Post
@@ -30,6 +29,7 @@ import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
+import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
 import io.github.mirancz.libreinfo.ui.components.AsyncContent
 import io.github.mirancz.libreinfo.ui.components.DepartureDetail
 import io.github.mirancz.libreinfo.ui.components.DepartureEntryRowShimmer
@@ -55,9 +55,15 @@ class DeparturePostDetailActivity : KBaseActivity("") {
 
         var stopDelays by remember { mutableStateOf(StopDelaysResponse(emptyMap())) }
 
-        val delays = DelaysDataHolder.getDelays()
-
         val result = rememberLoad {
+            var delays: RouteDelaysResponse? = null
+            try {
+                delays = RequestHelper.getRouteDelays(context)
+            } catch (e: RequestException) {
+                showErrorSnackBar(e)
+            }
+
+
             try {
                 stopDelays = RequestHelper.getStopDelays(context, post.stop.id)
             } catch (e: RequestException) {

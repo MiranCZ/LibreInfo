@@ -50,6 +50,7 @@ import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 
 class DeparturesSettingsActivity : KBaseActivity(R.string.departures_settings) {
 
+    // TODO use `LocalDepartureSettings` instead
     class DeparturesSettingsViewModel : ViewModel() {
         var settings by mutableStateOf(DeparturesSettings())
             private set

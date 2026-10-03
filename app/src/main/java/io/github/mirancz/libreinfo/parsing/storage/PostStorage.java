@@ -49,7 +49,7 @@ public class PostStorage implements AppStorage {
                 continue;
             }
 
-            postsForStop[stop.getId().internal()].add(post);
+            postsForStop[stop.getId().getInternal()].add(post);
         }
 
         this.posts = posts;
@@ -60,7 +60,7 @@ public class PostStorage implements AppStorage {
              if (post.postID() == postID) return post;
         }
 
-        Post dummyPost = new Post(Stop.Companion.getNONE(), postID, postID+". nastupiste", Location.NONE);
+        Post dummyPost = new Post(Stop.Companion.getNONE(), postID, postID+". nastupiste", Location.getNONE());
         AppLog.w("Unable to find post with args "+stopID + " ; "+postID + " ; "+getPosts(stopID));
 
         postsForStop[stopID].add(dummyPost);
@@ -68,7 +68,7 @@ public class PostStorage implements AppStorage {
     }
 
     public List<Post> getPosts(Stop stop) {
-        return getPosts(stop.getId().internal());
+        return getPosts(stop.getId().getInternal());
     }
 
     public List<Post> getPosts(int stopId) {

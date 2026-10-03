@@ -49,7 +49,6 @@ import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
 import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.ui.components.FavouriteStopAction
 import io.github.mirancz.libreinfo.ui.components.StopViewModel
-import io.github.mirancz.libreinfo.activity.data.DelaysDataHolder
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
@@ -75,6 +74,7 @@ import io.github.mirancz.libreinfo.util.load.LoadState
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 
+// FIXME use the same departures screen for both local and server
 /**
  * Departure boards taken verbatim from the app server. Unlike [DeparturesActivity], the entries are
  * not computed from the bundled timetables, so there is no whole day to open and no delay to render
@@ -108,7 +108,7 @@ class ServerDeparturesActivity : KBaseActivity("") {
 
         // the delays only tint an already final time, so the prefetch from SearchActivity is good
         // enough to open with - a refresh is what pulls a fresh feed
-        var delays by remember { mutableStateOf(DelaysDataHolder.getDelays()) }
+//        var delays by remember { mutableStateOf(DelaysDataHolder.getDelays()) }
         var refreshTick by remember { mutableIntStateOf(0) }
 
         val result = rememberLoad(refreshTick) {
@@ -125,7 +125,7 @@ class ServerDeparturesActivity : KBaseActivity("") {
 
             if (refreshTick > 0) {
                 try {
-                    delays = RequestHelper.getRouteDelays(context)
+//                    delays = RequestHelper.getRouteDelays(context)
                 } catch (e: RequestException) {
                     showErrorSnackBar(e)
                 }
@@ -145,7 +145,7 @@ class ServerDeparturesActivity : KBaseActivity("") {
                 refreshTick++
             }) {
                 AsyncContent(result, loading = { DeparturesShimmer(stop, storage) }) { departures ->
-                    Departures(departures, stop.id.internal(), storage!!, delays)
+//                    Departures(departures, stop.id.internal, storage!!, delays)
                 }
             }
         }

@@ -52,11 +52,11 @@ public class DeparturePerformanceActivity extends BaseActivity {
                 for (int i = 0; i < 3; i++) {
                     for (Stop stop : storage.stopStorage().getAllStops()) {
                         long startNs = System.nanoTime();
-                        var result = OfflineDepartures.getOffline(storage, stop.getId().internal());
+                        var result = OfflineDepartures.getOffline(storage, stop.getId().getInternal());
                         long tookNs = System.nanoTime()-startNs;
 
                         if (!result.isEmpty()) {
-                            took.put(stop.getId().internal(), Math.min(took.getOrDefault(stop.getId().internal(), Long.MAX_VALUE), tookNs));
+                            took.put(stop.getId().getInternal(), Math.min(took.getOrDefault(stop.getId().getInternal(), Long.MAX_VALUE), tookNs));
                         }
 
                         processed++;
