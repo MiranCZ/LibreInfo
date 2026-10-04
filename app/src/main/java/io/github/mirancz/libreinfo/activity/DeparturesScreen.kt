@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.mirancz.libreinfo.activity.base.snackbar.CustomSnackBarVisuals
 import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
 import io.github.mirancz.libreinfo.exception.RequestException
+import io.github.mirancz.libreinfo.nav.NavRoute
 import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
@@ -31,6 +32,7 @@ import io.github.mirancz.libreinfo.ui.components.FavouriteStopAction
 import io.github.mirancz.libreinfo.ui.components.NothingHere
 import io.github.mirancz.libreinfo.ui.components.StopViewModel
 import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
+import io.github.mirancz.libreinfo.ui.showError
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.util.OfflineDepartures
 import io.github.mirancz.libreinfo.util.load.rememberLoad
@@ -66,7 +68,7 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
             delays = RequestHelper.getRouteDelays(context, force = isRefresh)
         } catch (e: RequestException) {
 
-            snackbar.showSnackbar(CustomSnackBarVisuals(e.toAppException().getPrettyText(context),type= SnackBarType.ERROR))
+            snackbar.showError(context, e.toAppException())
         }
 
         val _storage = provider.getInstance()
@@ -95,7 +97,7 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
             if (deps.departures.isEmpty()) {
                 NothingHere()
             } else {
-                Departures(deps, stop, storage!!)
+                Departures(state, deps, stop, storage!!)
                 }
             }
         }
@@ -104,12 +106,14 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
 
 
 @Composable
-fun Departures(departures: Departures, stop: Stop, storage: IdStorage) {
+fun Departures(state: NavState, departures: Departures, stop: Stop, storage: IdStorage) {
     LazyColumn {
         items(departures.departures) { entry ->
             val post = storage.postStorage.getPost(stop.id.internal, entry.postID);
 
-            Departure(entry, post) { _, _, _ ->
+            Departure(entry, post, onHeaderClick = {
+                state.onNavigate(NavRoute.Departures.PostDetail(stop.id.internal, entry.postID))
+            }) { _, _, _ ->
                 // TODO
             }
         }

@@ -43,16 +43,6 @@
         </activity>
 
         <activity
-            android:name=".activity.DiversionsActivity"
-            android:parentActivityName=".activity.MainActivity">
-        </activity>
-
-        <activity
-            android:name=".activity.DiversionInfoActivity"
-            android:parentActivityName=".activity.DiversionsActivity">
-        </activity>
-
-        <activity
             android:name=".activity.settings.DeparturesSettingsActivity"
             android:parentActivityName=".activity.MainActivity">
         </activity>
@@ -64,21 +54,11 @@
 
         <activity
             android:name=".activity.TripDetailActivity"
-            android:parentActivityName=".activity.DeparturePostDetailActivity">
-        </activity>
-
-        <activity
-            android:name=".activity.DeparturesActivity"
-            android:parentActivityName=".activity.SearchActivity">
+            android:parentActivityName=".activity.MainActivity">
         </activity>
 
         <activity
             android:name=".activity.ServerDeparturesActivity"
-            android:parentActivityName=".activity.SearchActivity">
-        </activity>
-
-        <activity
-            android:name=".activity.DeparturePostDetailActivity"
             android:parentActivityName=".activity.SearchActivity">
         </activity>
 

@@ -8,22 +8,14 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,28 +25,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
-import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.activity.DeparturePostDetailActivity
-import io.github.mirancz.libreinfo.activity.TripDetailActivity
 import io.github.mirancz.libreinfo.activity.base.snackbar.CustomSnackBarVisuals
 import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
 import io.github.mirancz.libreinfo.exception.AppException
-import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
-import io.github.mirancz.libreinfo.parsing.types.Post
-import io.github.mirancz.libreinfo.parsing.types.departure.Departure
 import io.github.mirancz.libreinfo.ui.AppRoot
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
-import io.github.mirancz.libreinfo.ui.components.Departure
-import io.github.mirancz.libreinfo.ui.components.ErrorWidget
-import io.github.mirancz.libreinfo.ui.theme.AppTheme
-import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.Text
 import kotlinx.coroutines.launch
 import java.util.function.Consumer
@@ -172,31 +152,5 @@ abstract class KBaseActivity(name: Text) : ComponentActivity() {
         return result
     }
 
-
-    // TODO eventually remove wrapper
-    @Composable
-    fun Departure(departure: Departure, post: Post?) {
-        Departure(
-            departure,
-            post,
-            onHeaderClick = {
-                startActivity(DeparturePostDetailActivity::class) {
-                    it.putExtra("post", post)
-                }
-            }
-        ) { vehicleInfo, stopId, tripId ->
-            startActivity(TripDetailActivity::class) { intent ->
-                if (vehicleInfo.hasDelay()) {
-                    intent.putExtra("delay", vehicleInfo.delay())
-                }
-                if (vehicleInfo.hasId()) {
-                    intent.putExtra("vehicleId", vehicleInfo.id())
-                }
-
-                intent.putExtra("stopId", stopId)
-                intent.putExtra("tripId", tripId)
-            }
-        }
-    }
 
 }

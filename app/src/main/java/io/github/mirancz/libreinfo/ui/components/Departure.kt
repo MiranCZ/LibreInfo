@@ -35,9 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.valentinilk.shimmer.Shimmer
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.activity.DeparturePostDetailActivity
-import io.github.mirancz.libreinfo.activity.TripDetailActivity
-import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.parsing.storage.ApiStorage
 import io.github.mirancz.libreinfo.parsing.types.Post

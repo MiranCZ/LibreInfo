@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import io.github.mirancz.libreinfo.exception.AppException
 import io.github.mirancz.libreinfo.ui.LocalSnackbarHostState
+import io.github.mirancz.libreinfo.ui.showError
 import io.github.mirancz.libreinfo.util.AppLog
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -63,7 +64,7 @@ fun <T> rememberLoad(vararg keys: Any?, block: suspend LoadScope.() -> T): LoadR
             val error = e.toAppException()
             // a failed refresh shouldn't throw away data the user is already looking at
             if (isRefresh) {
-                snackbar.showSnackbar(CustomSnackBarVisuals(error.getPrettyText(context),type= SnackBarType.ERROR))
+                snackbar.showError(context, error)
             } else {
                 state.value = LoadState.Error(error)
             }

@@ -22,7 +22,13 @@ sealed interface NavRoute : NavKey {
     data class StopSearch(val prefetchDelays: Boolean = false) : NavRoute
 
     @Serializable
-    data class Departures(val stopId: Int) : NavRoute
+    data class Departures(val stopId: Int) : NavRoute {
+
+        @Serializable
+        data class PostDetail(val stopId: Int, val postId: Int) : NavRoute
+
+
+    }
 
     /**
      * Can be used by any screen to pick a stop (, location or poi) and return back.
