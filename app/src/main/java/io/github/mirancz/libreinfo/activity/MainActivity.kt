@@ -1,6 +1,6 @@
 package io.github.mirancz.libreinfo.activity
 
-import android.net.Uri
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -12,6 +12,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +38,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,14 +52,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.Lifecycle
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.activity
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.runtime.serialization.NavBackStackSerializer
+import androidx.navigation3.ui.NavDisplay
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.attribution.AttributionScreen
@@ -67,10 +68,10 @@ import io.github.mirancz.libreinfo.activity.settings.DevSettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.LocationSettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.SettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.UpdatingSettingsActivity
+import io.github.mirancz.libreinfo.nav.LocalNavResults
+import io.github.mirancz.libreinfo.nav.NavResults
 import io.github.mirancz.libreinfo.nav.NavRoute
 import io.github.mirancz.libreinfo.nav.NavState
-import io.github.mirancz.libreinfo.parsing.types.Diversion
-import io.github.mirancz.libreinfo.parsing.types.NewsEntry
 import io.github.mirancz.libreinfo.ui.AppRoot
 import io.github.mirancz.libreinfo.ui.NavigationScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AppButton
@@ -85,8 +86,6 @@ import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.util.UpdateHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
-import kotlin.reflect.typeOf
 
 class MainActivity : ComponentActivity() {
 
@@ -158,108 +157,108 @@ fun HomeScreen(onNavigate: (NavRoute) -> Unit) {
 }
 
 @Composable
-fun AppNavHost(nav: NavHostController = rememberNavController()) {
+fun AppNavHost() {
+    val context = LocalContext.current
+    val backStack = rememberSerializable(serializer = NavBackStackSerializer(NavRoute.serializer())) {
+        NavBackStack(NavRoute.Home)
+    }
+
     val decelerateQuad = Easing { 1f - (1f - it) * (1f - it) }
     val accelerateQuad = Easing { it * it }
     val accelerateCubic = Easing { it * it * it }
 
-    NavHost(
-        nav, startDestination = NavRoute.Home,
-        enterTransition = {
-            scaleIn(tween(240, easing = decelerateQuad), initialScale = 0.9f) +
-                    fadeIn(tween(240, easing = decelerateQuad), initialAlpha = 0.25f)
-        },
-        exitTransition = { fadeOut(tween(220, easing = accelerateQuad)) },
-        popEnterTransition = { fadeIn(tween(150, easing = decelerateQuad)) },
-        popExitTransition = {
+    val pushTransition = scaleIn(tween(240, easing = decelerateQuad), initialScale = 0.9f) +
+            fadeIn(tween(240, easing = decelerateQuad), initialAlpha = 0.25f) togetherWith
+            fadeOut(tween(220, easing = accelerateQuad))
+    val popTransition = fadeIn(tween(150, easing = decelerateQuad)) togetherWith
             scaleOut(tween(140, easing = accelerateCubic), targetScale = 0.8f) +
-                    fadeOut(tween(140, easing = accelerateCubic), targetAlpha = 0.25f)
-        },
-    ) {
-        val state = NavState(nav::navigate) {
-            // prevents from being able to step back multiple times whilst exit animation is playing
-            if (nav.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED) {
-                nav.popBackStack()
+            fadeOut(tween(140, easing = accelerateCubic), targetAlpha = 0.25f)
+
+    fun navigate(route: NavRoute) {
+        val activity = when (route) {
+            NavRoute.VehicleMap -> VehicleMapActivity::class
+            NavRoute.ConnectionSearch -> ConnectionSearchActivity::class
+            NavRoute.Settings.Departures -> DeparturesSettingsActivity::class
+            NavRoute.Settings.Updates -> UpdatingSettingsActivity::class
+            NavRoute.Settings.Dev.DeparturePerformance -> DeparturePerformanceActivity::class
+            else -> null
+        }
+
+        if (activity != null) {
+            context.startActivity(Intent(context, activity.java))
+        } else {
+            backStack.add(route)
+        }
+    }
+
+    // Navigation is only allowed from the topmost entry, this prevents stepping back (or forward) multiple times whilst
+    // the exit animation is playing
+    fun stateFor(route: NavRoute) = NavState(
+        onNavigate = { if (backStack.lastOrNull() === route) navigate(it) },
+        onBack = { if (backStack.size > 1 && backStack.last() === route) backStack.removeAt(backStack.lastIndex) }
+    )
+
+    val results = remember { NavResults() }
+
+    CompositionLocalProvider(LocalNavResults provides results) {
+        NavDisplay(
+            backStack = backStack,
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator(),
+            ),
+            transitionSpec = { pushTransition },
+            popTransitionSpec = { popTransition },
+            predictivePopTransitionSpec = { popTransition },
+            entryProvider = entryProvider {
+                entry<NavRoute.Home> { HomeScreen(onNavigate = stateFor(it).onNavigate) }
+
+                entry<NavRoute.Settings> { SettingsScreen(stateFor(it)) }
+
+                entry<NavRoute.Settings.Location> { LocationSettingsScreen(stateFor(it)) }
+
+                entry<NavRoute.News> { NewsScreen(stateFor(it)) }
+                entry<NavRoute.About> { AboutScreen(stateFor(it)) }
+                entry<NavRoute.About.Attribution> { AttributionScreen(stateFor(it)) }
+                entry<NavRoute.VehiclesList> { VehiclesListScreen(stateFor(it)) }
+                entry<NavRoute.Events> { EventsScreen(stateFor(it)) }
+
+                entry<NavRoute.Diversions> { DiversionsScreen(stateFor(it)) }
+
+                entry<NavRoute.Diversions.Detail> { DiversionDetailScreen(stateFor(it), it.diversion) }
+
+                // FIXME pass only IDs instead
+                entry<NavRoute.News.Detail> { NewsDetailScreen(stateFor(it), it.entry) }
+
+                @Suppress("SimplifyBooleanWithConstants", "KotlinConstantConditions")
+                if (BuildConfig.BUILD_TYPE != "release") {
+                    entry<NavRoute.Settings.Dev> { DevSettingsScreen(stateFor(it)) }
+
+                    entry<NavRoute.Settings.Dev.LineList> { LineListScreen(stateFor(it)) }
+                }
+
+
+                entry<NavRoute.StopSearch> { route ->
+                    val state = stateFor(route)
+                    SearchScreen<SearchOption.PickedStop>(state, prefetchDelays = route.prefetchDelays) { picked ->
+                        state.onNavigate(NavRoute.Departures(picked.stop.id.internal))
+                    }
+                }
+
+                entry<NavRoute.Departures> { DeparturesScreen(stateFor(it), it.stopId) }
+
+                entry<NavRoute.StopPicker> { route ->
+                    val state = stateFor(route)
+
+                    SearchScreen(state, route.kinds) { picked ->
+                        results.send(route.resultKey, picked)
+                        state.onBack()
+                    }
+                }
             }
-        }
-
-        composable<NavRoute.Home> { HomeScreen(onNavigate = nav::navigate) }
-
-        composable<NavRoute.Settings> { SettingsScreen(state) }
-
-        composable<NavRoute.Settings.Location> { LocationSettingsScreen(state) }
-
-        composable<NavRoute.News> { NewsScreen(state) }
-        composable<NavRoute.About> { AboutScreen(state) }
-        composable<NavRoute.About.Attribution> { AttributionScreen(state) }
-        composable<NavRoute.VehiclesList> { VehiclesListScreen(state) }
-        composable<NavRoute.Events> { EventsScreen(state) }
-
-        composable<NavRoute.Diversions> { DiversionsScreen(state) }
-
-        composable<NavRoute.Diversions.Detail>(
-            typeMap = mapOf(typeOf<Diversion>() to serializableNavType<Diversion>())
-        ) { DiversionDetailScreen(state, it.toRoute<NavRoute.Diversions.Detail>().diversion) }
-
-        // FIXME pass only IDs instead
-        composable<NavRoute.News.Detail>(
-            typeMap = mapOf(typeOf<NewsEntry>() to serializableNavType<NewsEntry>())
-        ) { NewsDetailScreen(state, it.toRoute<NavRoute.News.Detail>().entry) }
-
-        @Suppress("SimplifyBooleanWithConstants", "KotlinConstantConditions")
-        if (BuildConfig.BUILD_TYPE != "release") {
-            composable<NavRoute.Settings.Dev> { DevSettingsScreen(state) }
-
-            composable<NavRoute.Settings.Dev.LineList> { LineListScreen(state) }
-            activity<NavRoute.Settings.Dev.DeparturePerformance> { activityClass = DeparturePerformanceActivity::class }
-        }
-
-
-        composable<NavRoute.StopSearch> {
-            val route = it.toRoute<NavRoute.StopSearch>()
-
-            SearchScreen<SearchOption.PickedStop>(state, prefetchDelays = route.prefetchDelays) { picked ->
-                nav.navigate(NavRoute.Departures(picked.stop.id.internal))
-            }
-        }
-
-        composable<NavRoute.Departures> {
-            val route = it.toRoute<NavRoute.Departures>()
-
-            DeparturesScreen(state, route.stopId)
-        }
-
-        composable<NavRoute.StopPicker>(
-            typeMap = mapOf(typeOf<SearchKinds>() to serializableNavType<SearchKinds>())
-        ) {
-            val route = it.toRoute<NavRoute.StopPicker>()
-            SearchScreen(state, route.kinds) { picked ->
-                nav.previousBackStackEntry?.savedStateHandle?.set(route.resultKey, Json.encodeToString<SearchOption>(picked))
-                state.onBack()
-            }
-        }
-        activity<NavRoute.VehicleMap> { activityClass = VehicleMapActivity::class }
-        activity<NavRoute.ConnectionSearch> { activityClass = ConnectionSearchActivity::class }
-
-        activity<NavRoute.Settings.Departures> { activityClass = DeparturesSettingsActivity::class }
-        activity<NavRoute.Settings.Updates> { activityClass = UpdatingSettingsActivity::class }
-
+        )
     }
 }
-
-// FIXME pass only IDs instead
-inline fun <reified T : Any> serializableNavType(isNullable: Boolean = false) =
-    object : NavType<T>(isNullable) {
-        override fun get(bundle: Bundle, key: String): T? =
-            bundle.getString(key)?.let { Json.decodeFromString(it) }
-
-        override fun put(bundle: Bundle, key: String, value: T) =
-            bundle.putString(key, Json.encodeToString(value))
-
-        override fun parseValue(value: String): T = Json.decodeFromString(Uri.decode(value))
-
-        override fun serializeAsValue(value: T): String = Uri.encode(Json.encodeToString(value))
-    }
 
 @Composable
 fun UpdateOverlay(modifier: Modifier = Modifier) {

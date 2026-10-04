@@ -1,12 +1,14 @@
 package io.github.mirancz.libreinfo.nav
 
+import androidx.navigation3.runtime.NavKey
 import io.github.mirancz.libreinfo.activity.SearchKinds
 import io.github.mirancz.libreinfo.parsing.types.Diversion
 import io.github.mirancz.libreinfo.parsing.types.NewsEntry
 import kotlinx.serialization.Serializable
 
 
-sealed interface NavRoute {
+@Serializable
+sealed interface NavRoute : NavKey {
 
     @Serializable
     data object Home : NavRoute
@@ -20,10 +22,12 @@ sealed interface NavRoute {
     data class StopSearch(val prefetchDelays: Boolean = false) : NavRoute
 
     @Serializable
-    data class Departures(val stopId: Int)
+    data class Departures(val stopId: Int) : NavRoute
 
     /**
-     * Can be used by any screen to pick a stop (, location or poi) and return back
+     * Can be used by any screen to pick a stop (, location or poi) and return back.
+     * The picked [io.github.mirancz.libreinfo.activity.SearchOption] is sent to [resultKey] on
+     * [LocalNavResults], receive it with [NavResultEffect]
      *
      * an **exit** animation is played when a stop is selected
      */
