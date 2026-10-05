@@ -33,11 +33,6 @@
         </activity>
 
         <activity
-            android:name=".activity.SearchActivity"
-            android:parentActivityName=".activity.MainActivity">
-        </activity>
-
-        <activity
             android:name=".activity.VehicleMapActivity"
             android:parentActivityName=".activity.MainActivity">
         </activity>
@@ -49,7 +44,7 @@
 
         <activity
             android:name=".activity.ServerDeparturesActivity"
-            android:parentActivityName=".activity.SearchActivity">
+            android:parentActivityName=".activity.MainActivity">
         </activity>
 
 

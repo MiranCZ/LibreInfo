@@ -1,11 +1,8 @@
 package io.github.mirancz.libreinfo.activity
 
-import android.content.Intent
-import android.os.Bundle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,7 +34,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -46,15 +42,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.activity.SearchActivity.SearchViewModel
-import io.github.mirancz.libreinfo.activity.base.KBaseActivity
 import io.github.mirancz.libreinfo.activity.settings.LocationSettingsScreen
-import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.parsing.storage.StopStorage
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.Location
-import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
 import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
@@ -91,6 +83,15 @@ sealed interface SearchOption {
 
     @Serializable
     data class POI(val location: Location, val name: String) : StopOrPOI
+}
+
+class SearchViewModel : ViewModel() {
+    private val _liked = mutableStateOf(true)
+    val liked = _liked
+
+    fun toggleLiked() {
+        _liked.value = !_liked.value
+    }
 }
 
 @Serializable
@@ -148,103 +149,6 @@ internal fun SearchScreen(state: NavState, kinds: SearchKinds, prefetchDelays: B
     }
 }
 
-
-
-class SearchActivity : KBaseActivity(R.string.departures) {
-
-    companion object {
-        const val EXTRA_PICKER_MODE = "picker_mode"
-        const val EXTRA_RESULT_STOP = "stop"
-    }
-
-    class SearchViewModel : ViewModel() {
-        private val _liked = mutableStateOf(true)
-        val liked = _liked
-
-        fun toggleLiked() {
-            _liked.value = !_liked.value
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        // FIXME remove use of thread
-        Thread(Runnable {
-            val delays: RouteDelaysResponse?
-            try {
-                delays = RequestHelper.getRouteDelays(this)
-            } catch (e: RequestException) {
-                showErrorSnackBar(e)
-                return@Runnable
-            }
-//            runOnUiThread { DelaysDataHolder.setDelays(delays) }
-        }).start()
-    }
-
-    @Composable
-    @Preview
-    override fun CreateElements() {
-        SearchableList(SearchKinds(stops = true, locations = false, pois = false), onPick = { option ->
-            if (option is SearchOption.PickedStop) {
-                val item = option.stop
-
-                if (intent.getBooleanExtra(EXTRA_PICKER_MODE, false)) {
-                    setResult(
-                        RESULT_OK,
-                        Intent().apply { putExtra(EXTRA_RESULT_STOP, item.id.internal) })
-                    finish()
-                } else {
-                    // FIXME implement this
-                    // read on click so a source change mid-session applies right away
-//                    val target =
-//                        if (AppSettings.Departures.source == DepartureSource.SERVER) ServerDeparturesActivity::class
-//                        else DeparturesActivity::class
-//
-//                    startActivity(target) { i ->
-//                        i.putExtra(
-//                            "stop",
-//                            item.id.internal
-//                        )
-//                    }
-                }
-            }
-        })
-    }
-
-    override fun setBaseContent(
-        actions: @Composable RowScope.() -> Unit,
-        content: @Composable () -> Unit
-    ) {
-
-        super.setBaseContent({
-            actions()
-
-            val vm: SearchViewModel = viewModel()
-            val liked by vm.liked
-
-            IconButton(onClick = { vm.toggleLiked() }) {
-                if (liked) {
-                    Icon(
-                        painter = painterResource(R.drawable.heart_solid),
-                        contentDescription = "Unlike",
-                        tint = MaterialTheme.extendedColors.favourite,
-                        modifier = Modifier.size(32.dp)
-                    )
-                } else {
-                    Icon(
-                        painter = painterResource(R.drawable.heart_regular),
-                        contentDescription = "Like",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
-        }, content)
-    }
-
-
-}
 
 @Composable
 fun SearchableList(
