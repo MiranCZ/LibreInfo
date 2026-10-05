@@ -38,7 +38,6 @@ fun parse(input: AppInputStream, mapper: StopMapper): Stop {
 
     val id = StopId(stopId, mapper.getOriginal(stopId))
 
-    // TODO set favourite
     return Stop(id, name!!, parentStation!!, Location(lat, lon))
 
 }

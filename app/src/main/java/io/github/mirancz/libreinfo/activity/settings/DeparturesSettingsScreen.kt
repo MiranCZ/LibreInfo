@@ -49,7 +49,6 @@ import io.github.mirancz.libreinfo.ui.components.DepartureEntryShimmer
 import io.github.mirancz.libreinfo.ui.components.Divider
 import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 
-// TODO use `LocalDepartureSettings` instead
 class DeparturesSettingsViewModel : ViewModel() {
     // read eagerly so the dropdown never flashes the default before load() lands
     var source by mutableStateOf(AppSettings.Departures.source)
