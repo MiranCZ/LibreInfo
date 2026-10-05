@@ -113,8 +113,11 @@ fun Departures(state: NavState, departures: Departures, stop: Stop, storage: IdS
 
             Departure(entry, post, onHeaderClick = {
                 state.onNavigate(NavRoute.Departures.PostDetail(stop.id.internal, entry.postID))
-            }) { _, _, _ ->
-                // TODO
+            }) { vehicleInfo, stopId, tripId ->
+                val vehicleId = if (vehicleInfo.hasId()) vehicleInfo.id() else null
+
+                val route = NavRoute.TripDetail(vehicleId, stopId, tripId)
+                state.onNavigate(route)
             }
         }
     }

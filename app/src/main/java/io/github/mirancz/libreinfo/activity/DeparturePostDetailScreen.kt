@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import io.github.mirancz.libreinfo.exception.RequestException
+import io.github.mirancz.libreinfo.nav.NavRoute
 import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.Post
@@ -85,24 +86,16 @@ fun DeparturePostDetailScreen(state: NavState, stopId: Int, postId: Int) {
     val title = if (_post == null) "" else _post.name
     ScreenScaffold(title, onBack = state.onBack) {
         AsyncContent(result, loading = { DepartureDetailShimmer(title) }) { res ->
-                DepartureDetail(
-                    res.first,
-                    res.second.apiStorage,
-                    stopDelays
-                ) { vehicleInfo, stopId, tripId ->
-                    // TODO implement
-//                    startActivity(TripDetailActivity::class) { intent ->
-//                        if (vehicleInfo.hasDelay()) {
-//                            intent.putExtra("delay", vehicleInfo.delay())
-//                        }
-//                        if (vehicleInfo.hasId()) {
-//                            intent.putExtra("vehicleId", vehicleInfo.id())
-//                        }
-//
-//                        intent.putExtra("stopId", stopId)
-//                        intent.putExtra("tripId", tripId)
-//                    }
-                }
+            DepartureDetail(
+                res.first,
+                res.second.apiStorage,
+                stopDelays
+            ) { vehicleInfo, stopId, tripId ->
+                val vehicleId = if (vehicleInfo.hasId()) vehicleInfo.id() else null
+
+                val route = NavRoute.TripDetail(vehicleId, stopId, tripId)
+                state.onNavigate(route)
+            }
         }
     }
 }

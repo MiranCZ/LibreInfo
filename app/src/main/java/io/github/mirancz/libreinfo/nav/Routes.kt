@@ -30,6 +30,10 @@ sealed interface NavRoute : NavKey {
 
     }
 
+    @Serializable
+    data class TripDetail(val vehicleId: Int?, val stopId: Int, val routeId: Int) : NavRoute
+
+
     /**
      * Can be used by any screen to pick a stop (, location or poi) and return back.
      * The picked [io.github.mirancz.libreinfo.activity.SearchOption] is sent to [resultKey] on

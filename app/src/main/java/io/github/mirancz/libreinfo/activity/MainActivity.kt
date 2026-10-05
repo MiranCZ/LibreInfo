@@ -248,6 +248,8 @@ fun AppNavHost() {
                 entry<NavRoute.Departures> { DeparturesScreen(stateFor(it), it.stopId) }
                 entry<NavRoute.Departures.PostDetail> { DeparturePostDetailScreen(stateFor(it), it.stopId, it.postId) }
 
+                entry<NavRoute.TripDetail> { TripDetailScreen(stateFor(it), it.vehicleId, it.stopId, it.routeId) }
+
                 entry<NavRoute.StopPicker> { route ->
                     val state = stateFor(route)
 
