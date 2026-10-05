@@ -138,7 +138,7 @@ fun DepartureEntry(
     departure: DepartureEntry,
     modifier: Modifier = Modifier,
     showDelay: Boolean = true,
-    onClick: (VehicleInfo, Int, Int) -> Unit
+    onClick: ((VehicleInfo, Int, Int) -> Unit)?
 ) {
     val vehicleInfo = departure.vehicleInfo
     val depSettings = LocalDeparturesSettings.current
@@ -147,9 +147,13 @@ fun DepartureEntry(
         modifier
             .padding(horizontal = 8.dp)
             .clip(RoundedCornerShape(8.dp))
-            .clickable(null, ripple(), onClick = {
-                onClick(vehicleInfo, departure.stopId, departure.tripId)
-            })
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(null, ripple(), onClick = {
+                        onClick(vehicleInfo, departure.stopId, departure.tripId)
+                    })
+                } else Modifier
+            )
             .padding(horizontal = 8.dp)
     ) {
         Row(Modifier.fillMaxWidth()) {
@@ -302,8 +306,8 @@ fun DepartureDetail(
 fun Departure(
     departure: Departure,
     post: Post?,
-    onHeaderClick: () -> Unit = {},
-    onEntryClick: (VehicleInfo, Int, Int) -> Unit
+    onHeaderClick: (() -> Unit)? = null,
+    onEntryClick: ((VehicleInfo, Int, Int) -> Unit)?
 ) {
     val content: @Composable BoxScope.() -> Unit = {
         Column(Modifier.padding(vertical = 8.dp, horizontal = 6.dp)) {

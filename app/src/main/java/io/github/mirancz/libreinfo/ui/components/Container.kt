@@ -15,12 +15,17 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun Container(
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     innerPadding: Dp = 16.dp,
     color: Color = MaterialTheme.colorScheme.surfaceContainer,
     content: @Composable BoxScope.() -> Unit
 ) {
+    if (onClick == null) {
+        Container(modifier, innerPadding, color, content)
+        return
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = color),

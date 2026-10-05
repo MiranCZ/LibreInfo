@@ -271,8 +271,7 @@ class DeparturesSettingsActivity : KBaseActivity(R.string.departures_settings) {
         val settings = LocalDeparturesSettings.current
 
         CompositionLocalProvider(LocalDeparturesSettings provides settings.copy(maxEntries = entries.size)) {
-            io.github.mirancz.libreinfo.ui.components.Departure(dep, post = null) { _, _, _ ->
-            }
+            io.github.mirancz.libreinfo.ui.components.Departure(dep, post = null, onEntryClick = null)
         }
     }
 
