@@ -6,6 +6,29 @@ import io.github.mirancz.libreinfo.activity.base.snackbar.CustomSnackBarVisuals
 import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
 import io.github.mirancz.libreinfo.exception.AppException
 
+
+suspend fun SnackbarHostState.showInfo(text: String) {
+    show(text, SnackBarType.INFO)
+}
+
+suspend fun SnackbarHostState.showSuccess(text: String) {
+    show(text, SnackBarType.SUCCESS)
+}
+
+suspend fun SnackbarHostState.showError(text: String) {
+    show(text, SnackBarType.ERROR)
+}
+
+
+suspend fun SnackbarHostState.show(text: String, type: SnackBarType) {
+    showSnackbar(
+        CustomSnackBarVisuals(
+            text,
+            type = type
+        )
+    )
+}
+
 suspend fun SnackbarHostState.showError(context: Context, e: AppException) {
     showSnackbar(
         CustomSnackBarVisuals(

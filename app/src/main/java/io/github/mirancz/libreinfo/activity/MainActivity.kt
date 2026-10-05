@@ -67,7 +67,7 @@ import io.github.mirancz.libreinfo.activity.settings.DeparturesSettingsActivity
 import io.github.mirancz.libreinfo.activity.settings.DevSettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.LocationSettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.SettingsScreen
-import io.github.mirancz.libreinfo.activity.settings.UpdatingSettingsActivity
+import io.github.mirancz.libreinfo.activity.settings.UpdatingSettingsScreen
 import io.github.mirancz.libreinfo.nav.LocalNavResults
 import io.github.mirancz.libreinfo.nav.NavResults
 import io.github.mirancz.libreinfo.nav.NavRoute
@@ -179,7 +179,6 @@ fun AppNavHost() {
             NavRoute.VehicleMap -> VehicleMapActivity::class
             NavRoute.ConnectionSearch -> ConnectionSearchActivity::class
             NavRoute.Settings.Departures -> DeparturesSettingsActivity::class
-            NavRoute.Settings.Updates -> UpdatingSettingsActivity::class
             NavRoute.Settings.Dev.DeparturePerformance -> DeparturePerformanceActivity::class
             else -> null
         }
@@ -216,6 +215,7 @@ fun AppNavHost() {
                 entry<NavRoute.Settings> { SettingsScreen(stateFor(it)) }
 
                 entry<NavRoute.Settings.Location> { LocationSettingsScreen(stateFor(it)) }
+                entry<NavRoute.Settings.Updates> { UpdatingSettingsScreen(stateFor(it)) }
 
                 entry<NavRoute.News> { NewsScreen(stateFor(it)) }
                 entry<NavRoute.About> { AboutScreen(stateFor(it)) }
