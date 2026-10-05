@@ -51,6 +51,10 @@ sealed interface NavRoute : NavKey {
     data object ConnectionSearch : NavRoute
 
     @Serializable
+    data class ConnectionResults(val fromId: Int, val toId: Int, val time: String, val isArrival: Boolean) : NavRoute
+
+
+    @Serializable
     data object VehiclesList : NavRoute
 
     @Serializable

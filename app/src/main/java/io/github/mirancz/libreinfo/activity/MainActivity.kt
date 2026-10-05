@@ -177,7 +177,6 @@ fun AppNavHost() {
     fun navigate(route: NavRoute) {
         val activity = when (route) {
             NavRoute.VehicleMap -> VehicleMapActivity::class
-            NavRoute.ConnectionSearch -> ConnectionSearchActivity::class
             NavRoute.Settings.Dev.DeparturePerformance -> DeparturePerformanceActivity::class
             else -> null
         }
@@ -212,6 +211,10 @@ fun AppNavHost() {
                 entry<NavRoute.Home> { HomeScreen(onNavigate = stateFor(it).onNavigate) }
 
                 entry<NavRoute.Settings> { SettingsScreen(stateFor(it)) }
+                entry<NavRoute.ConnectionSearch> { ConnectionSearchScreen(stateFor(it)) }
+                entry<NavRoute.ConnectionResults> {
+                    ConnectionsResultScreen(stateFor(it), it.fromId, it.toId, it.time, it.isArrival)
+                }
 
                 entry<NavRoute.Settings.Location> { LocationSettingsScreen(stateFor(it)) }
                 entry<NavRoute.Settings.Updates> { UpdatingSettingsScreen(stateFor(it)) }
