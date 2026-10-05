@@ -21,10 +21,13 @@ data class DeparturesSettings(
             maxEntries = AppSettings.Departures.maxEntries
         )
 
-        fun save(s: DeparturesSettings) = AppSettings.edit {
-            AppSettings.Departures.delayRender = s.delayRender
-            AppSettings.Departures.showLowFloor = s.showLowFloor
-            AppSettings.Departures.maxEntries = s.maxEntries
+        fun save(s: DeparturesSettings) {
+            AppSettings.edit {
+                AppSettings.Departures.delayRender = s.delayRender
+                AppSettings.Departures.showLowFloor = s.showLowFloor
+                AppSettings.Departures.maxEntries = s.maxEntries
+            }
+            current = s
         }
     }
 }

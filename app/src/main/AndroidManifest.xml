@@ -43,11 +43,6 @@
         </activity>
 
         <activity
-            android:name=".activity.settings.DeparturesSettingsActivity"
-            android:parentActivityName=".activity.MainActivity">
-        </activity>
-
-        <activity
             android:name=".activity.TripDetailActivity"
             android:parentActivityName=".activity.MainActivity">
         </activity>
