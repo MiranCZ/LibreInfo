@@ -117,8 +117,11 @@ internal fun SearchScreen(state: NavState, kinds: SearchKinds, prefetchDelays: B
     if (prefetchDelays) {
         LaunchedEffect(Unit) {
             withContext(Dispatchers.IO) {
-                // if route delays are more than 10 seconds old, fetch new one and cache them
-                RequestHelper.getRouteDelays(context, cacheTtl = 10)
+                try {
+                    // if route delays are more than 10 seconds old, fetch new one and cache them
+                    RequestHelper.getRouteDelays(context, cacheTtl = 10)
+                } catch (_: Exception){
+                }
             }
         }
     }

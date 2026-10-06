@@ -2,6 +2,8 @@ package io.github.mirancz.libreinfo.engine.departure
 
 import android.content.Context
 import io.github.mirancz.libreinfo.engine.StorageProvider
+import io.github.mirancz.libreinfo.exception.AppException
+import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureBoard
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureEntry
@@ -9,9 +11,9 @@ import io.github.mirancz.libreinfo.parsing.types.departure.DepartureHeader
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureTime
 import io.github.mirancz.libreinfo.parsing.types.departure.PostDeparture
 import io.github.mirancz.libreinfo.parsing.types.departure.VehicleInfo
-import io.github.mirancz.libreinfo.parsing.types.dto.ServerDepartureDTO
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId
+import io.github.mirancz.libreinfo.util.load.toAppException
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 
 class ServerDepartureRepository(val storageProvider: StorageProvider) : DepartureRepository {
@@ -47,17 +49,25 @@ class ServerDepartureRepository(val storageProvider: StorageProvider) : Departur
         val stop = storage.stopStorage.getStop(StopId.internal(stopId))
         val response = RequestHelper.getDepartures(context, StopId(stopId, original))
 
-        val delays = RequestHelper.getRouteDelays(context).routeDelays
+        var error: AppException? = null
+
+        var delays: RouteDelaysResponse? = null
+        try {
+            delays = RequestHelper.getRouteDelays(context, force = forceRefresh)
+        } catch (e: RequestException) {
+            error = e.toAppException()
+        }
 
 
         return DepartureBoard(
             stop,
             response.message,
+            error,
             response.posts.map { p ->
                 PostDeparture(p.postId, p.name,false, p.departures.map {
                     val info = VehicleInfo()
 
-                    info.setDelay(delays[it.lineId]?.get(it.routeId)?.delay)
+                    info.setDelay(delays?.routeDelays[it.lineId]?.get(it.routeId)?.delay)
 
                     DepartureEntry(
                         storage.lineStorage.getAlias(it.lineId),

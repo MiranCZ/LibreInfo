@@ -1,10 +1,5 @@
 package io.github.mirancz.libreinfo.activity
 
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,19 +11,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.activity.settings.DepartureSource
-import io.github.mirancz.libreinfo.engine.departure.OfflineDepartureRepository
 import io.github.mirancz.libreinfo.engine.StorageProvider
+import io.github.mirancz.libreinfo.engine.departure.OfflineDepartureRepository
 import io.github.mirancz.libreinfo.engine.departure.ServerDepartureRepository
 import io.github.mirancz.libreinfo.nav.NavRoute
 import io.github.mirancz.libreinfo.nav.NavState
@@ -44,16 +36,18 @@ import io.github.mirancz.libreinfo.ui.LocalSnackbarHostState
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AsyncContent
 import io.github.mirancz.libreinfo.ui.components.Container
-import io.github.mirancz.libreinfo.ui.components.PostDeparture
 import io.github.mirancz.libreinfo.ui.components.DepartureEntryShimmer
 import io.github.mirancz.libreinfo.ui.components.FavouriteStopAction
 import io.github.mirancz.libreinfo.ui.components.NothingHere
+import io.github.mirancz.libreinfo.ui.components.PostDeparture
 import io.github.mirancz.libreinfo.ui.components.StopViewModel
 import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
+import io.github.mirancz.libreinfo.ui.showError
 import io.github.mirancz.libreinfo.util.AppSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
@@ -98,15 +92,18 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
         repo.board(context, stopId, departuresSettings.maxEntries, isRefresh)
     }
 
-
-
-
     val title = header?.stopName ?: ""
     ScreenScaffold(title, onBack = state.onBack, actions = {
         FavouriteStopAction(StopId(stopId, -1))
     }) {
         PullToRefreshBox(departuresResult.isRefreshing, departuresResult.refresh) {
             AsyncContent(departuresResult, loading = { DeparturesShimmer(header?.postNames) }) { deps ->
+
+                if (deps.error != null) {
+                    LaunchedEffect(Unit) {
+                        snackbar.showError(context, deps.error)
+                    }
+                }
 
                 LaunchedEffect(deps.stop) {
                     if (deps.stop.isFavourite()) {
