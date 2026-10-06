@@ -2,6 +2,8 @@ package io.github.mirancz.libreinfo.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -44,5 +46,36 @@ fun AppTextField(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
             )
+    )
+}
+
+@Composable
+fun AppTextField(
+    state: TextFieldState,
+    modifier: Modifier = Modifier,
+    placeHolder: String = "",
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    color: Color = MaterialTheme.colorScheme.surfaceContainer,
+    readOnly: Boolean = false,
+) {
+    TextField(
+        state = state,
+        modifier = modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester),
+        placeholder = { Text(placeHolder) },
+        shape = RoundedCornerShape(8.dp),
+        leadingIcon = leadingIcon,
+        lineLimits = TextFieldLineLimits.SingleLine,
+        trailingIcon = trailingIcon,
+        readOnly = readOnly,
+        colors = TextFieldDefaults.colors().copy(
+            unfocusedContainerColor = color,
+            focusedContainerColor = color,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
+        )
     )
 }

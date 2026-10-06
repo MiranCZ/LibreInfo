@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -169,14 +171,15 @@ fun SearchableList(
         )
     }
 
-    var query by remember { mutableStateOf("") }
+//    var query by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
+
+    val query = rememberTextFieldState()
 
     Column(Modifier.padding(horizontal = 8.dp)) {
         AppTextField(
-            value = query,
+            state = query,
             placeHolder = "Zadejte zastávku",
-            onValueChange = { query = it },
             focusRequester = focusRequester,
             leadingIcon = {
                 Icon(
@@ -189,8 +192,8 @@ fun SearchableList(
                 )
             },
             trailingIcon = {
-                if (query.isNotEmpty()) {
-                    IconButton(onClick = { query = "" }) {
+                if (query.text.isNotEmpty()) {
+                    IconButton(onClick = { query.clearText() }) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Clear text"
@@ -204,7 +207,7 @@ fun SearchableList(
             val searcher = data.first
             val location = data.second
 
-            StopList(searcher, query, location, kinds, onPick, vm)
+            StopList(searcher, query.text.toString(), location, kinds, onPick, vm)
         }
     }
 
