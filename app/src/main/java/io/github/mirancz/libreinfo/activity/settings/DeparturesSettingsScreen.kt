@@ -41,6 +41,7 @@ import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.nav.NavState
+import io.github.mirancz.libreinfo.parsing.types.departure.DepartureTime
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AppDropdown
 import io.github.mirancz.libreinfo.ui.components.AppSwitch
@@ -261,7 +262,7 @@ private fun DeparturePreview(name: String, storage: IdStorage, vararg entries: P
                 0,
                 0,
                 entry.isLowFloor,
-                timeMark,
+                DepartureTime.Scheduled(timeMark),
                 0,
                 vehicleInfo
             )
@@ -273,7 +274,7 @@ private fun DeparturePreview(name: String, storage: IdStorage, vararg entries: P
     val settings = LocalDeparturesSettings.current
 
     CompositionLocalProvider(LocalDeparturesSettings provides settings.copy(maxEntries = entries.size)) {
-        io.github.mirancz.libreinfo.ui.components.Departure(dep, post = null, onEntryClick = null)
+        io.github.mirancz.libreinfo.ui.components.PostDeparture(dep.toPostDeparture(false), onEntryClick = null)
     }
 }
 

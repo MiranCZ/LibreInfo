@@ -41,7 +41,7 @@ public final class VehicleInfo {
         return delay;
     }
 
-    public void setDelay(int delay) {
+    public void setDelay(Integer delay) {
         this.delay = delay;
     }
 

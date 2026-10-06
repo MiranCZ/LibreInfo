@@ -153,25 +153,6 @@ fun TripDetailScreen(state: NavState, vehicleId: Int?, stopId: Int, tripId: Int)
     }
 }
 
-class TripDetailActivity : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        super.onCreate(savedInstanceState, persistentState)
-
-        setContent {
-            val tripId = intent.getIntExtra("tripId", -1)
-            val highlightedStopId = intent.getIntExtra("stopId", -1)
-            val vehicleId = intent.getIntExtra("vehicleId", -1)
-
-            TripDetailScreen(NavState(onNavigate = {}, onBack = {
-                onBackPressed()
-            }),vehicleId, highlightedStopId, tripId)
-        }
-    }
-
-
-
-}
 
 private fun loadAndParseTripInfoData(
     storage: IdStorage,

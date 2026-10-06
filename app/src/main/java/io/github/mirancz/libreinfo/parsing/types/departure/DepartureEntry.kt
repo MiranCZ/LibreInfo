@@ -1,7 +1,14 @@
-package io.github.mirancz.libreinfo.parsing.types.departure;
+package io.github.mirancz.libreinfo.parsing.types.departure
 
-import io.github.mirancz.libreinfo.parsing.types.LineAlias;
-import io.github.mirancz.libreinfo.parsing.types.TimeMark;
+import io.github.mirancz.libreinfo.parsing.types.LineAlias
 
-public record DepartureEntry(LineAlias line, String finalStop, int stopId, int postID, boolean lowFloor, TimeMark timeMark, int tripId, VehicleInfo vehicleInfo) {
-}
+data class DepartureEntry(
+    val line: LineAlias,
+    val finalStop: String,
+    val stopId: Int,
+    val postID: Int,
+    val lowFloor: Boolean,
+    val time: DepartureTime,
+    val tripId: Int,
+    val vehicleInfo: VehicleInfo
+)

@@ -9,6 +9,7 @@ import io.github.mirancz.libreinfo.parsing.types.TimeMark;
 import io.github.mirancz.libreinfo.parsing.types.Trip;
 import io.github.mirancz.libreinfo.parsing.types.departure.Departure;
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureEntry;
+import io.github.mirancz.libreinfo.parsing.types.departure.DepartureTime;
 import io.github.mirancz.libreinfo.parsing.types.departure.VehicleInfo;
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse;
 
@@ -170,7 +171,7 @@ public class OfflineDepartures {
                             stopId,
                             postId,
                             trip.lowFloor(),
-                            mark,
+                            new DepartureTime.Scheduled(mark),
                             stop.tripId(),
                             holder.info
                     ));

@@ -1,7 +1,11 @@
 package io.github.mirancz.libreinfo.ui.components
 
-import android.content.Intent
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -9,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,19 +37,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.valentinilk.shimmer.Shimmer
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.parsing.storage.ApiStorage
-import io.github.mirancz.libreinfo.parsing.types.Post
 import io.github.mirancz.libreinfo.parsing.types.Time
 import io.github.mirancz.libreinfo.parsing.types.departure.Departure
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureEntry
+import io.github.mirancz.libreinfo.parsing.types.departure.DepartureTime
+import io.github.mirancz.libreinfo.parsing.types.departure.PostDeparture
 import io.github.mirancz.libreinfo.parsing.types.departure.VehicleInfo
 import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
+import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 
 @Composable
@@ -138,7 +147,7 @@ fun DepartureEntry(
     departure: DepartureEntry,
     modifier: Modifier = Modifier,
     showDelay: Boolean = true,
-    onClick: ((VehicleInfo, Int, Int) -> Unit)?
+    onClick: (() -> Unit)?
 ) {
     val vehicleInfo = departure.vehicleInfo
     val depSettings = LocalDeparturesSettings.current
@@ -149,9 +158,7 @@ fun DepartureEntry(
             .clip(RoundedCornerShape(8.dp))
             .then(
                 if (onClick != null) {
-                    Modifier.clickable(null, ripple(), onClick = {
-                        onClick(vehicleInfo, departure.stopId, departure.tripId)
-                    })
+                    Modifier.clickable(null, ripple(), onClick = onClick)
                 } else Modifier
             )
             .padding(horizontal = 8.dp)
@@ -188,64 +195,101 @@ fun DepartureEntry(
                     .weight(1f)
                     .align(Alignment.CenterVertically)
             ) {
-                if (vehicleInfo.hasDelay() && showDelay) {
-                    val delay: Int = vehicleInfo.delay()
-                    val color: Int = vehicleInfo.delayColor
-
-                    departure.timeMark.delay = delay
-                    val arrivalText: String =
-                        departure.timeMark.getFormattedDepartureString(30, true)
-
-
-                    Spacer(Modifier.weight(1f))
-
-                    if (delay > 0) {
-                        when (depSettings.delayRender) {
-                            DelayRenderType.PARENTHESES -> {
-                                Text(" ($delay) ", color = Color(color), fontSize = 14.sp)
-                            }
-
-                            DelayRenderType.BOX -> {
-                                Surface(
-                                    color = Color(color).copy(alpha = 0.2f),
-                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
-                                    modifier = Modifier.padding(end = 4.dp)
-                                ) {
-                                    Text(" +$delay ", color = Color(color), fontSize = 14.sp)
-                                }
-                            }
-
-                            else -> {}
-                        }
-                    }
-
-                    Text(
-                        arrivalText, color = Color(color), fontSize = 14.sp
-                    )
-                } else {
-                    val arrivalText: String =
-                        departure.timeMark.getFormattedDepartureString(30, false)
-
-                    Spacer(Modifier.weight(1f))
-                    Text(text = arrivalText, fontSize = 14.sp)
-                }
+                DepartureTimeText(vehicleInfo, showDelay, departure)
             }
         }
     }
 }
 
 @Composable
+private fun RowScope.DepartureTimeText(
+    vehicleInfo: VehicleInfo,
+    showDelay: Boolean,
+    departure: DepartureEntry,
+) {
+    val depSettings = LocalDeparturesSettings.current
+    val time = departure.time
+
+    if (vehicleInfo.hasDelay() && showDelay) {
+        val delay: Int = vehicleInfo.delay()
+        val color: Int = vehicleInfo.delayColor
+
+        val arrivalText: String = when(time) {
+            is DepartureTime.Scheduled -> {
+                val timeMark = time.mark
+
+                timeMark.delay = delay
+                timeMark.getFormattedDepartureString(30, true)
+            }
+            is DepartureTime.Verbatim -> {
+                time.text
+            }
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        if (delay > 0) {
+            when (depSettings.delayRender) {
+                DelayRenderType.PARENTHESES -> {
+                    Text(" ($delay) ", color = Color(color), fontSize = 14.sp)
+                }
+
+                DelayRenderType.BOX -> {
+                    Surface(
+                        color = Color(color).copy(alpha = 0.2f),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
+                        modifier = Modifier.padding(end = 4.dp)
+                    ) {
+                        Text(" +$delay ", color = Color(color), fontSize = 14.sp)
+                    }
+                }
+
+                else -> {}
+            }
+        }
+
+        if (arrivalText == "**") {
+            BlinkingText(arrivalText, color = Color(color), fontSize = 14.sp)
+        } else {
+            Text(arrivalText, color = Color(color), fontSize = 14.sp)
+        }
+    } else {
+        val arrivalText: String = when (time) {
+            is DepartureTime.Scheduled -> {
+                time.mark.getFormattedDepartureString(30, false)
+            }
+            is DepartureTime.Verbatim -> {
+                time.text
+            }
+        }
+
+        Spacer(Modifier.weight(1f))
+        if (arrivalText == "**") {
+            BlinkingText(arrivalText, fontSize = 14.sp)
+        } else {
+            Text(arrivalText, fontSize = 14.sp)
+        }
+    }
+}
+
+@Composable
 fun DepartureDetail(
-    departure: Departure,
+    departure: PostDeparture,
     apiStorage: ApiStorage,
     stopDelays: StopDelaysResponse,
-    onEntryClick: (VehicleInfo, Int, Int) -> Unit
+    onEntryClick: (DepartureEntry) -> Unit
 ) {
     val color = MaterialTheme.colorScheme.surfaceContainer
     val stopDelays = stopDelays.stopDelays
 
     fun alreadyLeft(entry: DepartureEntry): Boolean {
-        return entry.timeMark.delayedDeparture.isBefore(Time.now()) && !entry.timeMark.leaving
+        if (entry.time is DepartureTime.Scheduled) {
+            val mark = entry.time.mark
+
+            return mark.delayedDeparture.isBefore(Time.now()) && !mark.leaving
+        }
+
+        return false
     }
 
     Container(
@@ -294,34 +338,51 @@ fun DepartureDetail(
                     showDelay = delay != -1
                 }
 
-                DepartureEntry(
-                    entry, modifier, showDelay, onEntryClick
-                )
+                val onClick = if (departure.detailAvailable) { { onEntryClick(entry) } } else null
+                DepartureEntry(entry, modifier, showDelay, onClick)
             }
         }
     }
 }
 
 @Composable
-fun Departure(
-    departure: Departure,
-    post: Post?,
+fun PostDeparture(
+    departure: PostDeparture,
     onHeaderClick: (() -> Unit)? = null,
-    onEntryClick: ((VehicleInfo, Int, Int) -> Unit)?
+    onEntryClick: ((DepartureEntry) -> Unit)?
 ) {
     val content: @Composable BoxScope.() -> Unit = {
         Column(Modifier.padding(vertical = 8.dp, horizontal = 6.dp)) {
             DeparturePostHeader(departure.name, Modifier.padding(bottom = 4.dp))
             val depSettings = LocalDeparturesSettings.current
             for (dep in departure.entries.take(depSettings.maxEntries)) {
-                DepartureEntry(dep, onClick = onEntryClick)
+                val onClick = if (onEntryClick == null) null else {
+                    { onEntryClick(dep) }
+                }
+
+                DepartureEntry(dep, onClick = onClick)
             }
         }
     }
     val mod = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-    if (post != null) {
-        Container(onHeaderClick, innerPadding = 0.dp, modifier = mod, content = content)
-    } else {
-        Container(innerPadding = 0.dp, modifier = mod, content = content)
-    }
+
+    Container( if(departure.detailAvailable) onHeaderClick else null, innerPadding = 0.dp, modifier = mod, content = content)
+}
+
+
+/**
+ * Pulses [text] so a vehicle that is leaving right now draws the eye. Kept as its own composable
+ * so the infinite animation only ever exists for the rows that are actually leaving.
+ */
+@Composable
+private fun BlinkingText(text: String, color: Color = Color.Unspecified, fontSize: TextUnit) {
+    val transition = rememberInfiniteTransition(label = "leaving")
+    val alpha by transition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.15f,
+        animationSpec = infiniteRepeatable(tween(600), RepeatMode.Reverse),
+        label = "leavingAlpha"
+    )
+
+    Text(text, color = color, fontSize = fontSize, modifier = Modifier.alpha(alpha))
 }

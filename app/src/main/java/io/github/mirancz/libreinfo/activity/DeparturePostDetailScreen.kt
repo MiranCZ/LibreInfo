@@ -87,13 +87,15 @@ fun DeparturePostDetailScreen(state: NavState, stopId: Int, postId: Int) {
     ScreenScaffold(title, onBack = state.onBack) {
         AsyncContent(result, loading = { DepartureDetailShimmer(title) }) { res ->
             DepartureDetail(
-                res.first,
+                res.first.toPostDeparture(false),
                 res.second.apiStorage,
                 stopDelays
-            ) { vehicleInfo, stopId, tripId ->
+            ) {
+                val vehicleInfo = it.vehicleInfo
                 val vehicleId = if (vehicleInfo.hasId()) vehicleInfo.id() else null
 
-                val route = NavRoute.TripDetail(vehicleId, stopId, tripId)
+                // FIXME is it trip or route id???
+                val route = NavRoute.TripDetail(vehicleId, stopId, it.tripId)
                 state.onNavigate(route)
             }
         }
