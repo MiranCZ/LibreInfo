@@ -54,10 +54,10 @@ public class ApiStorage implements AppStorage {
      *
      * @return the trip ID, or -1 when no trip carries that pair
      */
-    public int getTripId(int lineId, int routeId) {
+    public Integer getTripId(int lineId, int routeId) {
         if (lineId < 0 || routeId < 0) return -1;
 
-        return getReverseMap().getOrDefault((lineId<<16) | (routeId&0xFFFF), -1);
+        return getReverseMap().get((lineId<<16) | (routeId&0xFFFF));
     }
 
     /**

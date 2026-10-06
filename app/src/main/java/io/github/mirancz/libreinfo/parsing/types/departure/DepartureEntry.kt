@@ -9,6 +9,6 @@ data class DepartureEntry(
     val postID: Int,
     val lowFloor: Boolean,
     val time: DepartureTime,
-    val tripId: Int,
+    val tripId: Int?,
     val vehicleInfo: VehicleInfo
 )

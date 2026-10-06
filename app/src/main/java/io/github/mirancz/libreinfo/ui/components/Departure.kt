@@ -316,29 +316,32 @@ fun DepartureDetail(
                 if (alreadyLeft) {
                     modifier = modifier.alpha(0.35f)
                 }
-                val lineRoute = apiStorage.getLineIdAndRoute(entry.tripId)
-
-                val lineId = lineRoute.left
-                val routeId = lineRoute.right
 
                 var showDelay = !alreadyLeft
-                if (alreadyLeft) {
-                    var delay = -1
+                if (entry.tripId != null) {
+                    val lineRoute = apiStorage.getLineIdAndRoute(entry.tripId)
 
-                    val delays = stopDelays[lineId]
-                    if (delays != null) {
-                        val delayEntry = delays[routeId]
+                    val lineId = lineRoute.left
+                    val routeId = lineRoute.right
 
-                        if (delayEntry != null) {
-                            delay = delayEntry.delay
+                    if (alreadyLeft) {
+                        var delay = -1
+
+                        val delays = stopDelays[lineId]
+                        if (delays != null) {
+                            val delayEntry = delays[routeId]
+
+                            if (delayEntry != null) {
+                                delay = delayEntry.delay
+                            }
                         }
-                    }
-                    entry.vehicleInfo.setDelay(delay)
+                        entry.vehicleInfo.setDelay(delay)
 
-                    showDelay = delay != -1
+                        showDelay = delay != -1
+                    }
                 }
 
-                val onClick = if (departure.detailAvailable) { { onEntryClick(entry) } } else null
+                val onClick = if (departure.detailAvailable && entry.tripId != null) { { onEntryClick(entry) } } else null
                 DepartureEntry(entry, modifier, showDelay, onClick)
             }
         }
@@ -356,7 +359,7 @@ fun PostDeparture(
             DeparturePostHeader(departure.name, Modifier.padding(bottom = 4.dp))
             val depSettings = LocalDeparturesSettings.current
             for (dep in departure.entries.take(depSettings.maxEntries)) {
-                val onClick = if (onEntryClick == null) null else {
+                val onClick = if (onEntryClick == null || dep.tripId == null) null else {
                     { onEntryClick(dep) }
                 }
 
