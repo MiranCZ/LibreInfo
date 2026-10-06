@@ -410,7 +410,7 @@ private fun AutoUpdatePromptDialog(onChoice: (Boolean) -> Unit) {
 }
 
 @Composable
-private fun InstallPermissionDialog(onContinue: () -> Unit, onDismiss: () -> Unit) {
+fun InstallPermissionDialog(onContinue: () -> Unit, onDismiss: () -> Unit) {
     ConfirmDialog(
         stringResource(R.string.install_permission_title),
         stringResource(R.string.cancel),

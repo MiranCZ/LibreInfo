@@ -1,6 +1,8 @@
 package io.github.mirancz.libreinfo.activity.settings
 
 import android.text.format.DateUtils
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,7 +27,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -35,6 +40,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
+import io.github.mirancz.libreinfo.activity.InstallPermissionDialog
+import io.github.mirancz.libreinfo.util.ApkInstaller
 import io.github.mirancz.libreinfo.util.AppUpdater
 import io.github.mirancz.libreinfo.util.UpdateDownloader
 import io.github.mirancz.libreinfo.R
@@ -43,8 +50,11 @@ import io.github.mirancz.libreinfo.ui.LocalSnackbarHostState
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AppButton
 import io.github.mirancz.libreinfo.ui.components.AppSwitch
+import io.github.mirancz.libreinfo.ui.components.ConfirmDialog
 import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.ui.components.Divider
+import io.github.mirancz.libreinfo.ui.components.PrimaryTextButton
+import io.github.mirancz.libreinfo.ui.components.SecondaryTextButton
 import io.github.mirancz.libreinfo.ui.show
 import io.github.mirancz.libreinfo.ui.showError
 import io.github.mirancz.libreinfo.ui.showInfo
@@ -60,6 +70,17 @@ fun UpdatingSettingsScreen(state: NavState) {
     var checking by remember { mutableStateOf(false) }
     var downloading by remember { mutableStateOf(false) }
     var pendingUpdate by remember { mutableStateOf<UpdateDownloader.CheckResult?>(null) }
+    var showRationale by remember { mutableStateOf(false) }
+
+    // Returning from the "install unknown apps" settings screen; continue into the installation if it was granted
+    val settingsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (ApkInstaller.installAllowed(context)) {
+            showRationale = false
+            ApkInstaller.launchInstall(context)
+        }
+    }
 
     ScreenScaffold(stringResource(R.string.updating_settings), onBack = state.onBack) {
         Column {
@@ -98,7 +119,6 @@ fun UpdatingSettingsScreen(state: NavState) {
             }
         }
 
-        val updateDownloadedText = stringResource(R.string.update_check_downloaded)
         val updateFailedText = stringResource(R.string.update_download_failed)
 
         val pending = pendingUpdate
@@ -116,17 +136,27 @@ fun UpdatingSettingsScreen(state: NavState) {
                             downloading = false
                             pendingUpdate = null
 
-                            val (message, type) = when (result) {
-                                UpdateDownloader.UpdateResult.DOWNLOADED -> updateDownloadedText to SnackBarType.SUCCESS
-
-                                else -> updateFailedText to SnackBarType.ERROR
+                            if (result != UpdateDownloader.UpdateResult.DOWNLOADED) {
+                                snackbar.show(updateFailedText, SnackBarType.ERROR)
+                                return@launch
                             }
 
-                            snackbar.show(message, type)
+                            if (ApkInstaller.installAllowed(context)) {
+                                ApkInstaller.launchInstall(context)
+                            } else {
+                                showRationale = true
+                            }
                         }
                     }
                 },
                 onDismiss = { pendingUpdate = null })
+        }
+
+        if (showRationale) {
+            InstallPermissionDialog(
+                onContinue = { settingsLauncher.launch(ApkInstaller.unknownSourcesIntent(context)) },
+                onDismiss = { showRationale = false }
+            )
         }
     }
 
@@ -230,7 +260,14 @@ private fun DownloadPromptDialog(
 
                 Spacer(Modifier.height(12.dp))
 
-                Text(stringResource(R.string.update_available_message, versionName))
+                // to make version name bold
+                val template = stringResource(R.string.update_available_message, "\u0000")
+                val (before, after) = template.split("\u0000")
+                Text(buildAnnotatedString {
+                    append(before)
+                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(versionName) }
+                    append(after)
+                })
 
                 Spacer(Modifier.height(16.dp))
 
@@ -248,13 +285,12 @@ private fun DownloadPromptDialog(
                         Text(stringResource(R.string.update_downloading))
                     }
                 } else {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        TextButton(onClick = onDismiss) {
-                            Text(stringResource(R.string.cancel))
-                        }
-                        TextButton(onClick = onDownload) {
-                            Text(stringResource(R.string.update_download_action))
-                        }
+                    Row(Modifier.fillMaxWidth()) {
+                        SecondaryTextButton(stringResource(R.string.cancel), onClick = onDismiss, modifier = Modifier.weight(1f))
+
+                        Spacer(Modifier.width(16.dp))
+
+                        PrimaryTextButton(stringResource(R.string.update_download_action), onClick = onDownload, modifier = Modifier.weight(1f))
                     }
                 }
             }
