@@ -1,5 +1,6 @@
 package io.github.mirancz.libreinfo.activity
 
+import kotlin.time.Duration.Companion.minutes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
@@ -56,7 +57,7 @@ fun EventsScreen(state: NavState) {
     ScreenScaffold(stringResource(R.string.events), onBack = state.onBack) {
         val context = LocalContext.current
 
-        val events = rememberLoad {
+        val events = rememberLoad(cacheFor = 10.minutes) {
             val storage = AppContainer.storageProvider.getInstance()
             RequestHelper.getEvents(context).events.map { it.map(storage) }
         }

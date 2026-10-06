@@ -1,5 +1,6 @@
 package io.github.mirancz.libreinfo.activity
 
+import kotlin.time.Duration.Companion.minutes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,7 +42,7 @@ fun NewsScreen(state: NavState) {
     ScreenScaffold(stringResource(R.string.news), onBack = state.onBack) {
         val context = LocalContext.current
 
-        val news = rememberLoad {
+        val news = rememberLoad(cacheFor = 20.minutes) {
             RequestHelper.getNews(context)
         }
 

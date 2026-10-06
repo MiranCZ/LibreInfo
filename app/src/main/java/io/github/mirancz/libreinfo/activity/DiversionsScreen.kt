@@ -1,5 +1,6 @@
 package io.github.mirancz.libreinfo.activity
 
+import kotlin.time.Duration.Companion.minutes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -103,7 +104,7 @@ fun DiversionsScreen(state: NavState) {
         val context = LocalContext.current
         val vm: DiversionsViewModel = viewModel()
 
-        val loadResult = rememberLoad {
+        val loadResult = rememberLoad(cacheFor = 10.minutes) {
             val storage = AppContainer.storageProvider.getInstance()
             Pair(storage, RequestHelper.getDiversions(context).diversions.map { it.map(storage) })
         }

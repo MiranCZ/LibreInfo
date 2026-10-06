@@ -1,5 +1,6 @@
 package io.github.mirancz.libreinfo.activity
 
+import kotlin.time.Duration.Companion.minutes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -47,7 +48,7 @@ fun VehiclesListScreen(state: NavState) {
     ScreenScaffold(stringResource(R.string.vehicles), onBack = state.onBack) {
         val context = LocalContext.current
 
-        val vehicles = rememberLoad {
+        val vehicles = rememberLoad(cacheFor = 10.minutes) {
             val storage = AppContainer.storageProvider.getInstance()
             RequestHelper.getVehicles(context).vehicles.map { it.map(storage) }
                 .sortedBy { vehicle -> vehicle.line.id }
