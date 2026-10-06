@@ -8,10 +8,6 @@
             android:parentActivityName=".activity.MainActivity">
         </activity>
 
-        <activity
-            android:name=".activity.devtest.LineListActivity"
-            android:parentActivityName=".activity.MainActivity">
-        </activity>
     </application>
 
 </manifest>
