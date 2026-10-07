@@ -230,6 +230,8 @@ object RequestHelper {
 
                 return json.decodeFromString(deserializer, output)
             }
+        } catch (e: RequestException) {
+            throw e
         } catch (e: SerializationException) {
             AppLog.e("Failed to parse response from " + endpoint.url, e)
             throw RequestException.parseError(endpoint)
