@@ -59,6 +59,7 @@ import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.nav.NavState
+import io.github.mirancz.libreinfo.parsing.getRouteStops
 import io.github.mirancz.libreinfo.parsing.storage.CalendarStorage
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
@@ -203,7 +204,7 @@ private fun loadAndParseTripInfoData(
         routeInfoText = context.getString(R.string.trip) + " "
 
 
-        val stopsList: MutableList<RouteStop?> = ArrayList()
+        val stopsList: MutableList<RouteStop> = ArrayList()
 
         for (i in neighbors.indices) {
             val neighbor = neighbors[i]
@@ -218,12 +219,12 @@ private fun loadAndParseTripInfoData(
             for (j in routeStops.indices) {
                 val routeStop = routeStops[j]
 
-                if (i != 0 && j == 0 && stopsList[stopsList.size - 1]!!.stopId == routeStop.stopId) continue
+                if (i != 0 && j == 0 && stopsList[stopsList.size - 1].stopId == routeStop.stopId) continue
                 stopsList.add(routeStop)
             }
         }
 
-        stops = stopsList.toTypedArray<RouteStop?>()
+        stops = stopsList.toTypedArray<RouteStop>()
     }
 
     val timedStops = ArrayList<TimedStop>()

@@ -1,5 +1,6 @@
 package io.github.mirancz.libreinfo.activity
 
+import io.github.mirancz.libreinfo.parsing.getRouteStops
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.parsing.types.DateTime
 import io.github.mirancz.libreinfo.parsing.types.LineAlias

@@ -9,14 +9,12 @@ import kotlinx.parcelize.TypeParceler
 import kotlinx.serialization.Serializable
 
 @Serializable
-@Parcelize
-@TypeParceler<DateTime?, NullableDateTimeParceler>()
 data class NewsEntry(
     val title: String,
     val content: String,
     val published: @Serializable(IsoDateTimeSerializer::class) DateTime?,
     val url: String?
-) : Parcelable {
+) {
 
     fun getPlaintext(): String {
         return HtmlCompat.fromHtml(content, HtmlCompat.FROM_HTML_MODE_LEGACY).toString()

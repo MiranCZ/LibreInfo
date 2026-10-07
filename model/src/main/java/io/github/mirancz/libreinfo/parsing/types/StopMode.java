@@ -1,7 +1,5 @@
 package io.github.mirancz.libreinfo.parsing.types;
 
-import io.github.mirancz.libreinfo.util.AppLog;
-
 public enum StopMode {
     // FIXME there is also a "t" mode??
 
@@ -15,15 +13,15 @@ public enum StopMode {
 
     public static StopMode parse(String stopMode) {
         stopMode = stopMode.strip().toLowerCase();
-        if (stopMode.isEmpty()) return StopMode.ALL;
+        return switch (stopMode) {
+            case "" -> StopMode.ALL;
+            case "z" -> StopMode.Z;
+            case "x" -> StopMode.X;
+            case "w" -> StopMode.W;
+            case "o" -> StopMode.O;
+            case "*" -> StopMode.MIXED;
+            default -> StopMode.MIXED;
+        };
 
-        if (stopMode.equals("z")) return StopMode.Z;
-        if (stopMode.equals("x")) return StopMode.X;
-        if (stopMode.equals("w")) return StopMode.W;
-        if (stopMode.equals("o")) return StopMode.O;
-        if (stopMode.equals("*")) return StopMode.MIXED;
-
-        AppLog.w("Unknown stop mode " + stopMode);
-        return StopMode.MIXED;
     }
 }
