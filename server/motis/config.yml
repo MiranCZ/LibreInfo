@@ -12,4 +12,4 @@ timetable:
     jmk:
       path: /input/gtfs
 
-geocoding: false
+geocoding: true

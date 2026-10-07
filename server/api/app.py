@@ -69,6 +69,16 @@ def get_route_delays():
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 
+# @api.route("/geocode", methods=["GET"])
+def geocode():
+    text = request.args.get("text")
+    if not text:
+        return jsonify({"error": "`text` is required"})
+    params = {"text": text, "type": "ADDRESS,PLACE"}
+
+    return motis.get(f"{MOTIS_URL}/api/v1/geocode", params=params, timeout=20).json()
+
+
 @api.route("/findConnections", methods=["GET"])
 def find_connections():
     from_stop = request.args.get("fromStop")
