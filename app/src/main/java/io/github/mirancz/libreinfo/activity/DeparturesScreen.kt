@@ -11,7 +11,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -19,19 +18,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.mirancz.libreinfo.activity.settings.DepartureSource
-import io.github.mirancz.libreinfo.engine.StorageProvider
 import io.github.mirancz.libreinfo.engine.departure.OfflineDepartureRepository
 import io.github.mirancz.libreinfo.engine.departure.ServerDepartureRepository
 import io.github.mirancz.libreinfo.nav.NavRoute
 import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
-import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureBoard
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureEntry
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureHeader
 import io.github.mirancz.libreinfo.parsing.types.departure.PostDeparture
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId
-import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
 import io.github.mirancz.libreinfo.ui.LocalSnackbarHostState
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AsyncContent
@@ -47,7 +43,6 @@ import io.github.mirancz.libreinfo.util.AppSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
@@ -59,22 +54,12 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
     val departuresSettings = LocalDeparturesSettings.current
     val snackbar = LocalSnackbarHostState.current
 
-    val repoProvider = object : StorageProvider {
-        override suspend fun get(): IdStorage {
-            return AppContainer.storageProvider.getInstance()
-        }
-
-        override fun getOrNull(): IdStorage? {
-            return AppContainer.storageProvider.getInstanceOrNull()
-        }
-    }
-
     val repo = when (AppSettings.Departures.source) {
         DepartureSource.LOCAL -> {
-            OfflineDepartureRepository(repoProvider)
+            OfflineDepartureRepository(AppContainer.storageProvider)
         }
         DepartureSource.SERVER -> {
-            ServerDepartureRepository(repoProvider)
+            ServerDepartureRepository(AppContainer.storageProvider)
         }
     }
 

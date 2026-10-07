@@ -1,10 +1,10 @@
 package io.github.mirancz.libreinfo.engine.departure
 
 import android.content.Context
-import io.github.mirancz.libreinfo.engine.StorageProvider
 import io.github.mirancz.libreinfo.exception.AppException
 import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
+import io.github.mirancz.libreinfo.parsing.storage.manager.StorageProvider
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureBoard
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureHeader
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
@@ -17,13 +17,13 @@ import io.github.mirancz.libreinfo.util.request.RequestHelper
 class OfflineDepartureRepository(val storageProvider: StorageProvider) : DepartureRepository {
 
     override fun headerOrNull(context: Context, stopId: Int): DepartureHeader? {
-        val storage = storageProvider.getOrNull() ?: return null
+        val storage = storageProvider.getInstanceOrNull() ?: return null
 
         return header(storage, stopId)
     }
 
     override suspend fun header(context: Context, stopId: Int): DepartureHeader {
-        val storage = storageProvider.get()
+        val storage = storageProvider.getInstance()
 
         return header(storage, stopId)
     }
@@ -36,7 +36,7 @@ class OfflineDepartureRepository(val storageProvider: StorageProvider) : Departu
     }
 
     override suspend fun board(context: Context, stopId: Int, maxEntries: Int, forceRefresh: Boolean): DepartureBoard {
-        val storage = storageProvider.get()
+        val storage = storageProvider.getInstance()
 
         var error: AppException? = null
         var delays: RouteDelaysResponse? = null
