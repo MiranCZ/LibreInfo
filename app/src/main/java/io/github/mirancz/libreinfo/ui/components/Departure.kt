@@ -341,7 +341,7 @@ fun DepartureDetail(
                     }
                 }
 
-                val onClick = if (departure.detailAvailable && entry.tripId != null) { { onEntryClick(entry) } } else null
+                val onClick = if (entry.tripId != null) { { onEntryClick(entry) } } else null
                 DepartureEntry(entry, modifier, showDelay, onClick)
             }
         }
