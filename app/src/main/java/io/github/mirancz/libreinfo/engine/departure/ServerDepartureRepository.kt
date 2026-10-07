@@ -1,7 +1,7 @@
 package io.github.mirancz.libreinfo.engine.departure
 
 import android.content.Context
-import io.github.mirancz.libreinfo.exception.AppException
+import io.github.mirancz.libreinfo.exception.AppError
 import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.parsing.storage.manager.StorageProvider
@@ -14,7 +14,6 @@ import io.github.mirancz.libreinfo.parsing.types.departure.VehicleInfo
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
-import io.github.mirancz.libreinfo.util.load.toAppException
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 
 class ServerDepartureRepository(val storageProvider: StorageProvider) : DepartureRepository {
@@ -50,13 +49,13 @@ class ServerDepartureRepository(val storageProvider: StorageProvider) : Departur
         val stop = storage.stopStorage.getStop(StopId.internal(stopId))
         val response = RequestHelper.getDepartures(context, StopId(stopId, original))
 
-        var error: AppException? = null
+        var error: AppError? = null
 
         var delays: RouteDelaysResponse? = null
         try {
             delays = RequestHelper.getRouteDelays(context, force = forceRefresh)
         } catch (e: RequestException) {
-            error = e.toAppException()
+            error = e.error
         }
 
 

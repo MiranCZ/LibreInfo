@@ -1,6 +1,6 @@
 package io.github.mirancz.libreinfo.util.load
 
-import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.exception.AppError
 import io.github.mirancz.libreinfo.exception.AppException
 import io.github.mirancz.libreinfo.util.AppLog
 
@@ -16,5 +16,8 @@ fun Throwable.toAppException(): AppException {
     if (appException != null) return appException
 
     AppLog.e("load", "Unexpected error while loading", this)
-    return AppException(R.string.generic_error, this)
+    return AppException(AppError.Unknown, this)
 }
+
+/** The [AppError] behind any failure of a load, see [toAppException]. */
+fun Throwable.toAppError(): AppError = toAppException().error

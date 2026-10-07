@@ -45,7 +45,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.valentinilk.shimmer.Shimmer
-import io.github.mirancz.libreinfo.util.load.toAppException
+import io.github.mirancz.libreinfo.util.load.toAppError
 import io.github.mirancz.libreinfo.util.load.toLoadState
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.nav.NavRoute
@@ -139,7 +139,7 @@ private fun LazyListScope.pageLoadItem(key: String, state: PagingLoadState, onRe
     when (state) {
         is PagingLoadState.Loading -> item(key) { PageLoadingIndicator() }
         is PagingLoadState.Error -> item(key) {
-            ErrorWidget(state.error.toAppException(), Modifier.padding(16.dp), onRetry)
+            ErrorWidget(state.error.toAppError(), Modifier.padding(16.dp), onRetry)
         }
         is PagingLoadState.NotLoading -> {}
     }

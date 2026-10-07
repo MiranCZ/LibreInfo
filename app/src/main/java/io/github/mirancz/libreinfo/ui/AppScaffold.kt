@@ -58,7 +58,7 @@ fun AppRoot(content: @Composable () -> Unit) {
 
                 if (error != null) {
                     // surface a fatal startup/data-init failure
-                    ErrorWidget(error)
+                    ErrorWidget(error.error)
                 } else {
                     content()
                 }

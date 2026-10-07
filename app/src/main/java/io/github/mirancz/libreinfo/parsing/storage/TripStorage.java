@@ -2,9 +2,7 @@ package io.github.mirancz.libreinfo.parsing.storage;
 
 import android.util.SparseArray;
 
-import io.github.mirancz.libreinfo.R;
 import io.github.mirancz.libreinfo.exception.AppException;
-import io.github.mirancz.libreinfo.exception.ErrorType;
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage;
 import io.github.mirancz.libreinfo.parsing.types.Trip;
 import io.github.mirancz.libreinfo.util.AppInputStream;
@@ -46,7 +44,7 @@ public class TripStorage implements AppStorage {
             }
             return new TripStorage(headsignPool, trips);
         } catch (IOException e) {
-            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
+            throw AppException.dataLoad(e);
         }
     }
 

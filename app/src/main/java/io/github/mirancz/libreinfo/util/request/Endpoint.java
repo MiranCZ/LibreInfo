@@ -38,4 +38,9 @@ public class Endpoint {
         return new Endpoint(result, name);
     }
 
+    @Override
+    public String toString() {
+        return url;
+    }
+
 }

@@ -8,6 +8,6 @@ import androidx.paging.LoadState as PagingLoadState
  */
 fun PagingLoadState.toLoadState(): LoadState<Unit> = when (this) {
     is PagingLoadState.Loading -> LoadState.Loading
-    is PagingLoadState.Error -> LoadState.Error(error.toAppException())
+    is PagingLoadState.Error -> LoadState.Error(error.toAppError())
     is PagingLoadState.NotLoading -> LoadState.Success(Unit)
 }

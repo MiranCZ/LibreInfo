@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.github.mirancz.libreinfo.R;
 import io.github.mirancz.libreinfo.exception.AppException;
-import io.github.mirancz.libreinfo.exception.ErrorType;
 import io.github.mirancz.libreinfo.util.AppInputStream;
 
 public class StopMapper implements AppStorage {
@@ -28,7 +26,7 @@ public class StopMapper implements AppStorage {
 
             return new StopMapper(map, mappedToNormal);
         } catch (IOException e) {
-            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
+            throw AppException.dataLoad(e);
         }
     }
 

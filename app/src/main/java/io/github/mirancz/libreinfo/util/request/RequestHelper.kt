@@ -5,8 +5,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
 import io.github.mirancz.libreinfo.BuildConfig
-import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.exception.AppException
+import io.github.mirancz.libreinfo.exception.AppError
 import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.parsing.types.dto.ReleaseInfoResponse
 import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
@@ -52,19 +51,10 @@ object RequestHelper {
 
     private var requestCache: ConcurrentHashMap<String, Pair<Any, Long>> = ConcurrentHashMap()
 
-    @Throws(AppException::class)
+    @Throws(RequestException::class)
     @JvmStatic
     fun getLastStaticUpdate(context: Context): Long {
-        try {
-            val info = makeRequest<DataInfoResponse>(context, Endpoint.STATIC_GTFS.resolve("info"))
-
-            return info.lastUpdated
-        } catch (e: IOException) {
-            throw AppException(
-                Text.translatable(R.string.error_parse, Endpoint.STATIC_GTFS.name),
-                e
-            )
-        }
+        return makeRequest<DataInfoResponse>(context, Endpoint.STATIC_GTFS.resolve("info")).lastUpdated
     }
 
     @JvmStatic
@@ -225,7 +215,7 @@ object RequestHelper {
                 val output = String(IOUtil.readAllBytes(stream), StandardCharsets.UTF_8)
 
                 if (output.isBlank()) {
-                    throw RequestException.readError(endpoint)
+                    throw RequestException(AppError.ReadFailed(endpoint))
                 }
 
                 return json.decodeFromString(deserializer, output)
@@ -234,13 +224,13 @@ object RequestHelper {
             throw e
         } catch (e: SerializationException) {
             AppLog.e("Failed to parse response from " + endpoint.url, e)
-            throw RequestException.parseError(endpoint)
+            throw RequestException(AppError.InvalidResponse(endpoint), e)
         } catch (e: IOException) {
             AppLog.e("IO error reading from " + endpoint.url, e)
-            throw RequestException(Text.translatable(R.string.error_read, endpoint.name), e)
+            throw RequestException(AppError.ReadFailed(endpoint), e)
         } catch (e: Exception) {
             AppLog.e("Unexpected error reading from " + endpoint.url, e)
-            throw RequestException.unknownError(endpoint, e)
+            throw RequestException(AppError.UnknownRequest(endpoint), e)
         }
     }
 
@@ -248,7 +238,7 @@ object RequestHelper {
     private fun readUrl(context: Context, endpoint: Endpoint): InputStream {
         if (!hasNetwork(context)) {
             AppLog.d("assuming network is unreachable for " + endpoint.url)
-            throw RequestException.offlineError(endpoint)
+            throw RequestException(AppError.Offline(endpoint))
         }
 
         // TODO make this into a setting
@@ -293,15 +283,15 @@ object RequestHelper {
             if (!response.isSuccessful) {
                 val code = response.code
                 response.close()
-                throw RequestException.serverError(endpoint, code)
+                throw RequestException(AppError.HttpStatus(endpoint, code))
             }
 
             return response.body.byteStream()
         } catch (e: SocketTimeoutException) {
-            throw RequestException.timedOutError(endpoint, timeoutMs.toInt())
+            throw RequestException(AppError.Timeout(endpoint, (timeoutMs / 1000).toInt()), e)
         } catch (e: IOException) {
             AppLog.e("Failed to reach " + endpoint.url, e)
-            throw RequestException.reachError(endpoint)
+            throw RequestException(AppError.Unreachable(endpoint), e)
         }
     }
 

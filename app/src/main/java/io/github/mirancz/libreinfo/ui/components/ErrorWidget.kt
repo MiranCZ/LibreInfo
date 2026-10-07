@@ -18,10 +18,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.exception.AppException
+import io.github.mirancz.libreinfo.exception.AppError
+import io.github.mirancz.libreinfo.ui.type
+import io.github.mirancz.libreinfo.ui.userMessage
 
 @Composable
-fun ErrorWidget(error: AppException, modifier: Modifier = Modifier, onRetry: (() -> Unit)? = null) {
+fun ErrorWidget(error: AppError, modifier: Modifier = Modifier, onRetry: (() -> Unit)? = null) {
     val context = LocalContext.current
     val type = error.type
 
@@ -39,7 +41,7 @@ fun ErrorWidget(error: AppException, modifier: Modifier = Modifier, onRetry: (()
                 fontWeight = FontWeight.Bold
             )
             Text(
-                error.getPrettyText(context),
+                error.userMessage(context),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center

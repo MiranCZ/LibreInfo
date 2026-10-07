@@ -9,9 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.github.mirancz.libreinfo.R;
 import io.github.mirancz.libreinfo.exception.AppException;
-import io.github.mirancz.libreinfo.exception.ErrorType;
 import io.github.mirancz.libreinfo.util.AppInputStream;
 import io.github.mirancz.libreinfo.util.AppLog;
 
@@ -24,7 +22,7 @@ public class CalendarStorage implements AppStorage {
         try {
             return parseInternal(calendar, calendarDates);
         } catch (IOException e) {
-            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
+            throw AppException.dataLoad(e);
         }
     }
 

@@ -1,7 +1,7 @@
 package io.github.mirancz.libreinfo.engine.departure
 
 import android.content.Context
-import io.github.mirancz.libreinfo.exception.AppException
+import io.github.mirancz.libreinfo.exception.AppError
 import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.parsing.storage.manager.StorageProvider
@@ -11,7 +11,6 @@ import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
 import io.github.mirancz.libreinfo.util.OfflineDepartures
-import io.github.mirancz.libreinfo.util.load.toAppException
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 
 class OfflineDepartureRepository(val storageProvider: StorageProvider) : DepartureRepository {
@@ -38,12 +37,12 @@ class OfflineDepartureRepository(val storageProvider: StorageProvider) : Departu
     override suspend fun board(context: Context, stopId: Int, maxEntries: Int, forceRefresh: Boolean): DepartureBoard {
         val storage = storageProvider.getInstance()
 
-        var error: AppException? = null
+        var error: AppError? = null
         var delays: RouteDelaysResponse? = null
         try {
             delays = RequestHelper.getRouteDelays(context, force = forceRefresh)
         } catch (e: RequestException) {
-            error = e.toAppException()
+            error = e.error
         }
 
         val stop = storage.stopStorage.getStop(StopId.internal(stopId))

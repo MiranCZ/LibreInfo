@@ -36,7 +36,6 @@ import io.github.mirancz.libreinfo.ui.components.DepartureEntryRowShimmer
 import io.github.mirancz.libreinfo.ui.components.DeparturePostHeader
 import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 import io.github.mirancz.libreinfo.ui.showError
-import io.github.mirancz.libreinfo.util.load.toAppException
 import kotlinx.coroutines.launch
 
 @Composable
@@ -56,7 +55,7 @@ fun DeparturePostDetailScreen(state: NavState, stopId: Int, postId: Int) {
         try {
             delays = RequestHelper.getRouteDelays(context)
         } catch (e: RequestException) {
-            scope.launch { snackbar.showError(context, e.toAppException()) }
+            scope.launch { snackbar.showError(context, e.error) }
         }
 
         val originalId = storage.stopMapper.getOriginal(stopId)
@@ -64,7 +63,7 @@ fun DeparturePostDetailScreen(state: NavState, stopId: Int, postId: Int) {
         try {
             stopDelays = RequestHelper.getStopDelays(context, StopId(stopId, originalId))
         } catch (e: RequestException) {
-            scope.launch { snackbar.showError(context, e.toAppException()) }
+            scope.launch { snackbar.showError(context, e.error) }
         }
 
         val departureList = OfflineDepartures.getOfflineForPost(

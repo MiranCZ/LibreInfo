@@ -2,9 +2,7 @@ package io.github.mirancz.libreinfo.parsing.storage;
 
 import android.graphics.Color;
 
-import io.github.mirancz.libreinfo.R;
 import io.github.mirancz.libreinfo.exception.AppException;
-import io.github.mirancz.libreinfo.exception.ErrorType;
 import io.github.mirancz.libreinfo.parsing.types.LineAlias;
 import io.github.mirancz.libreinfo.util.AppInputStream;
 import io.github.mirancz.libreinfo.util.AppLog;
@@ -37,7 +35,7 @@ public class LineStorage implements AppStorage {
 
             return new LineStorage(aliases);
         } catch (IOException e) {
-            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
+            throw AppException.dataLoad(e);
         }
     }
 

@@ -7,9 +7,8 @@ import android.os.Looper;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
-import io.github.mirancz.libreinfo.R;
+import io.github.mirancz.libreinfo.exception.AppError;
 import io.github.mirancz.libreinfo.exception.AppException;
-import io.github.mirancz.libreinfo.exception.ErrorType;
 import io.github.mirancz.libreinfo.exception.StorageInitException;
 import io.github.mirancz.libreinfo.parsing.storage.AppStorage;
 import io.github.mirancz.libreinfo.util.AppInputStream;
@@ -140,7 +139,7 @@ public class StorageManager {
         try (var data = RequestHelper.getData(context)) {
             writeToCache(data, "data");
         } catch (IOException e) {
-            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
+            throw AppException.dataLoad(e);
         }
     }
 
@@ -170,7 +169,7 @@ public class StorageManager {
                 Files.deleteIfExists(getCachedPath(file));
             }
         } catch (IOException e) {
-            throw new AppException("Failed to delete cache (uh oh)", e);
+            throw new AppException(new AppError.Internal("Failed to delete cache (uh oh)"), e);
         }
     }
 
@@ -270,7 +269,7 @@ public class StorageManager {
                 Files.move(tmpPath, finalPath, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException e) {
-            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
+            throw AppException.dataLoad(e);
         }
     }
 
@@ -278,7 +277,7 @@ public class StorageManager {
         try(var channel = FileChannel.open(getCachedPath(ROUTE_STOPS), StandardOpenOption.READ)) {
             return channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
         } catch (IOException e) {
-            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
+            throw AppException.dataLoad(e);
         }
     }
 
@@ -329,7 +328,7 @@ public class StorageManager {
         } catch (AppException e) {
             throw e;
         } catch (Exception e) {
-            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
+            throw AppException.dataLoad(e);
         }
     }
 
@@ -349,13 +348,13 @@ public class StorageManager {
                 out.write(buffer, 0, n);
             }
         } catch (IOException e) {
-            throw new AppException("Failed to write cache", e);
+            throw new AppException(new AppError.Internal("Failed to write cache"), e);
         }
 
         try {
             Files.write(metaPath, getCacheTime(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
-            throw new AppException("Failed to write cache meta", e);
+            throw new AppException(new AppError.Internal("Failed to write cache meta"), e);
         }
     }
 

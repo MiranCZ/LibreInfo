@@ -15,7 +15,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import io.github.mirancz.libreinfo.exception.AppException
 import io.github.mirancz.libreinfo.ui.LocalSnackbarHostState
 import io.github.mirancz.libreinfo.ui.showError
 import io.github.mirancz.libreinfo.util.AppLog
@@ -62,8 +61,8 @@ internal class LoadHolder<T> : ViewModel() {
  * expires, `null` disables caching). An expired result stays on screen while it is refreshed in the background.
  * [LoadResult.refresh] and [LoadResult.retry] always re-run the load. [keys] must have stable `equals` for this to work.
  *
- * [AppException]s map straight to [LoadState.Error]; any other [Throwable] is logged and wrapped in a
- * generic [AppException] so screens no longer hand-write `catch (RequestException) ... catch (Exception)`
+ * The [io.github.mirancz.libreinfo.exception.AppError] of an [io.github.mirancz.libreinfo.exception.AppException]
+ * maps straight to [LoadState.Error]; any other [Throwable] is logged and becomes a generic error so screens no longer hand-write `catch (RequestException) ... catch (Exception)`
  * ladders.
  */
 @Composable
@@ -100,7 +99,7 @@ fun <T> rememberLoad(vararg keys: Any?, cacheFor: Duration? = Duration.INFINITE,
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
-            val error = e.toAppException()
+            val error = e.toAppError()
             // a failed refresh shouldn't throw away data the user is already looking at
             if (isRefresh) {
                 snackbar.showError(context, error)

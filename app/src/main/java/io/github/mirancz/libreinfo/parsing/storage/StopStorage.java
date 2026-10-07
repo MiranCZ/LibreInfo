@@ -1,8 +1,6 @@
 package io.github.mirancz.libreinfo.parsing.storage;
 
-import io.github.mirancz.libreinfo.R;
 import io.github.mirancz.libreinfo.exception.AppException;
-import io.github.mirancz.libreinfo.exception.ErrorType;
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop;
 import io.github.mirancz.libreinfo.parsing.types.stop.StopExtKt;
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId;
@@ -20,7 +18,7 @@ public class StopStorage implements AppStorage {
         try {
             stops = StopExtKt.parseStops(is, mapper);
         } catch (IOException e) {
-            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
+            throw AppException.dataLoad(e);
         }
 
         return new StopStorage(stops, mapper);

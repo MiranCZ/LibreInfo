@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.compose.material3.SnackbarHostState
 import io.github.mirancz.libreinfo.activity.base.snackbar.CustomSnackBarVisuals
 import io.github.mirancz.libreinfo.activity.base.snackbar.SnackBarType
-import io.github.mirancz.libreinfo.exception.AppException
+import io.github.mirancz.libreinfo.exception.AppError
 
 
 suspend fun SnackbarHostState.showInfo(text: String) {
@@ -29,10 +29,10 @@ suspend fun SnackbarHostState.show(text: String, type: SnackBarType) {
     )
 }
 
-suspend fun SnackbarHostState.showError(context: Context, e: AppException) {
+suspend fun SnackbarHostState.showError(context: Context, error: AppError) {
     showSnackbar(
         CustomSnackBarVisuals(
-            e.getPrettyText(context),
+            error.userMessage(context),
             type = SnackBarType.ERROR
         )
     )

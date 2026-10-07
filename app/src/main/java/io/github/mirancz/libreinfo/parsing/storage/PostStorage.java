@@ -1,8 +1,6 @@
 package io.github.mirancz.libreinfo.parsing.storage;
 
-import io.github.mirancz.libreinfo.R;
 import io.github.mirancz.libreinfo.exception.AppException;
-import io.github.mirancz.libreinfo.exception.ErrorType;
 import io.github.mirancz.libreinfo.parsing.types.Location;
 import io.github.mirancz.libreinfo.parsing.types.Post;
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop;
@@ -21,7 +19,7 @@ public class PostStorage implements AppStorage {
         try {
             posts = Post.parsePosts(array, stopStorage);
         } catch (IOException e) {
-            throw new AppException(R.string.data_load_error, e).withType(ErrorType.DATA);
+            throw AppException.dataLoad(e);
         }
 
         return new PostStorage(posts, stopStorage);

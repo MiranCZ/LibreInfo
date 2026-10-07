@@ -6,7 +6,7 @@ import androidx.annotation.StringRes;
 import io.github.mirancz.libreinfo.R;
 
 /**
- * The kind of failure behind an {@link AppException}, used by the error UI to pick a distinct
+ * The category of an {@link AppError}, used by the error UI to pick a distinct
  * icon, heading and retry affordance per category instead of showing one generic error screen.
  */
 public enum ErrorType {
