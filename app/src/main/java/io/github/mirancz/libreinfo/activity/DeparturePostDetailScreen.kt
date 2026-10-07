@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +37,7 @@ import io.github.mirancz.libreinfo.ui.components.DeparturePostHeader
 import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 import io.github.mirancz.libreinfo.ui.showError
 import io.github.mirancz.libreinfo.util.load.toAppException
+import kotlinx.coroutines.launch
 
 @Composable
 fun DeparturePostDetailScreen(state: NavState, stopId: Int, postId: Int) {
@@ -44,6 +46,7 @@ fun DeparturePostDetailScreen(state: NavState, stopId: Int, postId: Int) {
 
     var post: Post? by remember { mutableStateOf(null) }
     var stopDelays by remember { mutableStateOf(StopDelaysResponse(emptyMap())) }
+    val scope = rememberCoroutineScope()
 
     val result = rememberLoad {
         val storage = AppContainer.storageProvider.getInstance()
@@ -53,19 +56,16 @@ fun DeparturePostDetailScreen(state: NavState, stopId: Int, postId: Int) {
         try {
             delays = RequestHelper.getRouteDelays(context)
         } catch (e: RequestException) {
-            snackbar.showError(context, e.toAppException())
+            scope.launch { snackbar.showError(context, e.toAppException()) }
         }
 
-
         val originalId = storage.stopMapper.getOriginal(stopId)
-
 
         try {
             stopDelays = RequestHelper.getStopDelays(context, StopId(stopId, originalId))
         } catch (e: RequestException) {
-            snackbar.showError(context, e.toAppException())
+            scope.launch { snackbar.showError(context, e.toAppException()) }
         }
-
 
         val departureList = OfflineDepartures.getOfflineForPost(
             storage,
