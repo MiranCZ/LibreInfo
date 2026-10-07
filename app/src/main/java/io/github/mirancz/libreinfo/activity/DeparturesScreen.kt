@@ -93,6 +93,15 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
     }
 
     val title = header?.stopName ?: ""
+
+    LaunchedEffect(header?.favourite) {
+        if (header?.favourite == true) {
+            vm.setLiked(true)
+        } else {
+            vm.setLiked(false)
+        }
+    }
+
     ScreenScaffold(title, onBack = state.onBack, actions = {
         FavouriteStopAction(StopId(stopId, -1))
     }) {
@@ -102,12 +111,6 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
                 if (deps.error != null) {
                     LaunchedEffect(Unit) {
                         snackbar.showError(context, deps.error)
-                    }
-                }
-
-                LaunchedEffect(deps.stop) {
-                    if (deps.stop.isFavourite()) {
-                        vm.setLiked(true)
                     }
                 }
 

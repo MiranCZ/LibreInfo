@@ -9,6 +9,7 @@ import io.github.mirancz.libreinfo.parsing.types.departure.DepartureBoard
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureHeader
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId
+import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
 import io.github.mirancz.libreinfo.util.OfflineDepartures
 import io.github.mirancz.libreinfo.util.load.toAppException
 import io.github.mirancz.libreinfo.util.request.RequestHelper
@@ -31,7 +32,7 @@ class OfflineDepartureRepository(val storageProvider: StorageProvider) : Departu
         val stop = storage.stopStorage.getStop(StopId.internal(stopId))
         val stopName = stop.name
 
-        return DepartureHeader(stopName, storage.postStorage.getPosts(stop).map { it.name })
+        return DepartureHeader(stopName, stop.isFavourite(),storage.postStorage.getPosts(stop).map { it.name })
     }
 
     override suspend fun board(context: Context, stopId: Int, maxEntries: Int, forceRefresh: Boolean): DepartureBoard {
