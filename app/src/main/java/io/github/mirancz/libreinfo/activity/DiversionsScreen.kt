@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
@@ -143,20 +145,21 @@ fun DiversionsScreen(state: NavState) {
             if (diversionList.isEmpty()) {
                 NothingHere()
             } else {
-                var rendered = false
 
-                Column(Modifier.verticalScroll(rememberScrollState())) {
-                    for (diversion in diversionList) {
-                        if (!vm.applyFilters || shouldShowDiversion(diversion, vm.filters)) {
-                            rendered = true
-                            Diversion(diversion) {
-                                state.onNavigate(NavRoute.Diversions.Detail(diversion))
-                            }
-                        }
-                    }
+                val results = diversionList.filter {
+                    !vm.applyFilters || shouldShowDiversion(it, vm.filters)
                 }
 
-                if (!rendered) {
+                if (!results.isEmpty()) {
+                    LazyColumn() {
+                        items(results) {
+                            Diversion(it) {
+                                state.onNavigate(NavRoute.Diversions.Detail(it))
+                            }
+                        }
+
+                    }
+                } else {
                     NothingHere(stringResource(R.string.filters_found_nothing))
                 }
             }
