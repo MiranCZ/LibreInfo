@@ -94,8 +94,8 @@ fun DeparturePostDetailScreen(state: NavState, stopId: Int, postId: Int) {
                 val vehicleId = if (vehicleInfo.hasId()) vehicleInfo.id() else null
 
                 // FIXME is it trip or route id???
-                if (it.tripId != null) {
-                    val route = NavRoute.TripDetail(vehicleId, stopId, it.tripId)
+                it.tripId?.let { tripId ->
+                    val route = NavRoute.TripDetail(vehicleId, stopId, tripId)
                     state.onNavigate(route)
                 }
             }

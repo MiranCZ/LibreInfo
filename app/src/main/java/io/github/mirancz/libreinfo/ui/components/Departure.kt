@@ -45,14 +45,13 @@ import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.parsing.storage.ApiStorage
 import io.github.mirancz.libreinfo.parsing.types.Time
-import io.github.mirancz.libreinfo.parsing.types.departure.Departure
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureEntry
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureTime
 import io.github.mirancz.libreinfo.parsing.types.departure.PostDeparture
 import io.github.mirancz.libreinfo.parsing.types.departure.VehicleInfo
 import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
-import io.github.mirancz.libreinfo.util.DeparturesSettings
+import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 
 @Composable
@@ -212,7 +211,7 @@ private fun RowScope.DepartureTimeText(
 
     if (vehicleInfo.hasDelay() && showDelay) {
         val delay: Int = vehicleInfo.delay()
-        val color: Int = vehicleInfo.delayColor
+        val color: Int = DelayUtil.getDelayColor(delay)
 
         val arrivalText: String = when(time) {
             is DepartureTime.Scheduled -> {
@@ -283,8 +282,9 @@ fun DepartureDetail(
     val stopDelays = stopDelays.stopDelays
 
     fun alreadyLeft(entry: DepartureEntry): Boolean {
-        if (entry.time is DepartureTime.Scheduled) {
-            val mark = entry.time.mark
+        val local = entry.time
+        if (local is DepartureTime.Scheduled) {
+            val mark = local.mark
 
             return mark.delayedDeparture.isBefore(Time.now()) && !mark.leaving
         }
@@ -318,8 +318,8 @@ fun DepartureDetail(
                 }
 
                 var showDelay = !alreadyLeft
-                if (entry.tripId != null) {
-                    val lineRoute = apiStorage.getLineIdAndRoute(entry.tripId)
+                entry.tripId?.let { tripId ->
+                    val lineRoute = apiStorage.getLineIdAndRoute(tripId)
 
                     val lineId = lineRoute.left
                     val routeId = lineRoute.right

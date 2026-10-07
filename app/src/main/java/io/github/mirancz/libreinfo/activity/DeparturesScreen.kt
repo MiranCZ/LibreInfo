@@ -93,9 +93,9 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
         PullToRefreshBox(departuresResult.isRefreshing, departuresResult.refresh) {
             AsyncContent(departuresResult, loading = { DeparturesShimmer(header?.postNames) }) { deps ->
 
-                if (deps.error != null) {
+                deps.error?.let { err ->
                     LaunchedEffect(Unit) {
-                        snackbar.showError(context, deps.error)
+                        snackbar.showError(context, err)
                     }
                 }
 
@@ -114,8 +114,8 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
                         val vehicleId = if (vehicleInfo.hasId()) vehicleInfo.id() else null
 
                         // FIXME is it trip or route id???
-                        if (it.tripId != null) {
-                            val route = NavRoute.TripDetail(vehicleId, stopId, routeId = it.tripId)
+                        it.tripId?.let { tripId ->
+                            val route = NavRoute.TripDetail(vehicleId, stopId, routeId = tripId)
                             state.onNavigate(route)
                         }
                     }

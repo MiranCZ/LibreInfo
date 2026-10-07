@@ -1,7 +1,5 @@
 package io.github.mirancz.libreinfo.parsing.types.departure;
 
-import io.github.mirancz.libreinfo.util.DelayUtil;
-
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
@@ -17,10 +15,6 @@ public final class VehicleInfo {
     public VehicleInfo() {
         id = null;
         delay = null;
-    }
-
-    public int getDelayColor() {
-        return DelayUtil.getDelayColor(delay());
     }
 
     public int id() {
