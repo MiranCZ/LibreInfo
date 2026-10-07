@@ -4,6 +4,7 @@ import android.content.Context
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.exception.AppError
 import io.github.mirancz.libreinfo.exception.ErrorType
+import io.github.mirancz.libreinfo.util.request.Endpoint
 
 /** The category the error UI uses to pick an icon, heading and retry affordance. */
 val AppError.type: ErrorType
@@ -28,4 +29,9 @@ fun AppError.userMessage(context: Context): String = when (this) {
     is AppError.Unknown -> context.getString(R.string.generic_error)
 }
 
-private fun AppError.Request.endpointName(context: Context): String = endpoint.name.getName(context)
+private fun AppError.Request.endpointName(context: Context): String = when (val name = endpoint.name) {
+    Endpoint.Name.StaticGtfs -> context.getString(R.string.endpoint_static_gtfs)
+    Endpoint.Name.AppServer -> context.getString(R.string.endpoint_app_server)
+    Endpoint.Name.GithubApi -> "Github API"
+    is Endpoint.Name.Literal -> name.label
+}

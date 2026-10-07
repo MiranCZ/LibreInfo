@@ -23,7 +23,6 @@ import io.github.mirancz.libreinfo.parsing.types.stop.Stop
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.util.AppLog
 import io.github.mirancz.libreinfo.util.IOUtil
-import io.github.mirancz.libreinfo.util.Text
 import io.github.mirancz.libreinfo.util.json
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationException
@@ -143,24 +142,24 @@ object RequestHelper {
     @JvmStatic
     @Throws(RequestException::class)
     fun getVersionInfo(context: Context, versionUrl: String): VersionInfoResponse {
-        return makeRequest(context, Endpoint(versionUrl, Text.literal("Release version meta")))
+        return makeRequest(context, Endpoint(versionUrl, Endpoint.Name.Literal("Release version meta")))
     }
 
     @JvmStatic
     @Throws(RequestException::class)
     fun <T> readJsonUrl(
         context: Context,
-        URL: String?,
-        endpointName: String?,
+        URL: String,
+        endpointName: String,
         deserializer: DeserializationStrategy<T>
     ): T {
-        return makeRequest(context, Endpoint(URL, Text.literal(endpointName)), deserializer)
+        return makeRequest(context, Endpoint(URL, Endpoint.Name.Literal(endpointName)), deserializer)
     }
 
     @JvmStatic
     @Throws(RequestException::class)
-    fun readUrl(context: Context, URL: String?, endpointName: String?): InputStream {
-        return readUrl(context, Endpoint(URL, Text.literal(endpointName)))
+    fun readUrl(context: Context, URL: String, endpointName: String): InputStream {
+        return readUrl(context, Endpoint(URL, Endpoint.Name.Literal(endpointName)))
     }
 
     @Throws(RequestException::class)
