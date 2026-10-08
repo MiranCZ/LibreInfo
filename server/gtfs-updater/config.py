@@ -1,12 +1,12 @@
 from pathlib import Path
 
+GTFS_RT_URL = "http://gtfs-rt:8080"
 GTFS_URL = "https://kordis-jmk.cz/gtfs/gtfs.zip"
 OSM_URL = "https://download.geofabrik.de/europe/czech-republic/jihomoravsky-latest.osm.pbf"
 
 DATA_DIR = Path("/data")
 
 RAW_DIR = DATA_DIR / "raw"
-PROCESSED_DIR = DATA_DIR / "processed"
 OSM_DIR = DATA_DIR / "osm"
 
 GTFS_PATH = RAW_DIR / "gtfs.zip"

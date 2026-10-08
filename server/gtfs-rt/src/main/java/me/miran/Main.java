@@ -55,6 +55,8 @@ public class Main {
         get("/diversions", endpoints::handleDiversions);
         get("/events", endpoints::handleEvents);
         get("/posts", endpoints::handlePosts);
+
+        post("/internal/reload", endpoints::handleReload);
     }
 
 }

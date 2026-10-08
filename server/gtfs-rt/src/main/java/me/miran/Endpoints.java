@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import me.miran.model.StopDelay;
 import me.miran.model.VehicleInfo;
 import me.miran.request.RequestHelper;
+import me.miran.util.IdStorage;
 import spark.Request;
 import spark.Response;
 
@@ -119,7 +120,7 @@ public class Endpoints {
         response.type(JSON);
 
         try {
-            return RequestHelper.getPosts();
+            return gson.toJson(RequestHelper.getPosts());
         } catch (RuntimeException e) {
             // Unlike the other handlers, failures must not be a 200 — the caller bakes this
             // response into the static bundle and cannot tell an error body from real data.
@@ -131,17 +132,44 @@ public class Endpoints {
     public String handleDepartures(Request request, Response response) {
         response.type(JSON);
 
-        String stopId = request.queryParams("stopId");
-        if (stopId == null || stopId.isBlank()) {
+        String stopIdStr = request.queryParams("stopId");
+        if (stopIdStr == null || stopIdStr.isBlank()) {
             return error("Parameter 'stopId' needs to be supplied!");
+        }
+
+        int stopId;
+        try {
+            stopId = Integer.parseInt(stopIdStr.strip());
+        } catch (NumberFormatException ignored) {
+            return error("Value '" + stopIdStr + "' could not be parsed as a number!");
         }
 
         try {
             return RequestHelper.getDepartures(stopId);
+        } catch (IllegalArgumentException e) {
+            response.status(404);
+            return error(e.getMessage());
         } catch (RuntimeException e) {
             response.status(502);
             return error("Upstream departures request failed: " + e.getMessage());
         }
+    }
+
+    public String handleReload(Request request, Response response) {
+        response.type(JSON);
+
+        try {
+            IdStorage.reload();
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            response.status(500);
+            return error("Reloading the id tables failed: " + e.getMessage());
+        }
+
+        var json = new JsonObject();
+        json.addProperty("stops", IdStorage.STOP.size());
+        json.addProperty("services", IdStorage.SERVICE.size());
+        return json.toString();
     }
 
     private String error(String reason) {

@@ -1,7 +1,7 @@
 .PHONY: up build down
 
 up:
-	docker compose --profile tools create --no-recreate
+	docker compose --profile tools create --force-recreate
 	docker compose up
 
 build:

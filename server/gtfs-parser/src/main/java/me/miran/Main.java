@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class Main {
 
@@ -41,12 +42,15 @@ public class Main {
         // resolved up front so a hard failure aborts before any output is written
         List<PostMapper.Post> posts = PostsSource.resolve();
 
+        // the parsers read the rewritten gtfs (the same one MOTIS gets), so both always agree on ids
+        GtfsRewriter.rewrite(GTFS_ZIP_PATH, getMappedGtfsFile().toPath(), getServiceMapsFile().toPath());
+
         XZOutputStream compressedOutput = new XZOutputStream(new FileOutputStream(getDataFile()), new LZMA2Options());
         DataOutputStream output = new DataOutputStream(compressedOutput);
 
         Function<String, CheckedOutputStream> outputProvider = s -> getWrappedDataOutputStream(s, output);
 
-        try (ZipInputStream zip = new ZipInputStream(new FileInputStream(GTFS_ZIP_PATH.toFile()))) {
+        try (ZipInputStream zip = new ZipInputStream(new FileInputStream(getMappedGtfsFile()))) {
             ZipEntry entry;
             while ((entry = zip.getNextEntry()) != null) {
                 String name = entry.getName();
@@ -122,7 +126,7 @@ public class Main {
 
     private static void writeStopIdMaps(Function<String, CheckedOutputStream> outputProvider) throws IOException {
         CheckedOutputStream os = outputProvider.apply("stop_mapping");
-        IdStorage.STOP.write(os);
+        IdStorage.STOP.writeNoop(os);
         os.close();
 
         DataOutputStream s = getDataOutStream(getStopMapsFile());
@@ -141,12 +145,20 @@ public class Main {
         return OUTPUT_DIR.resolve("data").toFile();
     }
 
+    public static File getMappedGtfsFile() {
+        return OUTPUT_DIR.resolve("gtfs.zip").toFile();
+    }
+
     public static File getInfoFile() {
         return OUTPUT_DIR.resolve("info").toFile();
     }
 
     public static File getPostsFile() {
         return STATE_DIR.resolve("posts").toFile();
+    }
+
+    public static File getServiceMapsFile() {
+        return STATE_DIR.resolve("service_maps").toFile();
     }
 
     public static File getStopMapsFile() {

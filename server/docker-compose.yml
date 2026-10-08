@@ -60,24 +60,11 @@ services:
       ofelia.job-exec.gtfs-update.schedule: "@every 10m"
       ofelia.job-exec.gtfs-update.command: "python /app/main.py"
     volumes:
-      - gtfs-data:/data/processed
       - gtfs-raw:/data/raw
       - osm-data:/data/osm
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - internal
-
-  pfaedle:
-    build:
-      context: https://github.com/ad-freiburg/pfaedle.git#ad7b061fdef72fc084378d2f82bf1913faa1600a
-      dockerfile: Dockerfile
-    restart: no
-    profiles: [tools]
-    volumes:
-      - gtfs-raw:/gtfs
-      - osm-data:/osm
-      - gtfs-data:/gtfs-out
-    command: -D -x /osm/region.osm.pbf -i /gtfs/gtfs.zip
 
   gtfs-parser:
     build: ./gtfs-parser
@@ -101,6 +88,8 @@ services:
   gtfs-rt:
     build: ./gtfs-rt
     restart: unless-stopped
+    volumes:
+      - ./gtfs-parser/state:/state
     secrets:
       - kordis_token
       - kordis_url
@@ -113,7 +102,7 @@ services:
     volumes:
       - motis-data:/data
       - ./motis/config.yml:/config.yml:ro
-      - gtfs-data:/input/gtfs:ro
+      - gtfs-parser-public:/input/gtfs:ro
       - osm-data:/input/osm:ro
     networks:
       - internal
@@ -126,7 +115,7 @@ services:
     volumes:
       - motis-data:/data
       - ./motis/config.yml:/config.yml:ro
-      - gtfs-data:/input/gtfs:ro
+      - gtfs-parser-public:/input/gtfs:ro
       - osm-data:/input/osm:ro
     networks:
       - internal

@@ -10,6 +10,6 @@ timetable:
   with_shapes: true
   datasets:
     jmk:
-      path: /input/gtfs
+      path: /input/gtfs/gtfs.zip
 
 geocoding: true

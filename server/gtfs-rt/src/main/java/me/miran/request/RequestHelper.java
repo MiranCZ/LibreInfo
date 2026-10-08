@@ -1,5 +1,13 @@
 package me.miran.request;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import me.miran.ids.ApiVehicle;
+import me.miran.ids.PostsResponse;
+import me.miran.ids.VehiclesResponse;
+import me.miran.util.IdStorage;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -10,6 +18,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class RequestHelper {
@@ -31,8 +40,10 @@ public class RequestHelper {
 
 
 
-    public static String getVehicles() {
-        return get("vehicles");
+    public static VehiclesResponse getVehicles() {
+        VehiclesResponse vehiclesResponse = new Gson().fromJson(get("vehicles"), VehiclesResponse.class);
+
+        return new VehiclesResponse(vehiclesResponse.vehicles().stream().map(ApiVehicle::mapIds).filter(Objects::nonNull).toList());
     }
 
     public static String getDiversions() {
@@ -43,12 +54,27 @@ public class RequestHelper {
         return get("events");
     }
 
-    public static String getPosts() {
-        return get("posts");
+    public static PostsResponse getPosts() {
+        // not mapped: the only consumer is gtfs-parser, which maps stops itself once it has written
+        // the new id tables (ours might not know the new stops yet)
+        return new Gson().fromJson(get("posts"), PostsResponse.class);
     }
 
-    public static String getDepartures(String stopId) {
-        return get("departures", Map.of("stopid", stopId));
+    public static String getDepartures(int stopId) {
+        Integer upstreamStopId = IdStorage.STOP.getOriginal(stopId);
+        if (upstreamStopId == null) {
+            throw new IllegalArgumentException("Unknown stop " + stopId);
+        }
+
+        String body = get("departures", Map.of("stopid", upstreamStopId.toString()));
+
+        // the response echoes the stop, lines and routes are not mapped (only stops and services are)
+        JsonElement parsed = JsonParser.parseString(body);
+        if (parsed.isJsonObject() && parsed.getAsJsonObject().has("stopId")) {
+            parsed.getAsJsonObject().addProperty("stopId", stopId);
+        }
+
+        return parsed.toString();
     }
 
 

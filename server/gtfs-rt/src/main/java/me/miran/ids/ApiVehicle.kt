@@ -1,6 +1,7 @@
 package me.miran.ids;
 
 import me.miran.model.Vehicle
+import me.miran.util.IdStorage
 
 data class ApiVehicle(
     val id: Int?,
@@ -24,9 +25,34 @@ data class ApiVehicle(
     val driverName: String?
 ) {
 
+    fun mapIds(): ApiVehicle? {
+        val stopMap = { i: Int? -> IdStorage.STOP.getId(i) }
+        val serviceMap = { i: Int? -> IdStorage.SERVICE.getId(i) }
 
-    fun map(): Vehicle
-    {
+        return ApiVehicle(
+            id,
+            idB,
+            idC,
+            vehicleType,
+            lineType,
+            latitude,
+            longitude,
+            bearing,
+            lineId,
+            routeId,
+            serviceMap(serviceId).orElse { return null },
+            course,
+            isLowFloor,
+            delay,
+            stopMap(lastStopId).orElse { return null },
+            stopMap(finalStopId).orElse { return null },
+            finalDestinationName,
+            isInactive,
+            driverName
+        )
+    }
+
+    fun map(): Vehicle {
         if (id == null || lineId == null || routeId == null || lastStopId == null || finalStopId == null) {
             throw NullPointerException("Null parameter in ApiVehicle")
         }
@@ -35,23 +61,24 @@ data class ApiVehicle(
         if (idB != null && idB != 0) connectedIds.add(idB);
         if (idC != null && idC != 0) connectedIds.add(idC);
 
-        return Vehicle(id,
-        connectedIds,
-        vehicleType,
-        lineType,
-        latitude,
-        longitude,
-        bearing,
-        lineId,
-        routeId,
-        serviceId,
-        course,
-        isLowFloor,
-        delay,
-        lastStopId,
-        finalStopId,
-        finalDestinationName,
-        isInactive
+        return Vehicle(
+            id,
+            connectedIds,
+            vehicleType,
+            lineType,
+            latitude,
+            longitude,
+            bearing,
+            lineId,
+            routeId,
+            serviceId,
+            course,
+            isLowFloor,
+            delay,
+            lastStopId,
+            finalStopId,
+            finalDestinationName,
+            isInactive
         );
     }
 

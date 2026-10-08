@@ -126,24 +126,6 @@ def check_and_download_osm() -> bool:
     return True
 
 
-def run_pfaedle(compose: Compose) -> None:
-    log.info("Running pfaedle...")
-
-    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-
-    container = compose.get("pfaedle")
-    container.start()
-
-    for line in container.logs(stream=True, follow=True):
-        log.info(f"[pfaedle] {line.decode().rstrip()}")
-
-    exit_code = container.wait()["StatusCode"]
-    if exit_code != 0:
-        raise RuntimeError(f"pfaedle exited with code {exit_code}")
-
-    log.info("pfaedle finished successfully")
-
-
 def run_motis_import(compose: Compose) -> None:
     log.info("Running MOTIS import...")
 
@@ -174,6 +156,24 @@ def run_gtfs_parser(compose: Compose) -> None:
         raise RuntimeError(f"gtfs-parser exited with code {exit_code}")
 
     log.info("gtfs-parser finished successfully")
+
+    reload_gtfs_rt()
+
+
+def reload_gtfs_rt() -> None:
+    """Make gtfs-rt pick up the id tables gtfs-parser just wrote."""
+    url = f"{GTFS_RT_URL}/internal/reload"
+    log.info("Reloading gtfs-rt id tables...")
+
+    try:
+        r = httpx.post(url, timeout=30)
+    except httpx.TransportError as e:
+        # not running (yet): it reads the tables itself when it starts
+        log.warning(f"gtfs-rt unreachable, skipping reload ({e!r})")
+        return
+
+    r.raise_for_status()
+    log.info(f"gtfs-rt reloaded: {r.text}")
 
 
 def ensure_running(compose: Compose, service: str) -> bool:
@@ -217,6 +217,11 @@ def main() -> None:
         if not gtfs_changed and not osm_changed:
             log.info("Nothing changed. Ensuring containers are running...")
             ensure_running(compose, "gtfs-static")
+            # motis reads the zip written by gtfs-parser, so that has to come first
+            if not PARSER_DONE_FILE.exists():
+                log.info("gtfs-parser has not run yet, bootstrapping...")
+                run_gtfs_parser(compose)
+                PARSER_DONE_FILE.write_text("ok")
             if not MOTIS_IMPORTED_FILE.exists():
                 log.info("MOTIS not imported yet, bootstrapping import...")
                 run_motis_import(compose)
@@ -224,10 +229,6 @@ def main() -> None:
                 restart_motis(compose)
             else:
                 ensure_running(compose, "motis")
-            if not PARSER_DONE_FILE.exists():
-                log.info("gtfs-parser has not run yet, bootstrapping...")
-                run_gtfs_parser(compose)
-                PARSER_DONE_FILE.write_text("ok")
             log.info("Done")
             return
 
@@ -238,11 +239,10 @@ def main() -> None:
             reasons.append("OSM extract updated")
         log.info(f"Changes detected: {', '.join(reasons)}")
 
-        if gtfs_changed:
+        if gtfs_changed or not PARSER_DONE_FILE.exists():
             run_gtfs_parser(compose)
             PARSER_DONE_FILE.write_text("ok")
 
-        run_pfaedle(compose)
         run_motis_import(compose)
         MOTIS_IMPORTED_FILE.write_text("ok")
         restart_motis(compose)

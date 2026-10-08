@@ -2,6 +2,7 @@ package me.miran;
 
 import com.google.gson.Gson;
 import me.miran.ids.ApiVehicle;
+import me.miran.ids.VehiclesResponse;
 import me.miran.model.StopDelay;
 import me.miran.model.Vehicle;
 import me.miran.model.VehicleInfo;
@@ -27,9 +28,8 @@ public class VehicleStore {
     }
 
 
-    public synchronized void onData(String data) {
-        VehiclesResponse vehiclesResponse = gson.fromJson(data, VehiclesResponse.class);
-        var vehicles = vehiclesResponse.vehicles;
+    public synchronized void onData(VehiclesResponse vehiclesResponse) {
+        var vehicles = vehiclesResponse.vehicles();
 
         if (vehicles == null) return;
 
@@ -111,9 +111,6 @@ public class VehicleStore {
     public VehicleInfo getTrip(int lineId, int routeId) {
         Map<Integer, VehicleInfo> lineMap = vehicleInfos.get(lineId);
         return lineMap == null ? null : lineMap.get(routeId);
-    }
-
-    private record VehiclesResponse(List<ApiVehicle> vehicles) {
     }
 
 }

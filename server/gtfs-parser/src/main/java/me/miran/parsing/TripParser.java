@@ -1,7 +1,6 @@
 package me.miran.parsing;
 
 import me.miran.util.CheckedOutputStream;
-import me.miran.util.IdStorage;
 import me.miran.util.Utils;
 
 import java.io.IOException;
@@ -113,7 +112,7 @@ public class TripParser extends Parser {
         while (lines.hasNext()) {
             Csv.CsvLine line = lines.next();
 
-            int tripId = IdStorage.TRIP.getId(line.getInt("trip_id"));
+            int tripId = line.getInt("trip_id");
 
             var stopInfo = Utils.parseStop(line.get("stop_id"));
 
@@ -196,7 +195,7 @@ public class TripParser extends Parser {
         while (lines.hasNext()) {
             Csv.CsvLine line = lines.next();
 
-            int id = IdStorage.TRIP.getId(line.getInt("trip_id"));
+            int id = line.getInt("trip_id");
             if (id != (expectedId++)) {
                 throw new IllegalStateException();
             }

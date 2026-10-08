@@ -1,7 +1,6 @@
 package me.miran.parsing;
 
 import me.miran.util.CheckedOutputStream;
-import me.miran.util.IdStorage;
 import me.miran.util.StopInfo;
 import me.miran.util.Utils;
 
@@ -35,8 +34,8 @@ public class TransfersParser extends Parser {
             int minTransferTime = line.getInt("min_transfer_time");
 
             if (line.getIntOrDefault("from_trip_id", -1) != -1) {
-                int fromTripId = IdStorage.TRIP.getId(line.getInt("from_trip_id"));
-                int toTripId = IdStorage.TRIP.getId(line.getInt("to_trip_id"));
+                int fromTripId = line.getInt("from_trip_id");
+                int toTripId = line.getInt("to_trip_id");
                 int maxWaitingTime = line.getInt("max_waiting_time");
 
                 tripTransfers.add(new TripTransfer(fromStop, toStop, transferType, minTransferTime, fromTripId, toTripId, maxWaitingTime));

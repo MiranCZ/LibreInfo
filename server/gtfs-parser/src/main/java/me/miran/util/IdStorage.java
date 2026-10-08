@@ -10,8 +10,6 @@ public class IdStorage {
 
     public static final MappingIndexer STOP;
 
-    public static final Indexer TRIP = (original -> original-1);
-
     static {
         STOP = load(Main.getStopMapsFile());
     }
@@ -63,6 +61,10 @@ public class IdStorage {
             return idToIndex.getOrDefault(original, -1);
         }
 
+        /**
+         * Writes the table: the count, then the original id of every index, in index order.
+         * This is the format {@link #load} (and gtfs-rt) reads back.
+         */
         public void write(CheckedOutputStream os) throws IOException {
             os.writeInt(idToIndex.size());
 
@@ -74,6 +76,18 @@ public class IdStorage {
 
             for (int id : ids) {
                 os.writeInt(id);
+            }
+        }
+
+        /**
+         * Same layout as {@link #write}, but every index maps to itself. Clients only ever see
+         * the mapped ids now, so they get a no-op mapping (kept for backwards compatibility).
+         */
+        public void writeNoop(CheckedOutputStream os) throws IOException {
+            os.writeInt(idToIndex.size());
+
+            for (int i = 0; i < idToIndex.size(); i++) {
+                os.writeInt(i);
             }
         }
 
