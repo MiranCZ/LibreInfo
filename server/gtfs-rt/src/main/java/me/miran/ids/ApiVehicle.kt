@@ -27,7 +27,6 @@ data class ApiVehicle(
 
     fun mapIds(): ApiVehicle? {
         val stopMap = { i: Int? -> IdStorage.STOP.getId(i) }
-        val serviceMap = { i: Int? -> IdStorage.SERVICE.getId(i) }
 
         return ApiVehicle(
             id,
@@ -40,7 +39,7 @@ data class ApiVehicle(
             bearing,
             lineId,
             routeId,
-            serviceMap(serviceId).orElse { return null },
+            serviceId, // THIS IS NOT THE SAME AS GTFS's `serviceId` and should not be mapped!
             course,
             isLowFloor,
             delay,
