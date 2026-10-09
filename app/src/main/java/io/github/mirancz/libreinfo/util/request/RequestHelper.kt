@@ -101,7 +101,7 @@ object RequestHelper {
     fun getDepartures(context: Context, stopId: StopId): ServerDeparturesResponse {
         return makeOwnRequest(
             context,
-            "departures?stopId=${stopId.original}"
+            "departures?stopId=${stopId.id}"
         )
     }
 
@@ -109,7 +109,7 @@ object RequestHelper {
     fun getStopDelays(context: Context, stopId: StopId): StopDelaysResponse {
         return makeOwnRequest(
             context,
-            "stopDelays?stopId=${stopId.original}"
+            "stopDelays?stopId=${stopId.id}"
         )
     }
 

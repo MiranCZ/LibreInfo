@@ -244,7 +244,7 @@ fun AppNavHost() {
                 entry<NavRoute.StopSearch> { route ->
                     val state = stateFor(route)
                     SearchScreen<SearchOption.PickedStop>(state, prefetchDelays = route.prefetchDelays) { picked ->
-                        state.onNavigate(NavRoute.Departures(picked.stop.id.internal))
+                        state.onNavigate(NavRoute.Departures(picked.stop.id.id))
                     }
                 }
 

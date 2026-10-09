@@ -9,68 +9,62 @@ import io.github.mirancz.libreinfo.util.search.FuzzyStopSearch;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.function.ToIntFunction;
 
 public class StopStorage implements AppStorage {
 
-    public static StopStorage parse(AppInputStream is, StopMapper mapper) throws AppException {
+    public static StopStorage parse(AppInputStream is) throws AppException {
         List<Stop> stops;
         try {
-            stops = StopExtKt.parseStops(is, mapper);
+            stops = StopExtKt.parseStops(is);
         } catch (IOException e) {
             throw AppException.dataLoad(e);
         }
 
-        return new StopStorage(stops, mapper);
+        return new StopStorage(stops);
     }
 
 
-    private final List<Stop> stops;
-    private final Stop[] idToStop;
+    private final Stop[] stops;
     private final FuzzyStopSearch searcher;
-    public final StopMapper mapper;
 
 
-    public StopStorage(List<Stop> stops, StopMapper mapper) {
-        this.stops = stops;
-        this.idToStop = new Stop[mapper.internalStopsLength()];
-        this.mapper = mapper;
+    public StopStorage(List<Stop> stops) {
+        stops.sort(Comparator.comparingInt(value -> value.getId().getId()));
 
-        Arrays.fill(idToStop, Stop.Companion.getNONE());
+        this.stops = new Stop[stops.get(stops.size()-1).getId().getId()+1];
+        Arrays.fill(this.stops, Stop.Companion.getNONE());
 
         for (Stop stop : stops) {
-            idToStop[stop.getId().getInternal()] = stop;
+            this.stops[stop.getId().getId()] = stop;
         }
 
         this.searcher = new FuzzyStopSearch(stops);
     }
 
-    public Stop getStop(StopId.StopIdHolder holder) {
-        if (holder.getType() == StopId.StopIdType.INTERNAL) {
-            return getInternalStop(holder.getId());
-        }
 
-        if (holder.getType() == StopId.StopIdType.ORIGINAL) {
-            return getOriginalStop(holder.getId());
-        }
-
-        throw new IllegalStateException();
+    public Stop getStop(StopId id) {
+        return getStop(id.getId());
     }
 
-    private Stop getInternalStop(int id) {
-        if (id < 0 || id >= idToStop.length) {
+    public Stop getStop(int id) {
+        if (id < 0 || id >= stops.length) {
             return Stop.Companion.getNONE();
         }
 
-        return idToStop[id];
+        return stops[id];
     }
 
-    private Stop getOriginalStop(int id) {
-        return getInternalStop(mapper.getMapped(id));
-    }
-
-    public List<Stop> getAllStops() {
+    public Stop[] getAllStops() {
         return stops;
+    }
+
+    public int getStopsLengths() {
+        return stops.length;
     }
 
     public FuzzyStopSearch getSearcher() {

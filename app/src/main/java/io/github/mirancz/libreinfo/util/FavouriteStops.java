@@ -9,11 +9,11 @@ public class FavouriteStops {
     private static PreferencesHolder holder = null;
 
     public static boolean isFavourite(StopId stopId) {
-        return get().getBoolean(stopId.getInternal(), false);
+        return get().getBoolean(stopId.getId(), false);
     }
 
     public static void setFavourite(StopId stopId, boolean favourite) {
-        get().putBoolean(stopId.getInternal(), favourite).flush();
+        get().putBoolean(stopId.getId(), favourite).flush();
     }
 
     public static void init(Context context) {

@@ -29,14 +29,12 @@ public class PostStorage implements AppStorage {
 
     private final List<Post>[] postsForStop;
     private final List<Post> posts;
-    private final StopStorage stopStorage;
 
     public PostStorage(List<Post> posts, StopStorage stopStorage) {
         posts = new ArrayList<>(posts);
 
-        this.stopStorage = stopStorage;
         //noinspection unchecked
-        this.postsForStop = new List[stopStorage.mapper.internalStopsLength()];
+        this.postsForStop = new List[stopStorage.getStopsLengths()];
         for (int i = 0; i < postsForStop.length; i++) {
             postsForStop[i] = new ArrayList<>();
         }
@@ -49,7 +47,7 @@ public class PostStorage implements AppStorage {
                 continue;
             }
 
-            postsForStop[stop.getId().getInternal()].add(post);
+            postsForStop[stop.getId().getId()].add(post);
         }
 
         this.posts = posts;
@@ -68,7 +66,7 @@ public class PostStorage implements AppStorage {
     }
 
     public List<Post> getPosts(Stop stop) {
-        return getPosts(stop.getId().getInternal());
+        return getPosts(stop.getId().getId());
     }
 
     public List<Post> getPosts(int stopId) {

@@ -80,13 +80,13 @@ private fun buildLeg(part: ConnectionLeg, index: Int, parts: List<ConnectionLeg>
         return VehicleLegUi(
             alias = alias,
             headsign = storage.tripStorage.getTripHeadsign(trip),
-            stopCount = computeStopCount(trip, storage, part.fromStop.id.internal, part.toStop.id.internal),
+            stopCount = computeStopCount(trip, storage, part.fromStop.id.id, part.toStop.id.id),
             boardTime = part.departure.toTimeString(),
             boardStop = part.fromStop.name,
             alightTime = part.arrival.toTimeString(),
             alightStop = part.toStop.name,
             tripId = tripId,
-            boardStopInternalId = part.fromStop.id.internal,
+            boardStopInternalId = part.fromStop.id.id,
         )
     }
 

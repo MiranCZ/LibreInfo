@@ -1,7 +1,6 @@
 package io.github.mirancz.libreinfo.parsing.types
 
 import io.github.mirancz.libreinfo.parsing.storage.StopStorage
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId.Companion.internal
 import io.github.mirancz.libreinfo.util.AppInputStream
 import java.io.IOException
 
@@ -27,7 +26,7 @@ fun parse(input: AppInputStream, stopStorage: StopStorage): Post {
     val lat = input.readDouble()
     val lng = input.readDouble()
 
-    val stop = stopStorage.getStop(internal(stopId))
+    val stop = stopStorage.getStop(stopId)
 
     return Post(stop, postId, name, Location(lat, lng))
 }

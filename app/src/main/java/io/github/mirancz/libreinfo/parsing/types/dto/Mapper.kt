@@ -7,7 +7,7 @@ import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 
 
 fun mapStop(storage: IdStorage, stopId: Int): Stop =
-    storage.stopStorage.getStop(StopId.original(stopId))
+    storage.stopStorage.getStop(stopId)
 
 fun mapLine(storage: IdStorage, lineId: Int): LineAlias =
     storage.lineStorage.getAlias(lineId)

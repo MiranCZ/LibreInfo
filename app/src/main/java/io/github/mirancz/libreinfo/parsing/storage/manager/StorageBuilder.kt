@@ -9,7 +9,6 @@ import io.github.mirancz.libreinfo.parsing.storage.CalendarStorage
 import io.github.mirancz.libreinfo.parsing.storage.LineStorage
 import io.github.mirancz.libreinfo.parsing.storage.PostStorage
 import io.github.mirancz.libreinfo.parsing.storage.RouteStopStorage
-import io.github.mirancz.libreinfo.parsing.storage.StopMapper
 import io.github.mirancz.libreinfo.parsing.storage.StopStorage
 import io.github.mirancz.libreinfo.parsing.storage.TripStorage
 import io.github.mirancz.libreinfo.util.AppLog
@@ -34,13 +33,8 @@ class StorageBuilder(val context: Context, val consumer: ((AppStorage) -> Unit)?
         AppLog.d("Initializing...")
         val ms = System.currentTimeMillis()
 
-        val stopMapper = manager.useStopMapping(StopMapper::parse)
-        onLoaded(stopMapper)
-
         val stopStorage = manager.useStops {
-            StopStorage.parse(
-                it, stopMapper
-            )
+            StopStorage.parse(it)
         }
         onLoaded(stopStorage)
 
@@ -57,7 +51,7 @@ class StorageBuilder(val context: Context, val consumer: ((AppStorage) -> Unit)?
 
         val routeStopStorage = manager.useStopTimes {
             RouteStopStorage.parse(
-                it, manager.getRouteStopsBuff(), stopMapper
+                it, manager.getRouteStopsBuff(), stopStorage.stopsLengths
             )
         }
 
@@ -78,9 +72,8 @@ class StorageBuilder(val context: Context, val consumer: ((AppStorage) -> Unit)?
             tripStorage,
             routeStopStorage,
             calendarStorage,
-            apiStorage,
-            stopMapper
-        );
+            apiStorage
+        )
     }
 
 }

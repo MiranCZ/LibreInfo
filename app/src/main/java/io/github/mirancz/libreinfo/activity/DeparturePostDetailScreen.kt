@@ -58,10 +58,8 @@ fun DeparturePostDetailScreen(state: NavState, stopId: Int, postId: Int) {
             scope.launch { snackbar.showError(context, e.error) }
         }
 
-        val originalId = storage.stopMapper.getOriginal(stopId)
-
         try {
-            stopDelays = RequestHelper.getStopDelays(context, StopId(stopId, originalId))
+            stopDelays = RequestHelper.getStopDelays(context, StopId(stopId))
         } catch (e: RequestException) {
             scope.launch { snackbar.showError(context, e.error) }
         }

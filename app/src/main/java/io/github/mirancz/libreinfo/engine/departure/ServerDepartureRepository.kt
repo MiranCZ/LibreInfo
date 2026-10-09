@@ -30,7 +30,7 @@ class ServerDepartureRepository(val storageProvider: StorageProvider) : Departur
     }
 
     private fun header(storage: IdStorage, stopId: Int): DepartureHeader {
-        val stop = storage.stopStorage.getStop(StopId.internal(stopId))
+        val stop = storage.stopStorage.getStop(stopId)
         val stopName = stop.name
 
         return DepartureHeader(stopName,stop.isFavourite(), storage.postStorage.getPosts(stop).map { it.name })
@@ -44,10 +44,8 @@ class ServerDepartureRepository(val storageProvider: StorageProvider) : Departur
     ): DepartureBoard {
         val storage = storageProvider.getInstance()
 
-        val original = storage.stopMapper.getOriginal(stopId)
-
-        val stop = storage.stopStorage.getStop(StopId.internal(stopId))
-        val response = RequestHelper.getDepartures(context, StopId(stopId, original))
+        val stop = storage.stopStorage.getStop(stopId)
+        val response = RequestHelper.getDepartures(context, StopId(stopId))
 
         var error: AppError? = null
 

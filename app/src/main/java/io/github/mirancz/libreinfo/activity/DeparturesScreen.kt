@@ -88,7 +88,7 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
     }
 
     ScreenScaffold(title, onBack = state.onBack, actions = {
-        FavouriteStopAction(StopId(stopId, -1))
+        FavouriteStopAction(StopId(stopId))
     }) {
         PullToRefreshBox(departuresResult.isRefreshing, departuresResult.refresh) {
             AsyncContent(departuresResult, loading = { DeparturesShimmer(header?.postNames) }) { deps ->
@@ -105,7 +105,7 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
                     DepartureBoard(deps, onPostClick = {
                         state.onNavigate(
                             NavRoute.Departures.PostDetail(
-                                deps.stop.id.internal,
+                                deps.stop.id.id,
                                 it.postId
                             )
                         )

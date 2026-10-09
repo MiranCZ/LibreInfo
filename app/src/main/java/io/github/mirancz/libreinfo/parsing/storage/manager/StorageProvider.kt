@@ -88,7 +88,6 @@ class StorageProvider {
             update(instance.routeStopStorage)
             update(instance.calendarStorage)
             update(instance.apiStorage)
-            update(instance.stopMapper)
         }
     }
 

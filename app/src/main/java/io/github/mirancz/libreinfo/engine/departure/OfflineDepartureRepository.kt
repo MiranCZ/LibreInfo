@@ -28,7 +28,7 @@ class OfflineDepartureRepository(val storageProvider: StorageProvider) : Departu
     }
 
     private fun header(storage: IdStorage, stopId: Int): DepartureHeader {
-        val stop = storage.stopStorage.getStop(StopId.internal(stopId))
+        val stop = storage.stopStorage.getStop(stopId)
         val stopName = stop.name
 
         return DepartureHeader(stopName, stop.isFavourite(),storage.postStorage.getPosts(stop).map { it.name })
@@ -45,7 +45,7 @@ class OfflineDepartureRepository(val storageProvider: StorageProvider) : Departu
             error = e.error
         }
 
-        val stop = storage.stopStorage.getStop(StopId.internal(stopId))
+        val stop = storage.stopStorage.getStop(stopId)
 
         return DepartureBoard(
             stop,

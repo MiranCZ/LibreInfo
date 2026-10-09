@@ -526,7 +526,7 @@ private fun onSearch(state: NavState, vm: ConnectionViewModel) {
         .toString()
 
 
-    state.onNavigate(NavRoute.ConnectionResults(from.id.internal, to.id.internal, time, vm.isArrival))
+    state.onNavigate(NavRoute.ConnectionResults(from.id.id, to.id.id, time, vm.isArrival))
 }
 
 

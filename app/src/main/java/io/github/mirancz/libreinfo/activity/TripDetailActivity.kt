@@ -346,7 +346,7 @@ private fun StopRow(
     state: StopRenderState,
 ) {
     val stop = data.stops[state.index]
-    val stopName = storage.stopStorage.getStop(StopId.internal(state.stopId)).name
+    val stopName = storage.stopStorage.getStop(state.stopId).name
     val isHighlighted = state.stopId == data.highlightedStopId
 
     val highlightedIconAlpha = 1f

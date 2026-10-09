@@ -38,8 +38,8 @@ internal class ConnectionPagingSource(
 
     private suspend fun loadPage(cursor: String?): LoadResult.Page<String, ConnectionUi> {
         val storage = AppContainer.storageProvider.getInstance()
-        val fromStop = storage.stopStorage.getStop(StopId.internal(fromStopId))
-        val toStop = storage.stopStorage.getStop(StopId.internal(toStopId))
+        val fromStop = storage.stopStorage.getStop(fromStopId)
+        val toStop = storage.stopStorage.getStop(toStopId)
 
         val response = RequestHelper.findConnections(context, fromStop, toStop, time, isArrival, cursor)
         val now = DateTime.now()

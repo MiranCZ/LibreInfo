@@ -266,7 +266,7 @@ fun StopList(
         ) {
             items(
                 filteredItems,
-                key = { it.id.internal }
+                key = { it.id.id }
             ) { item ->
 
                 Row(

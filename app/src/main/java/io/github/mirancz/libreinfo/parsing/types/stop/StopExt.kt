@@ -1,6 +1,5 @@
 package io.github.mirancz.libreinfo.parsing.types.stop
 
-import io.github.mirancz.libreinfo.parsing.storage.StopMapper
 import io.github.mirancz.libreinfo.parsing.types.Location
 import io.github.mirancz.libreinfo.util.AppInputStream
 import io.github.mirancz.libreinfo.util.FavouriteStops
@@ -16,18 +15,18 @@ fun Stop.setFavourite(favourite: Boolean) {
 
 
 @Throws(IOException::class)
-fun parseStops(input: AppInputStream, mapper: StopMapper): MutableList<Stop?> {
+fun parseStops(input: AppInputStream): MutableList<Stop?> {
     val result: MutableList<Stop?> = ArrayList()
 
     while (input.readBoolean()) {
-        result.add(parse(input, mapper))
+        result.add(parse(input))
     }
 
     return result
 }
 
 @Throws(IOException::class)
-fun parse(input: AppInputStream, mapper: StopMapper): Stop {
+fun parse(input: AppInputStream): Stop {
     val stopId = input.readInt()
 
     val name = input.readString()
@@ -36,7 +35,7 @@ fun parse(input: AppInputStream, mapper: StopMapper): Stop {
     val lat = input.readDouble()
     val lon = input.readDouble()
 
-    val id = StopId(stopId, mapper.getOriginal(stopId))
+    val id = StopId(stopId)
 
     return Stop(id, name!!, parentStation!!, Location(lat, lon))
 

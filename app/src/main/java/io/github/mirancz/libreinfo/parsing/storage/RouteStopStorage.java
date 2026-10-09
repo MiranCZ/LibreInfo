@@ -11,11 +11,11 @@ import java.nio.ByteBuffer;
 
 public class RouteStopStorage implements AppStorage {
 
-    public static RouteStopStorage parse(DataInputStream is, ByteBuffer routeStops, StopMapper mapper) throws AppException {
+    public static RouteStopStorage parse(DataInputStream is, ByteBuffer routeStops, int stopsLength) throws AppException {
         try {
-            int[][] stopIdToRoute = new int[mapper.internalStopsLength()][];
-
             int size = is.readInt();
+
+            int[][] stopIdToRoute = new int[stopsLength][];
 
             for (int i = 0; i < size; i++) {
                 short stopId = is.readShort();
