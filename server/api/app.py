@@ -62,6 +62,10 @@ def get_departures():
     resp = gtfs_rt.get(f"{GTFS_RT_URL}/departures", params=request.args)
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
+@api.route("/routePath", methods=["GET"])
+def get_route_path():
+    resp = gtfs_rt.get(f"{GTFS_RT_URL}/routePath", params=request.args)
+    return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 @api.route("/routeDelays", methods=["GET"])
 def get_route_delays():

@@ -56,6 +56,8 @@ public class Main {
         get("/events", endpoints::handleEvents);
         get("/posts", endpoints::handlePosts);
 
+        get("/routePath", endpoints::routePath);
+
         post("/internal/reload", endpoints::handleReload);
     }
 

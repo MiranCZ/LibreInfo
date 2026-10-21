@@ -60,6 +60,14 @@ public class RequestHelper {
         return new Gson().fromJson(get("posts"), PostsResponse.class);
     }
 
+    public static String getRoutePath(String serviceId, String lineId, String routeId) {
+        return get("routePath", Map.of(
+                "serviceid", serviceId,
+                "lineid", lineId,
+                "routeid", routeId
+        ));
+    }
+
     public static String getDepartures(int stopId) {
         Integer upstreamStopId = IdStorage.STOP.getOriginal(stopId);
         if (upstreamStopId == null) {
