@@ -3,9 +3,7 @@ package me.miran.request;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import me.miran.ids.ApiVehicle;
-import me.miran.ids.PostsResponse;
-import me.miran.ids.VehiclesResponse;
+import me.miran.ids.*;
 import me.miran.util.IdStorage;
 
 import java.io.IOException;
@@ -17,9 +15,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static me.miran.request.Util.decodeGooglePolyline;
 
 public class RequestHelper {
 
@@ -60,12 +62,23 @@ public class RequestHelper {
         return new Gson().fromJson(get("posts"), PostsResponse.class);
     }
 
-    public static String getRoutePath(String serviceId, String lineId, String routeId) {
-        return get("routePath", Map.of(
+    public static List<Pos> getRoutePath(String serviceId, String lineId, String routeId) {
+        var res =  get("routePath", Map.of(
                 "serviceid", serviceId,
                 "lineid", lineId,
                 "routeid", routeId
         ));
+
+
+        var response = new Gson().fromJson(res, RoutePathResponse.class);
+
+        ArrayList<Pos> list = new ArrayList<>();
+        for (RoutePart stop : response.getStops()) {
+            list.addAll(decodeGooglePolyline(stop.getPath()));
+        }
+        return list;
+
+
     }
 
     public static String getDepartures(int stopId) {

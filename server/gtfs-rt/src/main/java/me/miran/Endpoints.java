@@ -136,12 +136,15 @@ public class Endpoints {
         String lineId = request.queryParams("lineId");
         String routeId = request.queryParams("routeId");
         try {
-            return RequestHelper.getRoutePath(serviceId, lineId, routeId);
+            var points = RequestHelper.getRoutePath(serviceId, lineId, routeId).stream()
+                    .map(p -> new double[]{p.lat(), p.lng()})
+                    .toList();
+            return gson.toJson(Map.of("points", points));
         } catch (RuntimeException e) {
             // Unlike the other handlers, failures must not be a 200 — the caller bakes this
             // response into the static bundle and cannot tell an error body from real data.
             response.status(502);
-            return error("Upstream posts request failed: " + e.getMessage());
+            return error("Upstream routePath request failed: " + e.getMessage());
         }
     }
 
