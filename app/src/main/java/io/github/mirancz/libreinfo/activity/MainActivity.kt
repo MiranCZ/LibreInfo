@@ -105,6 +105,14 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HomeScreen(onNavigate: (NavRoute) -> Unit) {
+//    SelectedRoute(
+//                vehicleId = vehicle.id,
+//                serviceId = serviceId,
+//                lineId = vehicle.line.id,
+//                routeId = vehicle.routeId,
+//                color = vehicle.line.backgroundColorStr(),
+//            )
+
     NavigationScreenScaffold(
         title = stringResource(R.string.app_name),
         onBack = null,
@@ -118,7 +126,7 @@ fun HomeScreen(onNavigate: (NavRoute) -> Unit) {
             R.drawable.location_arrow,
             R.string.vehicle_map,
             true
-        ) { onNavigate(NavRoute.VehicleMap) }
+        ) { onNavigate(NavRoute.VehicleMap()) }
         NavigationItem(R.drawable.map_regular_full, R.string.connection_search, true) {
             onNavigate(
                 NavRoute.ConnectionSearch
@@ -220,7 +228,7 @@ fun AppNavHost() {
                 entry<NavRoute.Settings.Updates> { UpdatingSettingsScreen(stateFor(it)) }
                 entry<NavRoute.Settings.Departures> { DeparturesSettingsScreen(stateFor(it)) }
 
-                entry<NavRoute.VehicleMap> { VehicleMapScreen(stateFor(it)) }
+                entry<NavRoute.VehicleMap> { VehicleMapScreen(stateFor(it), it.vehicle) }
                 entry<NavRoute.News> { NewsScreen(stateFor(it)) }
                 entry<NavRoute.About> { AboutScreen(stateFor(it)) }
                 entry<NavRoute.About.Attribution> { AttributionScreen(stateFor(it)) }

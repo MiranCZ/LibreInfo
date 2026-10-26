@@ -33,6 +33,8 @@ import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.settings.SelectedRoute
+import io.github.mirancz.libreinfo.nav.NavRoute
 import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AsyncContent
@@ -60,7 +62,25 @@ fun VehiclesListScreen(state: NavState) {
             } else {
                 LazyColumn {
                     items(vehicleList) { vehicle ->
-                        VehicleEntry(vehicle)
+                        val onClick = vehicle.serviceId?.let { serviceId ->
+                            {
+                                state.onNavigate(
+                                    NavRoute.VehicleMap(
+                                        SelectedRoute(
+                                            vehicleId = vehicle.id,
+                                            serviceId = serviceId,
+                                            lineId = vehicle.line.id,
+                                            routeId = vehicle.routeId,
+                                            color = vehicle.line.backgroundColorStr(),
+                                            lat = vehicle.latitude,
+                                            lng = vehicle.longitude
+                                        )
+                                    )
+                                )
+                            }
+                        }
+
+                        VehicleEntry(vehicle, onClick)
                     }
                 }
             }
@@ -100,13 +120,11 @@ private fun VehicleEntryShimmer(shimmer: Shimmer) {
 }
 
 @Composable
-private fun VehicleEntry(item: Vehicle) {
+private fun VehicleEntry(item: Vehicle, onClick: (() -> Unit)?) {
     val context = LocalContext.current
 
     Container(
-        onClick = {
-            // TODO add on-click
-        },
+        onClick = onClick,
         Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
         Column() {

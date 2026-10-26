@@ -2,8 +2,10 @@ package io.github.mirancz.libreinfo.nav
 
 import androidx.navigation3.runtime.NavKey
 import io.github.mirancz.libreinfo.activity.SearchKinds
+import io.github.mirancz.libreinfo.activity.settings.SelectedRoute
 import io.github.mirancz.libreinfo.parsing.types.Diversion
 import io.github.mirancz.libreinfo.parsing.types.NewsEntry
+import io.github.mirancz.libreinfo.parsing.types.Vehicle
 import kotlinx.serialization.Serializable
 
 
@@ -45,7 +47,7 @@ sealed interface NavRoute : NavKey {
     data class StopPicker(val resultKey: String, val kinds: SearchKinds) : NavRoute
 
     @Serializable
-    data object VehicleMap : NavRoute
+    data class VehicleMap(val vehicle: SelectedRoute? = null) : NavRoute
 
     @Serializable
     data object ConnectionSearch : NavRoute
