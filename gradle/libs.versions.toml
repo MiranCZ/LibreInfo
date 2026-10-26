@@ -14,6 +14,7 @@ appcompat = "1.7.0"
 kotlinxCoroutinesPlayServices = "1.11.0"
 kotlinxSerializationJson = "1.11.0"
 lifecycleViewmodelCompose = "2.10.0"
+maplibreCompose = "0.14.0"
 navigation3 = "1.1.7"
 material = "1.10.0"
 gson = "2.14.0"
@@ -32,6 +33,7 @@ compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeB
 kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 maplibre-annotation = { module = "org.maplibre.gl:android-plugin-annotation-v9", version.ref = "androidPluginAnnotationV9" }
+maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibreCompose" }
 maplibre-sdk = { module = "org.maplibre.gl:android-sdk", version.ref = "androidSdk" }
 compose-shimmer = { module = "com.valentinilk.shimmer:compose-shimmer", version.ref = "composeShimmer" }
 flexbox = { module = "com.google.android.flexbox:flexbox", version.ref = "flexbox" }

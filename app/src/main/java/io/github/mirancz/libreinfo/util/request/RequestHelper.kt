@@ -14,11 +14,12 @@ import io.github.mirancz.libreinfo.parsing.types.response.DataInfoResponse
 import io.github.mirancz.libreinfo.parsing.types.response.DiversionsResponse
 import io.github.mirancz.libreinfo.parsing.types.response.EventsResponse
 import io.github.mirancz.libreinfo.parsing.types.response.NewsResponse
-import io.github.mirancz.libreinfo.parsing.types.response.VersionInfoResponse
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
+import io.github.mirancz.libreinfo.parsing.types.response.RoutePathResponse
 import io.github.mirancz.libreinfo.parsing.types.response.ServerDeparturesResponse
 import io.github.mirancz.libreinfo.parsing.types.response.VehicleInfoResponse
 import io.github.mirancz.libreinfo.parsing.types.response.VehiclesResponse
+import io.github.mirancz.libreinfo.parsing.types.response.VersionInfoResponse
 import io.github.mirancz.libreinfo.parsing.types.stop.Stop
 import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.util.AppLog
@@ -31,13 +32,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
 import java.io.InputStream
-import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
-import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
-import kotlin.getValue
 
 object RequestHelper {
 
@@ -76,6 +74,11 @@ object RequestHelper {
     @Throws(RequestException::class)
     fun getDiversions(context: Context, force: Boolean = false): DiversionsResponse {
         return makeOwnCachedRequest(context, "diversions", 120, force)
+    }
+
+    @Throws(RequestException::class)
+    fun getRoutePath(context: Context, serviceId: Int, lineId: Int, routeId: Int ,cacheTtl: Int = 300, force: Boolean = false): RoutePathResponse {
+        return makeOwnCachedRequest(context, "routePath?serviceId=$serviceId&lineId=$lineId&routeId=$routeId", cacheTtl, force)
     }
 
     @Throws(RequestException::class)

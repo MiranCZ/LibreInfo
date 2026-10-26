@@ -263,6 +263,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.maplibre.sdk)
     implementation(libs.maplibre.annotation)
+    implementation(libs.maplibre.compose)
     implementation(libs.xz)
     implementation(libs.compose.shimmer)
     implementation(libs.core.ktx)
