@@ -1,4 +1,6 @@
 import requests
+import datetime
+from zoneinfo import ZoneInfo
 from selectolax.parser import HTMLParser
 
 
@@ -80,7 +82,7 @@ class PageParser:
         else:
             to_str = to_str.text()
 
-        return from_str, to_str
+        return to_iso8601(from_str), to_iso8601(to_str)
 
     @staticmethod
     def get_and_parse():
@@ -94,6 +96,22 @@ class PageParser:
             "events": PageParser.__parse_list(dom.css_first(".view-display-id-attachment_1 > div:nth-child(2)"))
         }
 
+
+def to_iso8601(s: str):
+    if s == "?":
+        return None
+
+    parts = s.split(" ")
+    day = int(parts[0].removesuffix("."))
+    month = int(parts[1].removesuffix("."))
+    year = int(parts[2])
+
+    time_parts = parts[3].split(":")
+    hour = int(time_parts[0])
+    minute = int(time_parts[1])
+
+    dt = datetime.datetime(year, month, day, hour, minute, tzinfo=ZoneInfo("Europe/Prague"))
+    return dt.astimezone(datetime.timezone.utc).isoformat(timespec="seconds")
 
 if __name__ == '__main__':
     PageParser.get_and_parse()

@@ -20,13 +20,23 @@ motis = requests.Session()
 
 @api.route('/diversions', methods=['GET'])
 def get_diversions():
-    resp = gtfs_rt.get(f"{GTFS_RT_URL}/diversions")
+    source = request.args.get("source", "kordis")
+
+    if source != "dpmb":
+        resp = gtfs_rt.get(f"{GTFS_RT_URL}/diversions")
+    else:
+        resp = scraper.get(f"{SCRAPER_URL}/diversions")
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 
 @api.route('/events', methods=['GET'])
 def get_events():
-    resp = gtfs_rt.get(f"{GTFS_RT_URL}/events")
+    source = request.args.get("source", "kordis")
+
+    if source != "dpmb":
+        resp = gtfs_rt.get(f"{GTFS_RT_URL}/events")
+    else:
+        resp = scraper.get(f"{SCRAPER_URL}/events")
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 @api.route('/shapes', methods=['GET'])

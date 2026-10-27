@@ -14,7 +14,7 @@ cache = Caching(flask_cache)
 def get_diversions():
     result = get_traffic_changes()
     if result.get("diversions") is not None:
-        return json.dumps(result.get("diversions"))
+        return "{\"diversions\": " + json.dumps(result.get("diversions")) + "}"
 
     return json.dumps(result)
 
@@ -22,7 +22,7 @@ def get_diversions():
 def get_events():
     result = get_traffic_changes()
     if result.get("events") is not None:
-        return json.dumps(result.get("events"))
+        return "{\"events\": " + json.dumps(result.get("events")) + "}"
 
     return json.dumps(result)
 
