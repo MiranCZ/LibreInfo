@@ -2,10 +2,9 @@ package io.github.mirancz.libreinfo.nav
 
 import androidx.navigation3.runtime.NavKey
 import io.github.mirancz.libreinfo.activity.SearchKinds
-import io.github.mirancz.libreinfo.activity.settings.SelectedRoute
+import io.github.mirancz.libreinfo.activity.SelectedRoute
 import io.github.mirancz.libreinfo.parsing.types.Diversion
 import io.github.mirancz.libreinfo.parsing.types.NewsEntry
-import io.github.mirancz.libreinfo.parsing.types.Vehicle
 import kotlinx.serialization.Serializable
 
 

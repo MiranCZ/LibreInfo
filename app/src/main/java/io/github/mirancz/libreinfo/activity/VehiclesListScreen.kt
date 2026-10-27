@@ -33,7 +33,6 @@ import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.activity.settings.SelectedRoute
 import io.github.mirancz.libreinfo.nav.NavRoute
 import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.ui.ScreenScaffold

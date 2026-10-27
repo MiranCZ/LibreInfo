@@ -68,7 +68,6 @@ import io.github.mirancz.libreinfo.activity.settings.DevSettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.LocationSettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.SettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.UpdatingSettingsScreen
-import io.github.mirancz.libreinfo.activity.settings.VehicleMapScreen
 import io.github.mirancz.libreinfo.nav.LocalNavResults
 import io.github.mirancz.libreinfo.nav.NavResults
 import io.github.mirancz.libreinfo.nav.NavRoute

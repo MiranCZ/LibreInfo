@@ -1,4 +1,4 @@
-package io.github.mirancz.libreinfo.activity.settings
+package io.github.mirancz.libreinfo.activity
 
 import androidx.compose.animation.EnterExitState
 import androidx.compose.foundation.background
@@ -7,14 +7,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +33,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,13 +44,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.activity.MainActivity
 import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.Location
@@ -69,7 +72,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.int
-import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import org.maplibre.compose.camera.CameraPosition
@@ -84,7 +86,6 @@ import org.maplibre.compose.expressions.dsl.exponential
 import org.maplibre.compose.expressions.dsl.feature
 import org.maplibre.compose.expressions.dsl.image
 import org.maplibre.compose.expressions.dsl.interpolate
-import org.maplibre.compose.expressions.dsl.linear
 import org.maplibre.compose.expressions.dsl.rem
 import org.maplibre.compose.expressions.dsl.switch
 import org.maplibre.compose.expressions.dsl.times
@@ -93,7 +94,6 @@ import org.maplibre.compose.expressions.value.IconRotationAlignment
 import org.maplibre.compose.expressions.value.LineCap
 import org.maplibre.compose.expressions.value.LineJoin
 import org.maplibre.compose.expressions.value.SymbolAnchor
-import org.maplibre.compose.expressions.value.SymbolZOrder
 import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.SymbolLayer
 import org.maplibre.compose.map.GestureOptions
@@ -218,6 +218,21 @@ private fun VehicleMapContent(state: NavState, vehicle: SelectedRoute?) {
     val vehicles = remember { mutableStateMapOf<Int, Vehicle>() }
     val selectedVehicle = selected?.let { vehicles[it.vehicleId] }
 
+    // onMapClick runs before layer click handlers, so this holds the offset of the current click
+    var lastClickOffset by remember { mutableStateOf(DpOffset.Zero) }
+    var picker by remember { mutableStateOf<VehiclePicker?>(null) }
+
+    fun select(v: Vehicle) {
+        selected = v.toSelectedRoute() ?: return
+        val lat = v.latitude ?: return
+        val lng = v.longitude ?: return
+        scope.launch {
+            cameraState.animateTo(
+                CameraPosition(target = Position(lng, lat), zoom = 16.0)
+            )
+        }
+    }
+
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
@@ -288,124 +303,160 @@ private fun VehicleMapContent(state: NavState, vehicle: SelectedRoute?) {
             }
         },
     ) {
-        MaplibreMap(
-            modifier = Modifier.fillMaxSize(),
-            baseStyle = BaseStyle.Uri(STYLE_URL + BuildConfig.MAPTILER_API_KEY),
-            cameraState = cameraState,
-            options = MapOptions(
-                ornamentOptions = OrnamentOptions(
-                    isCompassEnabled = false, isScaleBarEnabled = false
-                ), gestureOptions = GestureOptions(isTiltEnabled = false),
+        Box(Modifier.fillMaxSize()) {
+            MaplibreMap(
+                modifier = Modifier.fillMaxSize(),
+                baseStyle = BaseStyle.Uri(STYLE_URL + BuildConfig.MAPTILER_API_KEY),
+                cameraState = cameraState,
+                options = MapOptions(
+                    ornamentOptions = OrnamentOptions(
+                        isCompassEnabled = false, isScaleBarEnabled = false
+                    ), gestureOptions = GestureOptions(isTiltEnabled = false),
 
-                // this should maybe make the map smoother, TODO test
-                renderOptions = RenderOptions(renderMode = RenderOptions.RenderMode.TextureView)
-            ),
-            onMapClick = { _, offset ->
-                val hit = cameraState.projection
-                    ?.queryRenderedFeatures(offset, setOf("vehicles"))
-                    .orEmpty()
-                if (hit.isEmpty()) selected = null
-                ClickResult.Pass
-            },
-        ) {
+                    // this should maybe make the map smoother, TODO test
+                    renderOptions = RenderOptions(renderMode = RenderOptions.RenderMode.TextureView)
+                ),
+                onMapClick = { _, offset ->
+                    lastClickOffset = offset
+                    val hit = cameraState.projection
+                        ?.queryRenderedFeatures(offset, setOf("vehicles"))
+                        .orEmpty()
+                    if (hit.isEmpty()) selected = null
+                    ClickResult.Pass
+                },
+            ) {
 
 
-            val vehicleSource = rememberGeoJsonSource(GeoJsonData.Features(vehicleData))
-            val busIcon = image(
-                painterResource(R.drawable.vehicle_arrow), DpSize(32.dp, 32.dp), drawAsSdf = true
-            )
+                val vehicleSource = rememberGeoJsonSource(GeoJsonData.Features(vehicleData))
+                val busIcon = image(
+                    painterResource(R.drawable.vehicle_arrow), DpSize(32.dp, 32.dp), drawAsSdf = true
+                )
 
-            val routeSource = rememberGeoJsonSource(GeoJsonData.Features(routePath))
-            LineLayer(
-                id = "route",
-                source = routeSource,
-                color = feature["color"].convertToColor(),
-                width = const(4.dp),
-                cap = const(LineCap.Round),
-                join = const(LineJoin.Round),
-            )
+                val routeSource = rememberGeoJsonSource(GeoJsonData.Features(routePath))
+                LineLayer(
+                    id = "route",
+                    source = routeSource,
+                    color = feature["color"].convertToColor(),
+                    width = const(4.dp),
+                    cap = const(LineCap.Round),
+                    join = const(LineJoin.Round),
+                )
 
-            posts?.let { data ->
-                val source = rememberGeoJsonSource(GeoJsonData.Features(data))
+                posts?.let { data ->
+                    val source = rememberGeoJsonSource(GeoJsonData.Features(data))
+
+                    SymbolLayer(
+                        id = "stops",
+                        source = source,
+                        minZoom = 13f,
+                        iconImage = image(painterResource(R.drawable.stop), DpSize(24.dp, 24.dp)),
+                        iconAnchor = const(SymbolAnchor.Bottom),
+                        iconAllowOverlap = const(false),
+                        onClick = { features ->
+                            // TODO
+                            ClickResult.Consume
+                        },
+                    )
+                }
+
+                val isSelected =
+                    feature["id"].asNumber() eq const(selected?.vehicleId?.toFloat() ?: -1f)
+                val selScale = switch(condition(isSelected, const(1.2f)), fallback = const(1f))
 
                 SymbolLayer(
-                    id = "stops",
-                    source = source,
-                    minZoom = 13f,
-                    iconImage = image(painterResource(R.drawable.stop), DpSize(24.dp, 24.dp)),
-                    iconAnchor = const(SymbolAnchor.Bottom),
-                    iconAllowOverlap = const(false),
+                    id = "vehicles",
+                    source = vehicleSource,
+                    iconImage = busIcon,
+                    iconSize = interpolate(
+                        exponential(1.2f), zoom(),
+                        11 to const(0.6f) * selScale,
+                        15 to const(1.25f) * selScale,
+                    ),
+                    iconColor = feature["color"].convertToColor(),
+                    iconRotate = feature["bearing"].asNumber(),
+                    iconRotationAlignment = const(IconRotationAlignment.Map),
+                    iconAllowOverlap = const(true),
+                    iconIgnorePlacement = const(true),
+                    textField = feature["name"].asString(),
+                    textColor = feature["textColor"].convertToColor(),
+                    textSize = interpolate(
+                        exponential(1.2f), zoom(),
+                        9.9f to const(0.sp) * selScale,
+                        10 to const(7.sp) * selScale,
+                        11 to const(7.sp) * selScale,
+                        15 to const(11.sp) * selScale,
+                    ),
+                    textAllowOverlap = const(true),
+                    textOptional = const(true),
+                    sortKey = switch(
+                        condition(isSelected, const(1_000_000f)),
+                        fallback = feature["id"].asNumber() % const(100),
+                    ),
                     onClick = { features ->
-                        // TODO
+                        // features are sorted front-to-back, may contain duplicates across tiles
+                        val ids = features
+                            .mapNotNull { it.properties?.get("id")?.jsonPrimitive?.int }
+                            .distinct()
+
+                        if (ids.size > 1) {
+                            picker = VehiclePicker(lastClickOffset, ids)
+                        } else {
+                            ids.firstOrNull()?.let { vehicles[it] }?.let(::select)
+                        }
                         ClickResult.Consume
                     },
                 )
             }
 
-            val isSelected =
-                feature["id"].asNumber() eq const(selected?.vehicleId?.toFloat() ?: -1f)
-            val selScale = switch(condition(isSelected, const(1.2f)), fallback = const(1f))
-
-            SymbolLayer(
-                id = "vehicles",
-                source = vehicleSource,
-                iconImage = busIcon,
-                iconSize = interpolate(
-                    exponential(1.2f), zoom(),
-                    11 to const(0.6f) * selScale,
-                    15 to const(1.25f) * selScale,
-                ),
-                iconColor = feature["color"].convertToColor(),
-                iconRotate = feature["bearing"].asNumber(),
-                iconRotationAlignment = const(IconRotationAlignment.Map),
-                iconAllowOverlap = const(true),
-                iconIgnorePlacement = const(true),
-                textField = feature["name"].asString(),
-                textColor = feature["textColor"].convertToColor(),
-                textSize = interpolate(
-                    exponential(1.2f), zoom(),
-                    9.9f to const(0.sp) * selScale,
-                    10 to const(7.sp) * selScale,
-                    11 to const(7.sp) * selScale,
-                    15 to const(11.sp) * selScale,
-                ),
-                textAllowOverlap = const(true),
-                textOptional = const(true),
-                sortKey = switch(
-                    condition(isSelected, const(1_000_000f)),
-                    fallback = feature["id"].asNumber() % const(100),
-                ),
-                onClick = { features ->
-
-                    val p = features.first().properties!!
-                    val point = features.first().geometry as Point
-
-                    selected = SelectedRoute(
-                        vehicleId = p["id"]!!.jsonPrimitive.int,
-                        serviceId = p["serviceId"]!!.jsonPrimitive.int,
-                        lineId = p["lineId"]!!.jsonPrimitive.int,
-                        routeId = p["routeId"]!!.jsonPrimitive.int,
-                        color = p["color"]!!.jsonPrimitive.content,
-                        lat = point.latitude,
-                        lng = point.longitude
-                    )
-
-                    scope.launch {
-
-                        cameraState.animateTo(
-                            CameraPosition(
-                                target = Position(
-                                    point.longitude, point.latitude
-                                ), zoom = 16.0
-                            )
-                        )
+            picker?.let { p ->
+                Box(Modifier.offset(p.offset.x, p.offset.y)) {
+                    PickerDropDown(p, vehicles, { picker = null}) {
+                        picker = null
+                        select(it)
                     }
-                    ClickResult.Consume
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PickerDropDown(
+    p: VehiclePicker,
+    vehicles: SnapshotStateMap<Int, Vehicle>,
+    onDismiss: () -> Unit,
+    onClick: (Vehicle) -> Unit
+) {
+    DropdownMenu(expanded = true, onDismissRequest = { onDismiss() }) {
+        p.ids.mapNotNull { vehicles[it] }.forEach { v ->
+            DropdownMenuItem(
+                leadingIcon = { LineIcon(line = v.line, padding = 0.dp) },
+                text = {
+                    Text(
+                        v.getFinalStopText(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                onClick = {
+                    onClick(v)
                 },
             )
         }
     }
 }
+
+private data class VehiclePicker(val offset: DpOffset, val ids: List<Int>)
+
+private fun Vehicle.toSelectedRoute(): SelectedRoute? = SelectedRoute(
+    vehicleId = id,
+    serviceId = serviceId ?: return null,
+    lineId = line.id,
+    routeId = routeId,
+    color = line.backgroundColorStr(),
+    lat = latitude,
+    lng = longitude,
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
