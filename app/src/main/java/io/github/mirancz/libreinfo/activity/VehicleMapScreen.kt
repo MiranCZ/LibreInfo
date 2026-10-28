@@ -35,11 +35,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -62,6 +65,8 @@ import io.github.mirancz.libreinfo.parsing.types.dto.VehicleDTO
 import io.github.mirancz.libreinfo.parsing.types.response.RoutePathResponse
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.LineIcon
+import io.github.mirancz.libreinfo.ui.components.ShimmerBox
+import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.json
@@ -69,6 +74,7 @@ import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.util.request.VehicleWebsocket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -114,6 +120,7 @@ import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.LineString
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
+import org.maplibre.spatialk.geojson.toJson
 import kotlin.runCatching
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -135,35 +142,62 @@ public data class SelectedRoute(
 )
 
 @Composable
-fun VehicleMapScreen(state: NavState, selected: SelectedRoute?) {
+fun VehicleMapScreen(state: NavState, vehicle: SelectedRoute?) {
+    val context = LocalContext.current
+
     val transition = LocalNavAnimatedContentScope.current.transition
     val showMap =
         transition.currentState == EnterExitState.Visible && transition.targetState == EnterExitState.Visible
 
+    var selected by remember { mutableStateOf(vehicle) }
+    // set once the first tiles are drawn, until then the map only shows the style's background.
+    // Keyed on showMap since every time the map is shown, a new map instance is created
+    var mapLoaded by remember(showMap) { mutableStateOf(false) }
+    val posts by loadPosts()
+    val routePath by getRoutePathState(selected, context)
+
     ScreenScaffold(stringResource(R.string.vehicle_map), onBack = state.onBack) {
-        if (showMap) {
-            VehicleMapContent(state, selected)
-        } else {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            )
+        Box(Modifier.fillMaxSize()) {
+            if (showMap) {
+                VehicleMapContent(
+                    state, posts, routePath, selected, mapLoaded,
+                    onMapLoaded = { mapLoaded = true },
+                    onSelectedChange = { selected = it },
+                )
+            }
+
+            if (!mapLoaded) MapPlaceholder()
         }
     }
 }
 
 @Composable
-private fun VehicleMapContent(state: NavState, vehicle: SelectedRoute?) {
+private fun MapPlaceholder() {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        ShimmerBox(Modifier.fillMaxSize(), rememberActivityShimmer(), RectangleShape)
+    }
+}
+
+@Composable
+private fun VehicleMapContent(
+    state: NavState,
+    posts: String?,
+    routePath: FeatureCollection<LineString, JsonObject>,
+    selected: SelectedRoute?,
+    mapLoaded: Boolean,
+    onMapLoaded: () -> Unit,
+    onSelectedChange: (SelectedRoute?) -> Unit,
+) {
     val context = LocalContext.current
 
-    val cameraState = getCameraStateFrom(vehicle)
+    val cameraState = getCameraStateFrom(selected)
     val scope = rememberCoroutineScope()
-    val posts by loadPosts()
 
-
-    var selected by remember { mutableStateOf(vehicle) }
-    val routePath by getRoutePathState(selected, context)
+    val currentSelected by rememberUpdatedState(selected)
 
     val vehicles = remember { mutableStateMapOf<Int, Vehicle>() }
     val selectedVehicle = selected?.let { vehicles[it.vehicleId] }
@@ -173,7 +207,7 @@ private fun VehicleMapContent(state: NavState, vehicle: SelectedRoute?) {
     var picker by remember { mutableStateOf<VehiclePicker?>(null) }
 
     fun select(v: Vehicle) {
-        selected = v.toSelectedRoute() ?: return
+        onSelectedChange(v.toSelectedRoute() ?: return)
         val lat = v.latitude ?: return
         val lng = v.longitude ?: return
 
@@ -193,26 +227,17 @@ private fun VehicleMapContent(state: NavState, vehicle: SelectedRoute?) {
                     context, false
                 ).vehicles.map { it.map(storage) }
             }.onSuccess { list ->
-                list.forEach { vehicles[it.id] = it }
+                vehicles.putAll(list.associateBy { it.id })
 
-                // update camera if vehicle moved from screen open
-                if (vehicle != null && selected?.vehicleId == vehicle.vehicleId) {
-                    val update = vehicles[vehicle.vehicleId]
+                // update camera if vehicle moved from screen open; nothing else can be selected yet
+                // since the vehicle layer is empty until this fetch completes
+                val update = currentSelected?.let { vehicles[it.vehicleId] } ?: return@onSuccess
+                val lat = update.latitude ?: return@onSuccess
+                val lng = update.longitude ?: return@onSuccess
 
-                    if (update?.latitude != null && update.longitude != null) {
-
-                        scope.launch {
-                            cameraState.animateTo(
-                                CameraPosition(
-                                    target = Position(
-                                        update.longitude!!, update.latitude!!
-                                    ), zoom = 16.0
-                                )
-                            )
-                        }
-                    }
+                scope.launch {
+                    cameraState.animateTo(CameraPosition(target = Position(lng, lat), zoom = 16.0))
                 }
-
             }
 
             VehicleWebsocket.subscribe(MainActivity::class.java) { message ->
@@ -227,6 +252,7 @@ private fun VehicleMapContent(state: NavState, vehicle: SelectedRoute?) {
     }
 
     val vehicleData by produceState(FeatureCollection()) {
+        snapshotFlow { vehicles.isEmpty() }.first { !it }
         while (true) {
             value = FeatureCollection(vehicles.values.mapNotNull { it.toFeature() })
             delay(2_000.milliseconds)
@@ -252,13 +278,17 @@ private fun VehicleMapContent(state: NavState, vehicle: SelectedRoute?) {
                     val hit =
                         cameraState.projection?.queryRenderedFeatures(offset, setOf("vehicles"))
                             .orEmpty()
-                    if (hit.isEmpty()) selected = null
+
+                    if (hit.isEmpty()) onSelectedChange(null)
                     ClickResult.Pass
                 },
+                onMapLoadFinished = onMapLoaded,
+                onMapLoadFailed = { onMapLoaded() },
             ) {
                 RoutePathLayer(routePath)
 
-                PostsLayer(posts)
+                // posts wait for the base map, otherwise their GeoJSON processing delays its first tiles
+                if (mapLoaded) PostsLayer(posts)
 
                 VehicleLayer(selected, vehicleData, vehicles, {
                     picker = VehiclePicker(lastClickOffset, it)
@@ -279,7 +309,10 @@ private fun VehicleMapContent(state: NavState, vehicle: SelectedRoute?) {
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun VehicleSheetScaffold(selectedVehicle: Vehicle?, content: @Composable (PaddingValues) -> Unit) {
+private fun VehicleSheetScaffold(
+    selectedVehicle: Vehicle?,
+    content: @Composable (PaddingValues) -> Unit
+) {
     val scaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = rememberStandardBottomSheetState(skipHiddenState = true)
     )
@@ -390,9 +423,9 @@ private fun RoutePathLayer(routePath: FeatureCollection<LineString, JsonObject>)
 }
 
 @Composable
-private fun PostsLayer(posts: FeatureCollection<Point, JsonObject>?) {
+private fun PostsLayer(posts: String?) {
     posts?.let { data ->
-        val source = rememberGeoJsonSource(GeoJsonData.Features(data))
+        val source = rememberGeoJsonSource(GeoJsonData.JsonString(data))
 
         SymbolLayer(
             id = "stops",
@@ -424,8 +457,10 @@ private fun getCameraStateFrom(vehicle: SelectedRoute?): CameraState {
     return cameraState
 }
 
+// Serialized here because GeoJsonData.Features runs toJson() on the main thread during composition,
+// which takes over 100ms for all posts.
 @Composable
-private fun loadPosts(): State<FeatureCollection<Point, JsonObject>?> = produceState(null) {
+private fun loadPosts(): State<String?> = produceState(null) {
     value = withContext(Dispatchers.IO) {
         val storage = AppContainer.storageProvider.getInstance()   // suspend
         FeatureCollection(storage.postStorage().allPosts.filter { it.location != Location.NONE }
@@ -441,7 +476,7 @@ private fun loadPosts(): State<FeatureCollection<Point, JsonObject>?> = produceS
                         put("name", post.name)
                     },
                 )
-            })
+            }).toJson()
     }
 }
 
