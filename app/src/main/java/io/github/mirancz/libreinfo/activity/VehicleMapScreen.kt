@@ -1,10 +1,12 @@
 package io.github.mirancz.libreinfo.activity
 
+import android.content.Context
 import androidx.compose.animation.EnterExitState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +28,7 @@ import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -75,6 +78,7 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import org.maplibre.compose.camera.CameraPosition
+import org.maplibre.compose.camera.CameraState
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.expressions.dsl.asNumber
 import org.maplibre.compose.expressions.dsl.asString
@@ -111,10 +115,11 @@ import org.maplibre.spatialk.geojson.LineString
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 import kotlin.runCatching
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val STYLE_URL = "https://api.maptiler.com/maps/basic-v2/style.json?key="
 
-// Brno city center, same fallback as VehicleMapActivity
+// Brno city center
 private val DEFAULT_TARGET = Position(longitude = 16.613163, latitude = 49.191748)
 
 
@@ -129,9 +134,6 @@ public data class SelectedRoute(
     val lng: Double?
 )
 
-/**
- * Compose port of [io.github.mirancz.libreinfo.activity.VehicleMapActivity], WIP
- */
 @Composable
 fun VehicleMapScreen(state: NavState, selected: SelectedRoute?) {
     val transition = LocalNavAnimatedContentScope.current.transition
@@ -151,69 +153,17 @@ fun VehicleMapScreen(state: NavState, selected: SelectedRoute?) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun VehicleMapContent(state: NavState, vehicle: SelectedRoute?) {
-    val lat = vehicle?.lat
-    val lng = vehicle?.lng
-
-    val cameraState = rememberCameraState(
-        firstPosition = if (vehicle == null || lat == null || lng == null) {
-            CameraPosition(target = DEFAULT_TARGET, zoom = 15.0)
-        } else {
-            CameraPosition(target = Position(latitude = lat, longitude = lng), zoom = 15.0)
-        }
-    )
-    val scope = rememberCoroutineScope()
-
-    val posts by produceState<FeatureCollection<Point, JsonObject>?>(null) {
-        value = withContext(Dispatchers.IO) {
-            val storage = AppContainer.storageProvider.getInstance()   // suspend
-            FeatureCollection(storage.postStorage().allPosts.filter { it.location != Location.NONE }
-                .map { post ->
-                    Feature(
-                        geometry = Point(
-                            Position(
-                                post.location.longitude, post.location.latitude
-                            )
-                        ),
-                        properties = buildJsonObject {
-                            put("postId", post.postID)
-                            put("name", post.name)
-                        },
-                    )
-                })
-        }
-    }
-
-
     val context = LocalContext.current
 
-    var selected by remember { mutableStateOf<SelectedRoute?>(vehicle) }
-
-//    if (vehicle != null) {
-//        vehicle.serviceId?.let { serviceId ->
-//            selected = SelectedRoute(
-//                vehicleId = vehicle.id,
-//                serviceId = serviceId,
-//                lineId = vehicle.line.id,
-//                routeId = vehicle.routeId,
-//                color = vehicle.line.backgroundColorStr(),
-//            )
-//        }
-//    }
+    val cameraState = getCameraStateFrom(vehicle)
+    val scope = rememberCoroutineScope()
+    val posts by loadPosts()
 
 
-    val routePath by produceState(FeatureCollection(), selected) {
-        val sel = selected ?: run { value = FeatureCollection(); return@produceState }
-        value = withContext(Dispatchers.IO) {
-            runCatching {
-                RequestHelper.getRoutePath(
-                    context, sel.serviceId, sel.lineId, sel.routeId
-                )
-            }.getOrNull()?.toFeatureCollection(sel.color) ?: FeatureCollection()
-        }
-    }
+    var selected by remember { mutableStateOf(vehicle) }
+    val routePath by getRoutePathState(selected, context)
 
     val vehicles = remember { mutableStateMapOf<Int, Vehicle>() }
     val selectedVehicle = selected?.let { vehicles[it.vehicleId] }
@@ -226,6 +176,7 @@ private fun VehicleMapContent(state: NavState, vehicle: SelectedRoute?) {
         selected = v.toSelectedRoute() ?: return
         val lat = v.latitude ?: return
         val lng = v.longitude ?: return
+
         scope.launch {
             cameraState.animateTo(
                 CameraPosition(target = Position(lng, lat), zoom = 16.0)
@@ -278,31 +229,11 @@ private fun VehicleMapContent(state: NavState, vehicle: SelectedRoute?) {
     val vehicleData by produceState(FeatureCollection()) {
         while (true) {
             value = FeatureCollection(vehicles.values.mapNotNull { it.toFeature() })
-            delay(2_000)
+            delay(2_000.milliseconds)
         }
     }
 
-    val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = rememberStandardBottomSheetState(skipHiddenState = true)
-    )
-    val density = LocalDensity.current
-    var sheetHeight by remember { mutableStateOf(0.dp) }
-
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = if (selectedVehicle != null) sheetHeight else 0.dp,
-        sheetDragHandle = null,
-        sheetContent = {
-            selectedVehicle?.let {
-                VehicleSheet(
-                    it,
-                    Modifier.onSizeChanged { size ->
-                        sheetHeight = with(density) { size.height.toDp() }
-                    }
-                )
-            }
-        },
-    ) {
+    VehicleSheetScaffold(selectedVehicle) {
         Box(Modifier.fillMaxSize()) {
             MaplibreMap(
                 modifier = Modifier.fillMaxSize(),
@@ -318,105 +249,199 @@ private fun VehicleMapContent(state: NavState, vehicle: SelectedRoute?) {
                 ),
                 onMapClick = { _, offset ->
                     lastClickOffset = offset
-                    val hit = cameraState.projection
-                        ?.queryRenderedFeatures(offset, setOf("vehicles"))
-                        .orEmpty()
+                    val hit =
+                        cameraState.projection?.queryRenderedFeatures(offset, setOf("vehicles"))
+                            .orEmpty()
                     if (hit.isEmpty()) selected = null
                     ClickResult.Pass
                 },
             ) {
+                RoutePathLayer(routePath)
 
+                PostsLayer(posts)
 
-                val vehicleSource = rememberGeoJsonSource(GeoJsonData.Features(vehicleData))
-                val busIcon = image(
-                    painterResource(R.drawable.vehicle_arrow), DpSize(32.dp, 32.dp), drawAsSdf = true
-                )
-
-                val routeSource = rememberGeoJsonSource(GeoJsonData.Features(routePath))
-                LineLayer(
-                    id = "route",
-                    source = routeSource,
-                    color = feature["color"].convertToColor(),
-                    width = const(4.dp),
-                    cap = const(LineCap.Round),
-                    join = const(LineJoin.Round),
-                )
-
-                posts?.let { data ->
-                    val source = rememberGeoJsonSource(GeoJsonData.Features(data))
-
-                    SymbolLayer(
-                        id = "stops",
-                        source = source,
-                        minZoom = 13f,
-                        iconImage = image(painterResource(R.drawable.stop), DpSize(24.dp, 24.dp)),
-                        iconAnchor = const(SymbolAnchor.Bottom),
-                        iconAllowOverlap = const(false),
-                        onClick = { features ->
-                            // TODO
-                            ClickResult.Consume
-                        },
-                    )
-                }
-
-                val isSelected =
-                    feature["id"].asNumber() eq const(selected?.vehicleId?.toFloat() ?: -1f)
-                val selScale = switch(condition(isSelected, const(1.2f)), fallback = const(1f))
-
-                SymbolLayer(
-                    id = "vehicles",
-                    source = vehicleSource,
-                    iconImage = busIcon,
-                    iconSize = interpolate(
-                        exponential(1.2f), zoom(),
-                        11 to const(0.6f) * selScale,
-                        15 to const(1.25f) * selScale,
-                    ),
-                    iconColor = feature["color"].convertToColor(),
-                    iconRotate = feature["bearing"].asNumber(),
-                    iconRotationAlignment = const(IconRotationAlignment.Map),
-                    iconAllowOverlap = const(true),
-                    iconIgnorePlacement = const(true),
-                    textField = feature["name"].asString(),
-                    textColor = feature["textColor"].convertToColor(),
-                    textSize = interpolate(
-                        exponential(1.2f), zoom(),
-                        9.9f to const(0.sp) * selScale,
-                        10 to const(7.sp) * selScale,
-                        11 to const(7.sp) * selScale,
-                        15 to const(11.sp) * selScale,
-                    ),
-                    textAllowOverlap = const(true),
-                    textOptional = const(true),
-                    sortKey = switch(
-                        condition(isSelected, const(1_000_000f)),
-                        fallback = feature["id"].asNumber() % const(100),
-                    ),
-                    onClick = { features ->
-                        // features are sorted front-to-back, may contain duplicates across tiles
-                        val ids = features
-                            .mapNotNull { it.properties?.get("id")?.jsonPrimitive?.int }
-                            .distinct()
-
-                        if (ids.size > 1) {
-                            picker = VehiclePicker(lastClickOffset, ids)
-                        } else {
-                            ids.firstOrNull()?.let { vehicles[it] }?.let(::select)
-                        }
-                        ClickResult.Consume
-                    },
-                )
+                VehicleLayer(selected, vehicleData, vehicles, {
+                    picker = VehiclePicker(lastClickOffset, it)
+                }, { select(it) })
             }
 
             picker?.let { p ->
                 Box(Modifier.offset(p.offset.x, p.offset.y)) {
-                    PickerDropDown(p, vehicles, { picker = null}) {
+                    PickerDropDown(p, vehicles, { picker = null }) {
                         picker = null
                         select(it)
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun VehicleSheetScaffold(selectedVehicle: Vehicle?, content: @Composable (PaddingValues) -> Unit) {
+    val scaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberStandardBottomSheetState(skipHiddenState = true)
+    )
+    val density = LocalDensity.current
+    var sheetHeight by remember { mutableStateOf(0.dp) }
+
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetPeekHeight = if (selectedVehicle != null) sheetHeight else 0.dp,
+        sheetDragHandle = null,
+        sheetContent = {
+            selectedVehicle?.let {
+                VehicleSheet(
+                    it, Modifier.onSizeChanged { size ->
+                        sheetHeight = with(density) { size.height.toDp() }
+                    })
+            }
+        },
+        content = content
+    )
+}
+
+@Composable
+private fun getRoutePathState(
+    selected: SelectedRoute?,
+    context: Context
+): State<FeatureCollection<LineString, JsonObject>> = produceState(FeatureCollection(), selected) {
+    val sel = selected ?: run { value = FeatureCollection(); return@produceState }
+    value = withContext(Dispatchers.IO) {
+        runCatching {
+            RequestHelper.getRoutePath(
+                context, sel.serviceId, sel.lineId, sel.routeId
+            )
+        }.getOrNull()?.toFeatureCollection(sel.color) ?: FeatureCollection()
+    }
+}
+
+@Composable
+private fun VehicleLayer(
+    selected: SelectedRoute?,
+    vehicleData: FeatureCollection<Point, JsonObject>,
+    vehicles: SnapshotStateMap<Int, Vehicle>,
+    onShowPicker: (List<Int>) -> Unit,
+    onSelect: (Vehicle) -> Unit
+) {
+    val isSelected = feature["id"].asNumber() eq const(selected?.vehicleId?.toFloat() ?: -1f)
+    val selScale = switch(condition(isSelected, const(1.2f)), fallback = const(1f))
+
+    val vehicleSource = rememberGeoJsonSource(GeoJsonData.Features(vehicleData))
+    val busIcon = image(
+        painterResource(R.drawable.vehicle_arrow), DpSize(32.dp, 32.dp), drawAsSdf = true
+    )
+
+    SymbolLayer(
+        id = "vehicles",
+        source = vehicleSource,
+        iconImage = busIcon,
+        iconSize = interpolate(
+            exponential(1.2f), zoom(),
+            11 to const(0.6f) * selScale,
+            15 to const(1.25f) * selScale,
+        ),
+        iconColor = feature["color"].convertToColor(),
+        iconRotate = feature["bearing"].asNumber(),
+        iconRotationAlignment = const(IconRotationAlignment.Map),
+        iconAllowOverlap = const(true),
+        iconIgnorePlacement = const(true),
+        textField = feature["name"].asString(),
+        textColor = feature["textColor"].convertToColor(),
+        textSize = interpolate(
+            exponential(1.2f), zoom(),
+            9.9f to const(0.sp) * selScale,
+            10 to const(7.sp) * selScale,
+            11 to const(7.sp) * selScale,
+            15 to const(11.sp) * selScale,
+        ),
+        textAllowOverlap = const(true),
+        textOptional = const(true),
+        sortKey = switch(
+            condition(isSelected, const(1_000_000f)),
+            fallback = feature["id"].asNumber() % const(100),
+        ),
+        onClick = { features ->
+            // features are sorted front-to-back, may contain duplicates across tiles
+            val ids =
+                features.mapNotNull { it.properties?.get("id")?.jsonPrimitive?.int }.distinct()
+
+            if (ids.size > 1) {
+                onShowPicker(ids)
+            } else {
+                ids.firstOrNull()?.let { vehicles[it] }?.let(onSelect)
+            }
+            ClickResult.Consume
+        })
+}
+
+@Composable
+private fun RoutePathLayer(routePath: FeatureCollection<LineString, JsonObject>) {
+    val routeSource = rememberGeoJsonSource(GeoJsonData.Features(routePath))
+    LineLayer(
+        id = "route",
+        source = routeSource,
+        color = feature["color"].convertToColor(),
+        width = const(4.dp),
+        cap = const(LineCap.Round),
+        join = const(LineJoin.Round),
+    )
+}
+
+@Composable
+private fun PostsLayer(posts: FeatureCollection<Point, JsonObject>?) {
+    posts?.let { data ->
+        val source = rememberGeoJsonSource(GeoJsonData.Features(data))
+
+        SymbolLayer(
+            id = "stops",
+            source = source,
+            minZoom = 13f,
+            iconImage = image(painterResource(R.drawable.stop), DpSize(24.dp, 24.dp)),
+            iconAnchor = const(SymbolAnchor.Bottom),
+            iconAllowOverlap = const(false),
+            onClick = { features ->
+                // TODO
+                ClickResult.Consume
+            },
+        )
+    }
+}
+
+@Composable
+private fun getCameraStateFrom(vehicle: SelectedRoute?): CameraState {
+    val lat = vehicle?.lat
+    val lng = vehicle?.lng
+
+    val cameraState = rememberCameraState(
+        firstPosition = if (vehicle == null || lat == null || lng == null) {
+            CameraPosition(target = DEFAULT_TARGET, zoom = 15.0)
+        } else {
+            CameraPosition(target = Position(latitude = lat, longitude = lng), zoom = 15.0)
+        }
+    )
+    return cameraState
+}
+
+@Composable
+private fun loadPosts(): State<FeatureCollection<Point, JsonObject>?> = produceState(null) {
+    value = withContext(Dispatchers.IO) {
+        val storage = AppContainer.storageProvider.getInstance()   // suspend
+        FeatureCollection(storage.postStorage().allPosts.filter { it.location != Location.NONE }
+            .map { post ->
+                Feature(
+                    geometry = Point(
+                        Position(
+                            post.location.longitude, post.location.latitude
+                        )
+                    ),
+                    properties = buildJsonObject {
+                        put("postId", post.postID)
+                        put("name", post.name)
+                    },
+                )
+            })
     }
 }
 
@@ -433,9 +458,7 @@ private fun PickerDropDown(
                 leadingIcon = { LineIcon(line = v.line, padding = 0.dp) },
                 text = {
                     Text(
-                        v.getFinalStopText(),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        v.getFinalStopText(), maxLines = 1, overflow = TextOverflow.Ellipsis
                     )
                 },
                 onClick = {
