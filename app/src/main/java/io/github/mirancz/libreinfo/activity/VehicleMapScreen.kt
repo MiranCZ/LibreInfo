@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.DropdownMenu
@@ -22,6 +24,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
@@ -69,6 +72,7 @@ import io.github.mirancz.libreinfo.ui.components.ShimmerBox
 import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.DelayUtil
+import io.github.mirancz.libreinfo.util.PermissionHelper
 import io.github.mirancz.libreinfo.util.json
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.util.request.VehicleWebsocket
@@ -106,6 +110,11 @@ import org.maplibre.compose.expressions.value.LineJoin
 import org.maplibre.compose.expressions.value.SymbolAnchor
 import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.SymbolLayer
+import org.maplibre.compose.location.DesiredAccuracy
+import org.maplibre.compose.location.LocationPuck
+import org.maplibre.compose.location.rememberDefaultLocationProvider
+import org.maplibre.compose.location.rememberNullLocationProvider
+import org.maplibre.compose.location.rememberUserLocationState
 import org.maplibre.compose.map.GestureOptions
 import org.maplibre.compose.map.MapOptions
 import org.maplibre.compose.map.MaplibreMap
@@ -218,6 +227,15 @@ private fun VehicleMapContent(
         }
     }
 
+    var hasLocationPermission by remember { mutableStateOf(PermissionHelper.locationEnabled(context)) }
+
+    val locationProvider = if (hasLocationPermission) {
+        rememberDefaultLocationProvider(desiredAccuracy = DesiredAccuracy.Balanced)
+    } else {
+        rememberNullLocationProvider()
+    }
+    val userLocation = rememberUserLocationState(locationProvider)
+
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
@@ -259,7 +277,7 @@ private fun VehicleMapContent(
         }
     }
 
-    VehicleSheetScaffold(selectedVehicle) {
+    VehicleSheetScaffold(selectedVehicle) { sheetPadding ->
         Box(Modifier.fillMaxSize()) {
             MaplibreMap(
                 modifier = Modifier.fillMaxSize(),
@@ -271,7 +289,7 @@ private fun VehicleMapContent(
                     ), gestureOptions = GestureOptions(isTiltEnabled = false),
 
                     // this should maybe make the map smoother, TODO test
-                    renderOptions = RenderOptions(renderMode = RenderOptions.RenderMode.TextureView)
+//                    renderOptions = RenderOptions(renderMode = RenderOptions.RenderMode.TextureView)
                 ),
                 onMapClick = { _, offset ->
                     lastClickOffset = offset
@@ -293,6 +311,12 @@ private fun VehicleMapContent(
                 VehicleLayer(selected, vehicleData, vehicles, {
                     picker = VehiclePicker(lastClickOffset, it)
                 }, { select(it) })
+
+                LocationPuck(
+                    idPrefix = "user-location",
+                    location = userLocation.location,
+                    cameraState = cameraState,
+                )
             }
 
             picker?.let { p ->
@@ -301,6 +325,27 @@ private fun VehicleMapContent(
                         picker = null
                         select(it)
                     }
+                }
+            }
+
+            if (hasLocationPermission && userLocation.location != null) {
+                SmallFloatingActionButton(
+                    onClick = {
+                        val pos = userLocation.location?.position?.value
+                            ?: return@SmallFloatingActionButton
+                        scope.launch {
+                            cameraState.animateTo(
+                                cameraState.position.copy(
+                                    target = pos,
+                                    zoom = 16.0
+                                )
+                            )
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(sheetPadding)
+                        .padding(16.dp),
+                ) {
+                    Icon(Icons.Default.MyLocation, contentDescription = null)
                 }
             }
         }
