@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.github.mirancz.libreinfo.BuildConfig;
 import io.github.mirancz.libreinfo.util.AppLog;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -50,6 +51,7 @@ public class VehicleWebsocket {
     private static void createWebsocket() {
         Request request = new Request.Builder()
                 .url(SOCKET_URL)
+                .header("X-App-Version", BuildConfig.VERSION_CODE + "")
                 .build();
 
         socket = client.newWebSocket(request, new WebSocketListener() {

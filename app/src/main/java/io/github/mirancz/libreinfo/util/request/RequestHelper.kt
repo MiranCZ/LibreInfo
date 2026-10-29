@@ -249,6 +249,7 @@ object RequestHelper {
         val request = Request.Builder()
             .url(endpoint.url)
             .header("User-Agent", getUserAgent())
+            .header("X-App-Version", BuildConfig.VERSION_CODE.toString())
             .build()
 
         val call = httpClient.newBuilder()
