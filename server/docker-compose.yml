@@ -77,14 +77,6 @@ services:
     networks:
       - internal
 
-  gtfs-static:
-    build: ./gtfs-static
-    restart: unless-stopped
-    volumes:
-      - gtfs-data:/data
-    networks:
-      - internal
-
   gtfs-rt:
     build: ./gtfs-rt
     restart: unless-stopped

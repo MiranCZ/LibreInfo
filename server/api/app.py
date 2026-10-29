@@ -4,7 +4,6 @@ import requests
 from motis_bridge import translate_plan
 
 SCRAPER_URL = "http://scraper:8080"
-GTFS_STATIC_URL = "http://gtfs-static:8080"
 GTFS_RT_URL = "http://gtfs-rt:8080"
 NEWS_URL = "http://news:8080"
 MOTIS_URL = "http://motis:8080"
@@ -37,11 +36,6 @@ def get_events():
         resp = gtfs_rt.get(f"{GTFS_RT_URL}/events")
     else:
         resp = scraper.get(f"{SCRAPER_URL}/events")
-    return resp.content, resp.status_code, {"Content-Type": "application/json"}
-
-@api.route('/shapes', methods=['GET'])
-def get_shapes():
-    resp = gtfs_static.get(f"{GTFS_STATIC_URL}/shapes", params=request.args)
     return resp.content, resp.status_code, {"Content-Type": "application/json"}
 
 @api.route('/news', methods=['GET'])

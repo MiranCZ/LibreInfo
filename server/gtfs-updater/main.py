@@ -193,12 +193,6 @@ def restart_motis(compose: Compose) -> None:
     log.info("Motis restarted")
 
 
-def restart_static_api(compose: Compose) -> None:
-    log.info("Restarting gtfs-static...")
-    compose.get("gtfs-static").restart()
-    log.info("gtfs-static restarted")
-
-
 def main() -> None:
     log.info("Updater starting")
 
@@ -216,7 +210,6 @@ def main() -> None:
 
         if not gtfs_changed and not osm_changed:
             log.info("Nothing changed. Ensuring containers are running...")
-            ensure_running(compose, "gtfs-static")
             # motis reads the zip written by gtfs-parser, so that has to come first
             if not PARSER_DONE_FILE.exists():
                 log.info("gtfs-parser has not run yet, bootstrapping...")
@@ -246,7 +239,6 @@ def main() -> None:
         run_motis_import(compose)
         MOTIS_IMPORTED_FILE.write_text("ok")
         restart_motis(compose)
-        restart_static_api(compose)
     except Exception as e:
         log.error(f"Update failed during processing: {e}")
         sys.exit(1)
