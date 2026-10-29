@@ -13,6 +13,7 @@ val AppError.type: ErrorType
         is AppError.Unreachable, is AppError.Timeout, is AppError.HttpStatus -> ErrorType.SERVER
         is AppError.ReadFailed, is AppError.InvalidResponse -> ErrorType.PARSE
         is AppError.DataLoad -> ErrorType.DATA
+        is AppError.OldClient -> ErrorType.OLD_CLIENT
         is AppError.UnknownRequest, is AppError.Internal, is AppError.Unknown -> ErrorType.GENERIC
     }
 
@@ -21,6 +22,7 @@ fun AppError.userMessage(context: Context): String = when (this) {
     is AppError.Unreachable -> context.getString(R.string.error_reach, endpointName(context))
     is AppError.Timeout -> context.getString(R.string.error_timeout, seconds, endpointName(context))
     is AppError.HttpStatus -> context.getString(R.string.error_server, code, endpointName(context))
+    is AppError.OldClient -> context.getString(R.string.error_old_client, endpointName(context))
     is AppError.ReadFailed -> context.getString(R.string.error_read, endpointName(context))
     is AppError.InvalidResponse -> context.getString(R.string.error_parse, endpointName(context))
     is AppError.UnknownRequest -> context.getString(R.string.error_unknown, endpointName(context))

@@ -283,6 +283,11 @@ object RequestHelper {
 
             }
 
+            if (response.code == 410) {
+                response.close()
+                throw RequestException(AppError.OldClient(endpoint))
+            }
+
             if (!response.isSuccessful) {
                 val code = response.code
                 response.close()

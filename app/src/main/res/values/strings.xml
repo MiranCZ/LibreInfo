@@ -65,6 +65,7 @@
     <string name="generic_error">Nastala chyba</string>
     <string name="error_offline_title">Jste offline</string>
     <string name="error_server_title">Problém se serverem</string>
+    <string name="error_old_client_title">Zastaralá aplikace</string>
     <string name="error_parse_title">Neplatná odpověď</string>
     <string name="error_data_title">Poškozená data</string>
     <string name="data_load_error">Nepodařilo se načíst data</string>
@@ -73,6 +74,7 @@
     <string name="error_read">Nepodařilo se načíst odpověď (%1$s)</string>
     <string name="error_timeout">Vypršel časový limit %1$d s (%2$s)</string>
     <string name="error_server">Chyba serveru %1$d (%2$s)</string>
+    <string name="error_old_client">Vaše verze aplikace je příliš stará a dotazovaný server (%1$s) ji již nepodporuje.\n\nTuto chybu lze většinou odstranit aktualizováním aplikace</string>
     <string name="error_unknown">Neočekávaná chyba (%1$s)</string>
     <string name="endpoint_static_gtfs">statická data</string>
     <string name="endpoint_app_server">server aplikace</string>

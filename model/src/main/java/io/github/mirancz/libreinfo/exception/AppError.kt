@@ -24,6 +24,9 @@ sealed interface AppError {
     /** The server answered with a non-success HTTP status. */
     data class HttpStatus(override val endpoint: Endpoint, val code: Int) : Request
 
+    /** The server answered with 410. */
+    data class OldClient(override val endpoint: Endpoint) : Request
+
     /** The response body was empty or couldn't be read. */
     data class ReadFailed(override val endpoint: Endpoint) : Request
 

@@ -14,6 +14,8 @@ public enum ErrorType {
     OFFLINE(R.drawable.wifi_slash, R.string.error_offline_title, true),
     /** The server couldn't be reached, timed out, or returned an error status. */
     SERVER(R.drawable.server_solid, R.string.error_server_title, true),
+    /** The client is too old for the server to supports its data format */
+    OLD_CLIENT(R.drawable.file_circle_exclamation, R.string.error_old_client_title, false),
     /** A response was received but couldn't be read or parsed into something usable. */
     PARSE(R.drawable.file_circle_exclamation, R.string.error_parse_title, true),
     /** The locally cached static data is missing or corrupt. */
