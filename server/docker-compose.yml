@@ -1,0 +1,155 @@
+name: mhd
+
+services:
+
+  caddy:
+    build: ./caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - gtfs-parser-public:/srv/gtfs:ro
+    depends_on:
+      - api
+      - gtfs-rt
+    networks:
+      - public
+      - internal
+
+  api:
+    build: ./api
+    restart: unless-stopped
+    depends_on:
+      - scraper
+      - gtfs-rt
+      - motis
+    networks:
+      - internal
+
+  ofelia:
+    image: mcuadros/ofelia:0.3.22
+    restart: unless-stopped
+    # Jobs are declared as labels on the containers they run in. The filter scopes
+    # discovery to this project, so a second copy of the stack on the same host
+    # does not get its jobs picked up (and double-scheduled) by this daemon too.
+    command: daemon --docker --docker-filter label=com.docker.compose.project=${COMPOSE_PROJECT_NAME}
+    depends_on:
+      # labels are only read at startup, so the targets have to exist by then
+      - gtfs-updater
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  scraper:
+    build: ./scraper
+    restart: unless-stopped
+    networks:
+      - internal
+
+  gtfs-updater:
+    build: ./gtfs-updater
+    # Runs once on boot to bootstrap, then idles so ofelia can exec into it.
+    restart: unless-stopped
+    command: ["sh", "-c", "python main.py; exec sleep infinity"]
+    labels:
+      ofelia.enabled: "true"
+      # FIXME change this schedule before prod!!!!
+      ofelia.job-exec.gtfs-update.schedule: "@every 10m"
+      ofelia.job-exec.gtfs-update.command: "python /app/main.py"
+    volumes:
+      - gtfs-raw:/data/raw
+      - osm-data:/data/osm
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - internal
+
+  gtfs-parser:
+    build: ./gtfs-parser
+    profiles: [tools]
+    restart: "no"
+    volumes:
+      - gtfs-raw:/data/raw:ro
+      - gtfs-parser-public:/public
+      - ./gtfs-parser/state:/state
+    networks:
+      - internal
+
+  gtfs-static:
+    build: ./gtfs-static
+    restart: unless-stopped
+    volumes:
+      - gtfs-data:/data
+    networks:
+      - internal
+
+  gtfs-rt:
+    build: ./gtfs-rt
+    restart: unless-stopped
+    volumes:
+      - ./gtfs-parser/state:/state
+    secrets:
+      - kordis_token
+      - kordis_url
+    networks:
+      - internal
+
+  motis:
+    image: ghcr.io/motis-project/motis:pr-1469
+    restart: unless-stopped
+    volumes:
+      - motis-data:/data
+      - ./motis/config.yml:/config.yml:ro
+      - gtfs-parser-public:/input/gtfs:ro
+      - osm-data:/input/osm:ro
+    networks:
+      - internal
+
+  motis-import:
+    image: ghcr.io/motis-project/motis:pr-1469
+    profiles: [tools]
+    restart: "no"
+    command: ["/motis", "import"]
+    volumes:
+      - motis-data:/data
+      - ./motis/config.yml:/config.yml:ro
+      - gtfs-parser-public:/input/gtfs:ro
+      - osm-data:/input/osm:ro
+    networks:
+      - internal
+
+  news:
+    build: ./news
+    restart: unless-stopped
+    volumes:
+      - news-data:/data
+      - ./secrets:/secrets
+    environment:
+      - NEWSLETTER_SENDER=info@dpmb.cz
+      - NEWSLETTER_SUBJECT=Newsletter
+      - DEBUG=true
+    networks:
+      - internal
+
+
+volumes:
+  gtfs-raw:
+  gtfs-data:
+  gtfs-parser-public:
+  osm-data:
+  news-data:
+  motis-data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  public:
+  internal:
+
+secrets:
+  kordis_url:
+    file: ./secrets/kordis_url
+  kordis_token:
+    file: ./secrets/kordis_token
