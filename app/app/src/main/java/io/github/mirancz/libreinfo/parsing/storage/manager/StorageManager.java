@@ -213,6 +213,7 @@ public class StorageManager {
     }
 
     private void inflateData(boolean skipExisting) throws AppException {
+        AppLog.d("Inflating data...");
         try (var is = new AppInputStream(new XZInputStream(new BufferedInputStream(new FileInputStream(getCachedPath("data").toFile()))))) {
             while (is.readBoolean()) {
                 String name = is.readString();
@@ -221,6 +222,7 @@ public class StorageManager {
                 Path tmpPath = getCachedPath(tmpName);
                 Path finalPath = getCachedPath(name);
 
+                long ms = System.currentTimeMillis();
                 AppLog.d("extracting " + name);
                 int dataLen = is.readInt();
 
@@ -234,7 +236,7 @@ public class StorageManager {
 
                     while (skipped != dataLen) {
                         if (skipped > dataLen) {
-                            throw new IOException("Skiped more than " + dataLen + " bytes (" + skipped + ")");
+                            throw new IOException("Skipped more than " + dataLen + " bytes (" + skipped + ")");
                         }
 
                         long newSkipped = is.skip(dataLen - skipped);
@@ -267,6 +269,8 @@ public class StorageManager {
                 // rename to normal name only after fully written
                 // (to mitigate half-written files when app is closed etc.)
                 Files.move(tmpPath, finalPath, StandardCopyOption.REPLACE_EXISTING);
+
+                AppLog.d("Extracted "+name + " in "+(System.currentTimeMillis()-ms)+"ms");
             }
         } catch (IOException e) {
             throw AppException.dataLoad(e);

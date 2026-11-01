@@ -28,10 +28,14 @@ class StorageBuilder(val context: Context, val consumer: ((AppStorage) -> Unit)?
     @Suppress("UsePropertyAccessSyntax")
     @Throws(AppException::class)
     private fun buildInternal(manager: StorageManager): IdStorage {
-        fun <T : AppStorage> onLoaded(instance: T) = consumer?.invoke(instance)
-
         AppLog.d("Initializing...")
         val ms = System.currentTimeMillis()
+
+        fun <T : AppStorage> onLoaded(instance: T) {
+            AppLog.d("Initialized ${instance.javaClass.simpleName} in ${System.currentTimeMillis()-ms}ms")
+
+            consumer?.invoke(instance)
+        }
 
         val stopStorage = manager.useStops {
             StopStorage.parse(it)
@@ -48,6 +52,7 @@ class StorageBuilder(val context: Context, val consumer: ((AppStorage) -> Unit)?
         onLoaded(apiStorage)
 
         val tripStorage = manager.useTrips(TripStorage::parse)
+        onLoaded(tripStorage)
 
         val routeStopStorage = manager.useStopTimes {
             RouteStopStorage.parse(
@@ -62,6 +67,7 @@ class StorageBuilder(val context: Context, val consumer: ((AppStorage) -> Unit)?
                 )
             }
         }
+        onLoaded(calendarStorage)
 
         AppLog.d("Initialized in " + (System.currentTimeMillis() - ms) + "ms")
 

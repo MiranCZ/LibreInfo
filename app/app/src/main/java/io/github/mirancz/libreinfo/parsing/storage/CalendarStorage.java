@@ -74,9 +74,6 @@ public class CalendarStorage implements AppStorage {
             exceptions.computeIfAbsent(serviceId, k -> new HashMap<>()).put(date, type);
         }
 
-        AppLog.d("parsed " + entries.size() + " calendar entries in " + (System.currentTimeMillis() - ms) + "ms");
-
-
         return new CalendarStorage(serviceToCalendar, exceptions);
     }
 

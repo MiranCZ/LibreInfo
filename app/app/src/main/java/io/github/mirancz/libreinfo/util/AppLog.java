@@ -1,5 +1,6 @@
 package io.github.mirancz.libreinfo.util;
 
+import android.os.Build;
 import android.util.Log;
 
 import io.github.mirancz.libreinfo.BuildConfig;
@@ -11,7 +12,8 @@ public final class AppLog {
     }
 
     public static void d(String message) {
-        if (BuildConfig.DEBUG) {
+        //noinspection ConstantValue
+        if (!BuildConfig.BUILD_TYPE.equals("release")) {
             Log.d(callerTag(), message);
         }
     }
@@ -56,12 +58,16 @@ public final class AppLog {
 
     /** The simple name of the first caller outside {@code AppLog}, used as the log tag. */
     private static String callerTag() {
-        return StackWalker.getInstance().walk(frames -> frames
-                .map(StackWalker.StackFrame::getClassName)
-                .filter(name -> !name.equals(AppLog.class.getName()))
-                .findFirst()
-                .map(AppLog::simpleTag)
-                .orElse("App"));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            return StackWalker.getInstance().walk(frames -> frames
+                    .map(StackWalker.StackFrame::getClassName)
+                    .filter(name -> !name.equals(AppLog.class.getName()))
+                    .findFirst()
+                    .map(AppLog::simpleTag)
+                    .orElse("App"));
+        } else {
+            return "UNKNOWN";
+        }
     }
 
     private static String simpleTag(String className) {
