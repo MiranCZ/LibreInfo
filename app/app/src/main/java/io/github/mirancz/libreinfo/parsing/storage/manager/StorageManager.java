@@ -387,7 +387,21 @@ public class StorageManager {
     }
 
     private Path getCachedPath(String... name) {
-        Path path = context.getFilesDir().toPath();
+        /// -- BACKWARDS COMPAT START
+        // so stale data from previous versions is not kept
+        Path prevPath = context.getFilesDir().toPath();
+        for (String s : name) {
+            prevPath = prevPath.resolve(s);
+        }
+        try {
+            Files.deleteIfExists(prevPath);
+        } catch (IOException e) {
+            AppLog.e("Failed to delete stale file", e);
+        }
+        /// -- BACKWARDS COMPAT START
+
+
+        Path path = getDataDir(context);
 
         for (String s : name) {
             path = path.resolve(s);
@@ -404,6 +418,10 @@ public class StorageManager {
 
     private Path getCachedMetaPath(String... name) {
         return getCachedPath(name).getParent().resolve(name[name.length - 1] + ".meta");
+    }
+
+    public static Path getDataDir(Context context) {
+        return context.getFilesDir().toPath().resolve("data");
     }
 
     record DataCachedState(boolean present, boolean stale, boolean extracted) {

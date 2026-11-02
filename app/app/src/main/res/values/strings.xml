@@ -117,4 +117,8 @@
     <string name="allow_fine_location">Povolit přístup k přesné poloze</string>
     <string name="sort_stops_by_distance">Řadit zastávky podle vzdálenosti</string>
     <string name="last_updated">Aktualizováno:</string>
+    <string name="storage_options">Data a úložiště</string>
+    <string name="storage_data">Jízdní řády</string>
+    <string name="storage_autoupdate">Automatické aktualizace</string>
+    <string name="storage_other">Ostatní</string>
 </resources>

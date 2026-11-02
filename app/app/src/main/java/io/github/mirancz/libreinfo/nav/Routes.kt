@@ -88,6 +88,9 @@ sealed interface NavRoute : NavKey {
         data object Updates : NavRoute
 
         @Serializable
+        data object Storage : NavRoute
+
+        @Serializable
         data object Dev : NavRoute {
 
             @Serializable

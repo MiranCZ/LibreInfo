@@ -1,5 +1,7 @@
 package io.github.mirancz.libreinfo.activity.settings
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import io.github.mirancz.libreinfo.BuildConfig
@@ -32,5 +34,7 @@ fun SettingsScreen(state: NavState) {
         if (BuildConfig.BUILD_TYPE != "release") {
             NavigationItem(R.drawable.code, "dev options") { state.onNavigate(NavRoute.Settings.Dev) }
         }
+
+        NavigationItem(R.drawable.database, stringResource(R.string.storage_options)) { state.onNavigate(NavRoute.Settings.Storage) }
     }
 }
