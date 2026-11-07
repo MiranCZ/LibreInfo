@@ -1,6 +1,6 @@
 package io.github.mirancz.gtfs;
 
-import io.github.mirancz.gtfs.ids.ApiEntry;
+import io.github.mirancz.gtfs.ids.GtfsApiEntry;
 import io.github.mirancz.util.Pair;
 
 import java.io.*;
@@ -13,10 +13,10 @@ public class ApiParser {
 
     static final String START_TEXT = "Linka/CVlaku = trip_id: ";
 
-    public static List<ApiEntry> parse(InputStream input) throws IOException {
+    public static List<GtfsApiEntry> parse(InputStream input) throws IOException {
         Scanner scanner = new Scanner(detectCharset(input));
 
-        List<ApiEntry> output = new ArrayList<>();
+        List<GtfsApiEntry> output = new ArrayList<>();
 
         List<Pair<Integer, Integer>> result = new ArrayList<>();
         while (scanner.hasNextLine()) {
@@ -38,7 +38,7 @@ public class ApiParser {
 
             int tripId = Integer.parseInt(parts[1].strip());
 
-            output.add(new ApiEntry(lineId, routeId, tripId));
+            output.add(new GtfsApiEntry(lineId, routeId, tripId));
         }
 
         input.close();

@@ -1,6 +1,7 @@
 package io.github.mirancz.gtfs.export;
 
-import io.github.mirancz.util.CheckedOutputStream;
+import io.github.mirancz.libreinfo.codec.util.CheckedOutputStream;
+import io.github.mirancz.libreinfo.model.types.PostType;
 
 import java.io.IOException;
 
@@ -12,9 +13,5 @@ public record StopInfo(short stopId, short postId, PostType type) {
         os.writeShort(postId);
     }
 
-    public enum PostType {
-        POST,
-        PLATFORM
-    }
 }
 

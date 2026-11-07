@@ -1,7 +1,8 @@
 package io.github.mirancz.gtfs.export;
 
 import io.github.mirancz.gtfs.ParsedGtfs;
-import io.github.mirancz.util.CheckedOutputStream;
+import io.github.mirancz.libreinfo.codec.TransitDataCodec;
+import io.github.mirancz.libreinfo.codec.util.CheckedOutputStream;
 
 import java.io.IOException;
 import java.util.function.Function;
@@ -15,8 +16,9 @@ public abstract class SingleWriter implements Writer {
     }
 
     @Override
-    public void write(ParsedGtfs gtfs, Function<String, CheckedOutputStream> outputProvider) {
-        try (var os = outputProvider.apply(name)) {
+    public void write(ParsedGtfs gtfs, TransitDataCodec.StreamCreator creator) {
+        try {
+            var os = creator.create(name);
             this.write(gtfs, os);
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -1,9 +1,11 @@
 FROM eclipse-temurin:25-jdk-alpine AS build
-WORKDIR /app
-COPY . .
+WORKDIR /src
+COPY --from=shared . shared/
+COPY . server/gtfs/
+WORKDIR /src/server/gtfs
 RUN --mount=type=cache,id=gradle,target=/root/.gradle ./gradlew shadowJar --no-daemon
 
 FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
-COPY --from=build /app/build/libs/*-all.jar app.jar
+COPY --from=build /src/server/gtfs/build/libs/*-all.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]

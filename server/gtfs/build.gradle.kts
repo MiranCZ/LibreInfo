@@ -18,6 +18,8 @@ java {
 }
 
 dependencies {
+    implementation("io.github.mirancz.libreinfo:shared:0.1")
+
     implementation("org.tukaani:xz:1.10")
     implementation("com.google.code.gson:gson:2.14.0")
 

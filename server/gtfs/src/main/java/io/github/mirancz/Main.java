@@ -2,21 +2,18 @@ package io.github.mirancz;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.github.mirancz.debug.CompressionStats;
 import io.github.mirancz.gtfs.ApiParser;
 import io.github.mirancz.gtfs.ParsedGtfs;
 import io.github.mirancz.gtfs.export.writer.*;
 import io.github.mirancz.gtfs.export.Writer;
 import io.github.mirancz.gtfs.ids.*;
 import io.github.mirancz.gtfs.remap.Mapper;
+import io.github.mirancz.libreinfo.codec.TransitDataCodec;
+import io.github.mirancz.libreinfo.codec.util.CheckedOutputStream;
 import io.github.mirancz.request.*;
 import io.github.mirancz.request.ids.ApiPost;
-import io.github.mirancz.request.ids.PostsResponse;
 import io.github.mirancz.request.transform.DiversionMapper;
 import io.github.mirancz.request.transform.EventMapper;
-import io.github.mirancz.util.CheckedOutputStream;
-import org.tukaani.xz.LZMA2Options;
-import org.tukaani.xz.XZOutputStream;
 import tools.jackson.databind.MappingIterator;
 import tools.jackson.dataformat.csv.CsvMapper;
 import tools.jackson.dataformat.csv.CsvSchema;
@@ -28,7 +25,6 @@ import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
-import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -41,7 +37,7 @@ public class Main {
 
 
     private static final Path OUTPUT_DIR = Path.of("/public");
-    
+
     private static final Path STATE_DIR = Path.of("/state");
     private static final Path MAP_DIR = STATE_DIR.resolve("maps");
 
@@ -122,28 +118,17 @@ public class Main {
                 new CalendarWriter(),
                 new LineInfoWriter(),
                 new StopWriter(),
-                new TripWriter(),
+                new RoutesWriter(),
 
                 // not from GTFS, but from proprietary API buuut whatever
                 new PostWriter(posts)
         );
 
-        // XZOutputStream compressedOutput = new XZOutputStream(new FileOutputStream(getDataFile()), new LZMA2Options());
-        CompressionStats stats = new CompressionStats();
-
-        var options = new LZMA2Options();
-        options.setNiceLen(273);
-        XZOutputStream compressedOutput = new XZOutputStream(stats.track(new FileOutputStream(new File("test.txt"))), options);
-        try(CheckedOutputStream output = new CheckedOutputStream(compressedOutput)) {
-            Function<String, CheckedOutputStream> outputProvider = s -> getWrappedDataOutputStream(s, output, stats, compressedOutput);
-
-            writeHeader(output);
-
+        TransitDataCodec.write(OUTPUT_DIR.resolve("data"), streamCreator -> {
             for (Writer writer : writers) {
-                writer.write(data, outputProvider);
+                writer.write(data, streamCreator);
             }
-        }
-        stats.printTotal();
+        });
 
         Files.move(tmp, mapped, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         Mapper.savePersistentMaps();
@@ -158,26 +143,26 @@ public class Main {
 
         }
 
-        List<ApiEntry> api = new ArrayList<>();
-        List<StopEntry> stops = new ArrayList<>();
-        List<CalendarEntry> calendar = new ArrayList<>();
-        List<CalendarDateEntry> calendarDates = new ArrayList<>();
-        List<RouteEntry> routes = new ArrayList<>();
-        List<StopTimeEntry> stopTimes = new ArrayList<>();
-        List<TransferEntry> transfers = new ArrayList<>();
-        List<TripEntry> trips = new ArrayList<>();
+        List<GtfsApiEntry> api = new ArrayList<>();
+        List<GtfsStopEntry> stops = new ArrayList<>();
+        List<GtfsCalendarEntry> calendar = new ArrayList<>();
+        List<GtfsCalendarDateEntry> calendarDates = new ArrayList<>();
+        List<GtfsRouteEntry> routes = new ArrayList<>();
+        List<GtfsStopTimeEntry> stopTimes = new ArrayList<>();
+        List<GtfsTransferEntry> transfers = new ArrayList<>();
+        List<GtfsTripEntry> trips = new ArrayList<>();
 
         List<Entry<?>> entries = new ArrayList<>() {{
             // we do not need this; only for the rewritten gtfs
             add(new Entry<>(AgencyEntry.class, "agency.txt", new ArrayList<>()));
 
-            add(new Entry<>(StopEntry.class, "stops.txt", stops));
-            add(new Entry<>(CalendarEntry.class, "calendar.txt", calendar));
-            add(new Entry<>(CalendarDateEntry.class, "calendar_dates.txt", calendarDates));
-            add(new Entry<>(RouteEntry.class, "routes.txt", routes));
-            add(new Entry<>(StopTimeEntry.class, "stop_times.txt", stopTimes));
-            add(new Entry<>(TransferEntry.class, "transfers.txt", transfers));
-            add(new Entry<>(TripEntry.class, "trips.txt", trips));
+            add(new Entry<>(GtfsStopEntry.class, "stops.txt", stops));
+            add(new Entry<>(GtfsCalendarEntry.class, "calendar.txt", calendar));
+            add(new Entry<>(GtfsCalendarDateEntry.class, "calendar_dates.txt", calendarDates));
+            add(new Entry<>(GtfsRouteEntry.class, "routes.txt", routes));
+            add(new Entry<>(GtfsStopTimeEntry.class, "stop_times.txt", stopTimes));
+            add(new Entry<>(GtfsTransferEntry.class, "transfers.txt", transfers));
+            add(new Entry<>(GtfsTripEntry.class, "trips.txt", trips));
         }};
 
         Map<String, Entry<?>> extractors = new HashMap<>();
@@ -240,30 +225,6 @@ public class Main {
         }
 
         return res;
-    }
-
-    private static CheckedOutputStream getWrappedDataOutputStream(String s, CheckedOutputStream output, CompressionStats stats, XZOutputStream compressed) {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-
-        return new CheckedOutputStream(os) {
-            @Override
-            public void close() throws IOException {
-                byte[] data = os.toByteArray();
-
-                stats.beginSection(compressed);
-
-                output.writeBoolean(true);
-
-                output.writeString(s);
-
-                output.writeInt(data.length);
-                output.write(data);
-
-                stats.endSection(s, data, compressed);
-
-                super.close();
-            }
-        };
     }
 
     private static void writeHeader(CheckedOutputStream output) throws IOException {

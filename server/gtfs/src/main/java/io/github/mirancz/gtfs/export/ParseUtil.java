@@ -1,5 +1,7 @@
 package io.github.mirancz.gtfs.export;
 
+import io.github.mirancz.libreinfo.model.types.PostType;
+
 public class ParseUtil {
 
     public static StopInfo parseStop(String stopUID) {
@@ -23,9 +25,9 @@ public class ParseUtil {
             throw new IllegalStateException();
         }
 
-        StopInfo.PostType type;
-        if (zInd != -1) type = StopInfo.PostType.POST;
-        else type = StopInfo.PostType.PLATFORM;
+        PostType type;
+        if (zInd != -1) type = PostType.POST;
+        else type = PostType.PLATFORM;
 
         return new StopInfo((short) stopId, (short) postId, type);
     }

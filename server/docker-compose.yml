@@ -67,7 +67,10 @@ services:
       - internal
 
 #  gtfs:
-#    build: ./gtfs
+#    build:
+#      context: ./gtfs
+#      additional_contexts:
+#        shared: ../shared
 #    restart: unless-stopped
 #    volumes:
 #      - gtfs-raw:/data/raw:ro
