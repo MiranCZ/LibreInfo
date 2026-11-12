@@ -10,10 +10,11 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Mapper {
 
-    private static final Map<IdType, Mapper> mappers = new HashMap<>();
+    private static final Map<IdType, Mapper> mappers = new ConcurrentHashMap<>();
 
     // TODO error handling
     public static void savePersistentMaps() {

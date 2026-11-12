@@ -1,0 +1,158 @@
+package io.github.mirancz.gtfs;
+
+import io.github.mirancz.gtfs.export.Writer;
+import io.github.mirancz.gtfs.export.writer.*;
+import io.github.mirancz.gtfs.ids.*;
+import io.github.mirancz.gtfs.remap.Mapper;
+import io.github.mirancz.libreinfo.codec.TransitDataCodec;
+import io.github.mirancz.request.RequestHelper;
+import io.github.mirancz.request.ids.ApiPost;
+import tools.jackson.databind.MappingIterator;
+import tools.jackson.dataformat.csv.CsvMapper;
+import tools.jackson.dataformat.csv.CsvSchema;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+import static io.github.mirancz.Main.*;
+
+public class Parser {
+
+
+    public static void parseGtfs() throws IOException {
+        if (!Files.exists(GTFS_ZIP_PATH)) {
+            throw new FileNotFoundException("GTFS zip not found at " + GTFS_ZIP_PATH);
+        }
+
+
+        List<ApiPost> posts = RequestHelper.getPosts().posts();
+//        List<ApiPost> posts = new Gson().fromJson(Files.readString(STATE_DIR.resolve("posts.json")), PostsResponse.class).posts();
+
+        Path mapped = getMappedGtfsFile();
+        Path tmp = mapped.resolveSibling(mapped.getFileName() + ".tmp");
+
+        Files.createDirectories(mapped.getParent());
+
+        ParsedGtfs data = handleGtfs(tmp);
+
+        List<Writer> writers = List.of(
+                new ApiWriter(),
+                new CalendarWriter(),
+                new LineInfoWriter(),
+                new StopWriter(),
+                new RoutesWriter(),
+
+                // not from GTFS, but from proprietary API buuut whatever
+                new PostWriter(posts)
+        );
+
+        TransitDataCodec.write(OUTPUT_DIR.resolve("data"), streamCreator -> {
+            for (Writer writer : writers) {
+                writer.write(data, streamCreator);
+            }
+        });
+
+        Files.move(tmp, mapped, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        Mapper.savePersistentMaps();
+    }
+
+    private static ParsedGtfs handleGtfs(Path mappedPath) throws IOException {
+        record Entry<T>(Class<T> clazz, String name, List<T> values) {
+
+            public void addAll(List<?> x) {
+                values.addAll((Collection<? extends T>) x);
+            }
+
+        }
+
+        List<GtfsApiEntry> api = new ArrayList<>();
+        List<GtfsStopEntry> stops = new ArrayList<>();
+        List<GtfsCalendarEntry> calendar = new ArrayList<>();
+        List<GtfsCalendarDateEntry> calendarDates = new ArrayList<>();
+        List<GtfsRouteEntry> routes = new ArrayList<>();
+        List<GtfsStopTimeEntry> stopTimes = new ArrayList<>();
+        List<GtfsTransferEntry> transfers = new ArrayList<>();
+        List<GtfsTripEntry> trips = new ArrayList<>();
+
+        List<Entry<?>> entries = new ArrayList<>() {{
+            // we do not need this; only for the rewritten gtfs
+            add(new Entry<>(AgencyEntry.class, "agency.txt", new ArrayList<>()));
+
+            add(new Entry<>(GtfsStopEntry.class, "stops.txt", stops));
+            add(new Entry<>(GtfsCalendarEntry.class, "calendar.txt", calendar));
+            add(new Entry<>(GtfsCalendarDateEntry.class, "calendar_dates.txt", calendarDates));
+            add(new Entry<>(GtfsRouteEntry.class, "routes.txt", routes));
+            add(new Entry<>(GtfsStopTimeEntry.class, "stop_times.txt", stopTimes));
+            add(new Entry<>(GtfsTransferEntry.class, "transfers.txt", transfers));
+            add(new Entry<>(GtfsTripEntry.class, "trips.txt", trips));
+        }};
+
+        Map<String, Entry<?>> extractors = new HashMap<>();
+        for (Entry<?> entry : entries) {
+            extractors.put(entry.name, entry);
+        }
+
+        try (ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(mappedPath)))) {
+            try (ZipInputStream zip = new ZipInputStream(Files.newInputStream(GTFS_ZIP_PATH))) {
+                ZipEntry entry;
+                while ((entry = zip.getNextEntry()) != null) {
+                    String name = entry.getName();
+                    InputStream is = new ByteArrayInputStream(zip.readAllBytes());
+
+                    // their own file not compliant with GTFS and **not** a csv (obviously)
+                    if (name.equals("api.txt")) {
+                        api = ApiParser.parse(is);
+                    } else if (extractors.containsKey(name)) {
+                        var e = extractors.get(name);
+
+                        ByteArrayOutputStream remapOs = new ByteArrayOutputStream();
+                        List<?> result = remapAndGet(e.clazz, is, remapOs);
+
+                        e.addAll(result);
+                        out.putNextEntry(new ZipEntry(name));
+                        remapOs.writeTo(out);
+                        out.closeEntry();
+                    }
+                }
+            }
+        }
+
+        return new ParsedGtfs(
+                api,
+                stops,
+                calendar,
+                calendarDates,
+                routes,
+                stopTimes,
+                transfers,
+                trips
+        );
+    }
+
+    private static <T> List<T> remapAndGet(Class<T> clazz, InputStream input, OutputStream os) {
+        CsvMapper mapper = CsvMapper.builder().build();
+        CsvSchema schema = mapper.schemaFor(clazz).withHeader();
+
+        List<T> res;
+        try (MappingIterator<T> it = mapper
+                .readerFor(clazz)
+                .with(schema)
+                .readValues(input)) {
+
+            res = it.readAll();
+        }
+
+        try (var writer = mapper.writerFor(clazz).with(schema).writeValues(os)) {
+            writer.writeAll(res);
+        }
+
+        return res;
+    }
+
+}

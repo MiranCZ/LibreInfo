@@ -4,7 +4,7 @@ import requests
 from motis_bridge import translate_plan
 
 SCRAPER_URL = "http://scraper:8080"
-GTFS_RT_URL = "http://gtfs-rt:8080"
+GTFS_RT_URL = "http://gtfs:8080"
 NEWS_URL = "http://news:8080"
 MOTIS_URL = "http://motis:8080"
 MOTIS_PLAN_PATH = "/api/v6/plan"

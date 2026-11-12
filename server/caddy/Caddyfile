@@ -35,7 +35,7 @@ localhost {
 				window 1m
 			}
 		}
-		reverse_proxy gtfs-rt:8080
+		reverse_proxy gtfs:8080
 	}
 
 	handle /static/data {

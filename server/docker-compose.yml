@@ -15,7 +15,7 @@ services:
       - gtfs-parser-public:/srv/gtfs:ro
     depends_on:
       - api
-#      - gtfs-rt
+      - gtfs
     networks:
       - public
       - internal
@@ -25,23 +25,10 @@ services:
     restart: unless-stopped
     depends_on:
       - scraper
-#      - gtfs-rt
+      - gtfs
       - motis
     networks:
       - internal
-
-  ofelia:
-    image: mcuadros/ofelia:0.3.22
-    restart: unless-stopped
-    # Jobs are declared as labels on the containers they run in. The filter scopes
-    # discovery to this project, so a second copy of the stack on the same host
-    # does not get its jobs picked up (and double-scheduled) by this daemon too.
-    command: daemon --docker --docker-filter label=com.docker.compose.project=${COMPOSE_PROJECT_NAME}
-    depends_on:
-      # labels are only read at startup, so the targets have to exist by then
-      - gtfs-updater
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
 
   scraper:
     build: ./scraper
@@ -49,55 +36,18 @@ services:
     networks:
       - internal
 
-  gtfs-updater:
-    build: ./gtfs-updater
-    # Runs once on boot to bootstrap, then idles so ofelia can exec into it.
+  gtfs:
+    build:
+      context: ./gtfs
+      additional_contexts:
+        shared: ../shared
     restart: unless-stopped
-    command: ["sh", "-c", "python main.py; exec sleep infinity"]
-    labels:
-      ofelia.enabled: "true"
-      # FIXME change this schedule before prod!!!!
-      ofelia.job-exec.gtfs-update.schedule: "@every 10m"
-      ofelia.job-exec.gtfs-update.command: "python /app/main.py"
     volumes:
       - gtfs-raw:/data/raw
       - osm-data:/data/osm
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - internal
-
-#  gtfs:
-#    build:
-#      context: ./gtfs
-#      additional_contexts:
-#        shared: ../shared
-#    restart: unless-stopped
-#    volumes:
-#      - gtfs-raw:/data/raw:ro
-#      - gtfs-parser-public:/public
-#      - ./gtfs-parser/state:/state
-#    secrets:
-#      - kordis_token
-#      - kordis_url
-#    networks:
-#      - internal
-#
-  gtfs-parser:
-    build: ./gtfs-parser
-    profiles: [tools]
-    restart: "no"
-    volumes:
-      - gtfs-raw:/data/raw:ro
       - gtfs-parser-public:/public
       - ./gtfs-parser/state:/state
-    networks:
-      - internal
-
-  gtfs-rt:
-    build: ./gtfs-rt
-    restart: unless-stopped
-    volumes:
-      - ./gtfs-parser/state:/state
+      - /var/run/docker.sock:/var/run/docker.sock
     secrets:
       - kordis_token
       - kordis_url

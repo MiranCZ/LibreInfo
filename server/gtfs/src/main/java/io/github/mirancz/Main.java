@@ -2,47 +2,30 @@ package io.github.mirancz;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.github.mirancz.gtfs.ApiParser;
-import io.github.mirancz.gtfs.ParsedGtfs;
 import io.github.mirancz.gtfs.export.writer.*;
-import io.github.mirancz.gtfs.export.Writer;
 import io.github.mirancz.gtfs.ids.*;
-import io.github.mirancz.gtfs.remap.Mapper;
-import io.github.mirancz.libreinfo.codec.TransitDataCodec;
-import io.github.mirancz.libreinfo.codec.util.CheckedOutputStream;
 import io.github.mirancz.request.*;
-import io.github.mirancz.request.ids.ApiPost;
 import io.github.mirancz.request.transform.DiversionMapper;
 import io.github.mirancz.request.transform.EventMapper;
-import tools.jackson.databind.MappingIterator;
-import tools.jackson.dataformat.csv.CsvMapper;
-import tools.jackson.dataformat.csv.CsvSchema;
+import io.github.mirancz.update.Updater;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 
 import static spark.Spark.*;
 
 public class Main {
-    private static final Path GTFS_ZIP_PATH = Path.of("/data/raw/gtfs.zip");
+    public static final Path GTFS_ZIP_PATH = Path.of("/data/raw/gtfs.zip");
 
+    public static final Path OSM_DIR = Path.of("/data/osm");
 
-    private static final Path OUTPUT_DIR = Path.of("/public");
+    public static final Path OUTPUT_DIR = Path.of("/public");
 
-    private static final Path STATE_DIR = Path.of("/state");
+    public static final Path STATE_DIR = Path.of("/state");
     private static final Path MAP_DIR = STATE_DIR.resolve("maps");
-
-    private static final long MAGIC = 0xF5444A4D0D0A1A00L;
-    private static final int DATA_VERSION = 1;
 
     public static Poller<String> diversionPoller = new Poller<>(
             "diversions",
@@ -58,18 +41,39 @@ public class Main {
 
 
     static void main() throws Exception {
-        parseGtfs();
+        setupUpdater();
 
         setupSpark();
+    }
+
+    private static void setupUpdater() throws Exception {
+        var time = Duration.ofHours(10).toMillis();
+
+        new Timer(true).schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    Updater.update();
+                } catch (Exception e) {
+                    e.printStackTrace();
+//                    throw new RuntimeException(e);
+                }
+            }
+        }, time, time);
+
+        try {
+            Updater.update();
+        } catch (Exception e) {
+            e.printStackTrace();
+//          throw new RuntimeException(e);
+        }
     }
 
     private static void setupSpark() {
         ipAddress("0.0.0.0");
         port(8080);
 
-        Gson gson = new GsonBuilder()
-                .create();
-
+        Gson gson = new GsonBuilder().create();
 
         diversionPoller.start();
         eventPoller.start();
@@ -97,145 +101,6 @@ public class Main {
         get("/routePath", endpoints::routePath);
     }
 
-    private static void parseGtfs() throws IOException {
-        if (!Files.exists(GTFS_ZIP_PATH)) {
-            throw new FileNotFoundException("GTFS zip not found at " + GTFS_ZIP_PATH);
-        }
-
-
-        List<ApiPost> posts = RequestHelper.getPosts().posts();
-//        List<ApiPost> posts = new Gson().fromJson(Files.readString(STATE_DIR.resolve("posts.json")), PostsResponse.class).posts();
-
-        Path mapped = getMappedGtfsFile();
-        Path tmp = mapped.resolveSibling(mapped.getFileName() + ".tmp");
-
-        Files.createDirectories(mapped.getParent());
-
-        ParsedGtfs data = handleGtfs(tmp);
-
-        List<Writer> writers = List.of(
-                new ApiWriter(),
-                new CalendarWriter(),
-                new LineInfoWriter(),
-                new StopWriter(),
-                new RoutesWriter(),
-
-                // not from GTFS, but from proprietary API buuut whatever
-                new PostWriter(posts)
-        );
-
-        TransitDataCodec.write(OUTPUT_DIR.resolve("data"), streamCreator -> {
-            for (Writer writer : writers) {
-                writer.write(data, streamCreator);
-            }
-        });
-
-        Files.move(tmp, mapped, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-        Mapper.savePersistentMaps();
-    }
-
-    private static ParsedGtfs handleGtfs(Path mappedPath) throws IOException {
-        record Entry<T>(Class<T> clazz, String name, List<T> values) {
-
-            public void addAll(List<?> x) {
-                values.addAll((Collection<? extends T>) x);
-            }
-
-        }
-
-        List<GtfsApiEntry> api = new ArrayList<>();
-        List<GtfsStopEntry> stops = new ArrayList<>();
-        List<GtfsCalendarEntry> calendar = new ArrayList<>();
-        List<GtfsCalendarDateEntry> calendarDates = new ArrayList<>();
-        List<GtfsRouteEntry> routes = new ArrayList<>();
-        List<GtfsStopTimeEntry> stopTimes = new ArrayList<>();
-        List<GtfsTransferEntry> transfers = new ArrayList<>();
-        List<GtfsTripEntry> trips = new ArrayList<>();
-
-        List<Entry<?>> entries = new ArrayList<>() {{
-            // we do not need this; only for the rewritten gtfs
-            add(new Entry<>(AgencyEntry.class, "agency.txt", new ArrayList<>()));
-
-            add(new Entry<>(GtfsStopEntry.class, "stops.txt", stops));
-            add(new Entry<>(GtfsCalendarEntry.class, "calendar.txt", calendar));
-            add(new Entry<>(GtfsCalendarDateEntry.class, "calendar_dates.txt", calendarDates));
-            add(new Entry<>(GtfsRouteEntry.class, "routes.txt", routes));
-            add(new Entry<>(GtfsStopTimeEntry.class, "stop_times.txt", stopTimes));
-            add(new Entry<>(GtfsTransferEntry.class, "transfers.txt", transfers));
-            add(new Entry<>(GtfsTripEntry.class, "trips.txt", trips));
-        }};
-
-        Map<String, Entry<?>> extractors = new HashMap<>();
-        for (Entry<?> entry : entries) {
-            extractors.put(entry.name, entry);
-        }
-
-        try (ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(mappedPath)))) {
-            try (ZipInputStream zip = new ZipInputStream(Files.newInputStream(GTFS_ZIP_PATH))) {
-                ZipEntry entry;
-                while ((entry = zip.getNextEntry()) != null) {
-                    String name = entry.getName();
-                    InputStream is = new ByteArrayInputStream(zip.readAllBytes());
-
-                    // their own file not compliant with GTFS and **not** a csv (obviously)
-                    if (name.equals("api.txt")) {
-                        api = ApiParser.parse(is);
-                    } else if (extractors.containsKey(name)) {
-                        var e = extractors.get(name);
-
-                        ByteArrayOutputStream remapOs = new ByteArrayOutputStream();
-                        List<?> result = remapAndGet(e.clazz, is, remapOs);
-
-                        e.addAll(result);
-                        out.putNextEntry(new ZipEntry(name));
-                        remapOs.writeTo(out);
-                        out.closeEntry();
-                    }
-                }
-            }
-        }
-
-        return new ParsedGtfs(
-                api,
-                stops,
-                calendar,
-                calendarDates,
-                routes,
-                stopTimes,
-                transfers,
-                trips
-        );
-    }
-
-    private static <T> List<T> remapAndGet(Class<T> clazz, InputStream input, OutputStream os) {
-        CsvMapper mapper = CsvMapper.builder().build();
-        CsvSchema schema = mapper.schemaFor(clazz).withHeader();
-
-        List<T> res;
-        try (MappingIterator<T> it = mapper
-                .readerFor(clazz)
-                .with(schema)
-                .readValues(input)) {
-
-            res = it.readAll();
-        }
-
-        try (var writer = mapper.writerFor(clazz).with(schema).writeValues(os)) {
-            writer.writeAll(res);
-        }
-
-        return res;
-    }
-
-    private static void writeHeader(CheckedOutputStream output) throws IOException {
-        output.writeLong(MAGIC);
-
-        output.writeInt(DATA_VERSION);
-
-        int date = Integer.parseInt(new SimpleDateFormat("HHddMMyy").format(new Date()));
-
-        output.writeInt(date);
-    }
 
     public static Path getMapFile(String name) {
         return MAP_DIR.resolve(name);
