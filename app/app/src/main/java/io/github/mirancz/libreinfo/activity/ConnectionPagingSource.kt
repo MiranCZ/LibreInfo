@@ -5,8 +5,6 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.DateTime
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.util.load.toAppException
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 import kotlinx.coroutines.Dispatchers

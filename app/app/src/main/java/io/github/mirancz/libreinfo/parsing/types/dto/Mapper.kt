@@ -1,9 +1,8 @@
 package io.github.mirancz.libreinfo.parsing.types.dto
 
+import io.github.mirancz.libreinfo.model.LineAlias
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
-import io.github.mirancz.libreinfo.parsing.types.LineAlias
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId
+import io.github.mirancz.libreinfo.model.Stop
 
 
 fun mapStop(storage: IdStorage, stopId: Int): Stop =

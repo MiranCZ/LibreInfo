@@ -55,11 +55,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.valentinilk.shimmer.Shimmer
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.model.LineAlias
 import io.github.mirancz.libreinfo.nav.NavRoute
 import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.types.Diversion
-import io.github.mirancz.libreinfo.parsing.types.LineAlias
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AppButton
 import io.github.mirancz.libreinfo.ui.components.AppSwitch
@@ -237,7 +237,7 @@ fun LineFilterSheet(aliases: List<LineAlias>) {
 
     val onApply: () -> Unit = {
         vm.filters = HashSet(filters)
-        AppSettings.Diversions.diversionFilters = filters.map { it.id }
+        AppSettings.Diversions.diversionFilters = filters.map { it.id.toInt() }
 
         scope.launch { sheetState.hide() }
             .invokeOnCompletion {
@@ -255,7 +255,7 @@ fun LineFilterSheet(aliases: List<LineAlias>) {
                 if (value.isEmpty()) {
                     aliases.toList()
                 } else {
-                    aliases.filter { it.lineDisplayName.contains(value, ignoreCase = true) }
+                    aliases.filter { it.displayName.contains(value, ignoreCase = true) }
                 }
             }
 

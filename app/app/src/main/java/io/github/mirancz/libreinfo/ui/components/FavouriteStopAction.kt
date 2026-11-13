@@ -13,9 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.mirancz.libreinfo.R
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId
-import io.github.mirancz.libreinfo.parsing.types.stop.setFavourite
+import io.github.mirancz.libreinfo.model.Stop
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
 import io.github.mirancz.libreinfo.util.FavouriteStops
 
@@ -41,12 +39,12 @@ class StopViewModel : ViewModel() {
 
 @Composable
 fun FavouriteStopAction(stop: Stop) {
-    FavouriteStopAction(stop.id)
+    FavouriteStopAction(stop.id.toInt())
 }
 
 /** Toolbar heart that marks stop with [stopId] as a favourite. */
 @Composable
-fun FavouriteStopAction(stopId: StopId) {
+fun FavouriteStopAction(stopId: Int) {
     val vm: StopViewModel = viewModel()
     val liked by vm.liked
 

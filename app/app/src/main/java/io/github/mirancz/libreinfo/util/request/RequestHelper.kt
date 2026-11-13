@@ -20,8 +20,7 @@ import io.github.mirancz.libreinfo.parsing.types.response.ServerDeparturesRespon
 import io.github.mirancz.libreinfo.parsing.types.response.VehicleInfoResponse
 import io.github.mirancz.libreinfo.parsing.types.response.VehiclesResponse
 import io.github.mirancz.libreinfo.parsing.types.response.VersionInfoResponse
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId
+import io.github.mirancz.libreinfo.model.Stop
 import io.github.mirancz.libreinfo.util.AppLog
 import io.github.mirancz.libreinfo.util.IOUtil
 import io.github.mirancz.libreinfo.util.json
@@ -101,18 +100,18 @@ object RequestHelper {
     }
 
     @Throws(RequestException::class)
-    fun getDepartures(context: Context, stopId: StopId): ServerDeparturesResponse {
+    fun getDepartures(context: Context, stopId: Int): ServerDeparturesResponse {
         return makeOwnRequest(
             context,
-            "departures?stopId=${stopId.id}"
+            "departures?stopId=${stopId}"
         )
     }
 
     @Throws(RequestException::class)
-    fun getStopDelays(context: Context, stopId: StopId): StopDelaysResponse {
+    fun getStopDelays(context: Context, stopId: Int): StopDelaysResponse {
         return makeOwnRequest(
             context,
-            "stopDelays?stopId=${stopId.id}"
+            "stopDelays?stopId=${stopId}"
         )
     }
 

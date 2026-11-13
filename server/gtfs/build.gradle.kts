@@ -13,7 +13,7 @@ repositories {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
@@ -54,5 +54,5 @@ tasks.shadowJar {
 }
 
 kotlin {
-    jvmToolchain(25)
+    jvmToolchain(17)
 }

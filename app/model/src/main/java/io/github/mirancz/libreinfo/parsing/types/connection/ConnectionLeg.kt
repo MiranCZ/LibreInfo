@@ -1,7 +1,7 @@
 package io.github.mirancz.libreinfo.parsing.types.connection
 
 import io.github.mirancz.libreinfo.parsing.types.DateTime
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.model.Stop
 
 data class ConnectionLeg(
     val departure: DateTime,

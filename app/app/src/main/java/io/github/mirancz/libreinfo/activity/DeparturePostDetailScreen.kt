@@ -18,7 +18,7 @@ import io.github.mirancz.libreinfo.exception.RequestException
 import io.github.mirancz.libreinfo.nav.NavRoute
 import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
-import io.github.mirancz.libreinfo.parsing.types.Post
+import io.github.mirancz.libreinfo.model.Post
 import io.github.mirancz.libreinfo.parsing.types.Time
 import io.github.mirancz.libreinfo.parsing.types.departure.Departure
 import io.github.mirancz.libreinfo.util.OfflineDepartures
@@ -27,7 +27,6 @@ import io.github.mirancz.libreinfo.util.request.RequestHelper
 import io.github.mirancz.libreinfo.ui.components.Container
 import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.ui.LocalSnackbarHostState
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AsyncContent
@@ -59,7 +58,7 @@ fun DeparturePostDetailScreen(state: NavState, stopId: Int, postId: Int) {
         }
 
         try {
-            stopDelays = RequestHelper.getStopDelays(context, StopId(stopId))
+            stopDelays = RequestHelper.getStopDelays(context, stopId)
         } catch (e: RequestException) {
             scope.launch { snackbar.showError(context, e.error) }
         }

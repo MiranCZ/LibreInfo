@@ -57,7 +57,7 @@ import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.nav.NavResultEffect
 import io.github.mirancz.libreinfo.nav.NavRoute
 import io.github.mirancz.libreinfo.nav.NavState
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.model.Stop
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AppButton
 import io.github.mirancz.libreinfo.ui.components.AppTextField
@@ -526,7 +526,7 @@ private fun onSearch(state: NavState, vm: ConnectionViewModel) {
         .toString()
 
 
-    state.onNavigate(NavRoute.ConnectionResults(from.id.id, to.id.id, time, vm.isArrival))
+    state.onNavigate(NavRoute.ConnectionResults(from.id.toInt(), to.id.toInt(), time, vm.isArrival))
 }
 
 

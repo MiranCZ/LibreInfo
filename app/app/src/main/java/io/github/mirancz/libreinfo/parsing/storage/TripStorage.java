@@ -2,10 +2,10 @@ package io.github.mirancz.libreinfo.parsing.storage;
 
 import android.util.SparseArray;
 
+import io.github.mirancz.libreinfo.codec.util.AppInputStream;
 import io.github.mirancz.libreinfo.exception.AppException;
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage;
 import io.github.mirancz.libreinfo.parsing.types.Trip;
-import io.github.mirancz.libreinfo.util.AppInputStream;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,6 +14,7 @@ import java.util.List;
 
 public class TripStorage implements AppStorage {
 
+    // TODO move to Codec
     public static TripStorage parse(AppInputStream is) throws AppException {
         try {
             int size = is.readInt();
@@ -85,7 +86,7 @@ public class TripStorage implements AppStorage {
                 headSign = storage.tripStorage().getTripHeadsign(neighbor);
             } else {
                 multiple = true;
-                headSign = headSign + " (> "+storage.lineStorage().getAlias(neighbor.lineId()).lineDisplayName() + " "+storage.tripStorage().getTripHeadsign(neighbor);
+                headSign = headSign + " (> "+storage.lineStorage().getAlias(neighbor.lineId()).getDisplayName() + " "+storage.tripStorage().getTripHeadsign(neighbor);
             }
         }
         if (multiple) {

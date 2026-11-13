@@ -4,7 +4,6 @@ import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.parsing.types.VehicleInfo
 import io.github.mirancz.libreinfo.parsing.types.dto.PreviousStopDTO
 import io.github.mirancz.libreinfo.parsing.types.dto.mapStop
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import kotlinx.serialization.Serializable
 
 @Serializable

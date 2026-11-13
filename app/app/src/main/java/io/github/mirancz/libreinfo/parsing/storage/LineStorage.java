@@ -2,13 +2,14 @@ package io.github.mirancz.libreinfo.parsing.storage;
 
 import android.graphics.Color;
 
+import io.github.mirancz.libreinfo.codec.LinesCodec;
+import io.github.mirancz.libreinfo.codec.util.AppInputStream;
 import io.github.mirancz.libreinfo.exception.AppException;
-import io.github.mirancz.libreinfo.parsing.types.LineAlias;
-import io.github.mirancz.libreinfo.util.AppInputStream;
+import io.github.mirancz.libreinfo.model.LineAlias;
 import io.github.mirancz.libreinfo.util.AppLog;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -19,21 +20,8 @@ import java.util.Optional;
 public class LineStorage implements AppStorage {
 
     public static LineStorage parse(AppInputStream is) throws AppException {
-        List<LineAlias> aliases = new ArrayList<>();
-
         try {
-            while (is.readBoolean()) {
-                int routeId = is.readInt();
-
-                String name = is.readString();
-
-                String background = readColor(is);
-                String text = readColor(is);
-
-                aliases.add(new LineAlias(routeId, name, Color.parseColor(background), background, Color.parseColor(text), text));
-            }
-
-            return new LineStorage(aliases);
+            return new LineStorage(LinesCodec.read(is));
         } catch (IOException e) {
             throw AppException.dataLoad(e);
         }
@@ -50,29 +38,33 @@ public class LineStorage implements AppStorage {
 
 
     private final List<LineAlias> aliases;
-    private final Map<Integer, LineAlias> idToAlias = new HashMap<>();
+    private final Map<Short, LineAlias> idToAlias = new HashMap<>();
     private final Map<String, LineAlias> nameToAlias = new HashMap<>();
 
     private LineStorage(List<LineAlias> aliases) {
         this.aliases = aliases;
 
         for (LineAlias alias : aliases) {
-             idToAlias.put(alias.id(), alias);
-             nameToAlias.put(alias.lineDisplayName(), alias);
+             idToAlias.put(alias.getId(), alias);
+             nameToAlias.put(alias.getDisplayName(), alias);
         }
 
-        this.aliases.sort(Comparator.comparing(l -> l.getSortKey(this::getOptionalAlias)));
+        Collections.sort(this.aliases);
     }
 
     public LineAlias getAlias(int id) {
+        return getAlias((short) id);
+    }
+
+    public LineAlias getAlias(short id) {
         if (!idToAlias.containsKey(id)) {
             // this does actually happen sometimes due to the api not listing all line aliases
             // the original client deals with it by just ignoring the entry, I think this is at least a bit better
             AppLog.w("Vehicle with id "+id+" not found! Creating a dummy one...");
 
-            LineAlias dummy = new LineAlias(id, String.valueOf(id), android.graphics.Color.MAGENTA, "#FF00FF", Color.WHITE, "#FFFFFF");
+            LineAlias dummy = new LineAlias(id, String.valueOf(id), android.graphics.Color.MAGENTA, Color.WHITE);
             idToAlias.put(id, dummy);
-            nameToAlias.put(dummy.lineDisplayName(), dummy);
+            nameToAlias.put(dummy.getDisplayName(), dummy);
         }
 
         return idToAlias.get(id);
@@ -80,7 +72,7 @@ public class LineStorage implements AppStorage {
 
     public LineAlias getAlias(String name) {
         LineAlias alias = nameToAlias.get(name);
-        if (alias == null) return new LineAlias(0, name, android.graphics.Color.MAGENTA, "#FF00FF", Color.WHITE, "#FFFFFF");
+        if (alias == null) return new LineAlias(0, name, android.graphics.Color.MAGENTA, Color.WHITE);
         return alias;
     }
 

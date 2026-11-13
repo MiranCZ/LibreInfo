@@ -3,7 +3,7 @@
 package io.github.mirancz.libreinfo.util.location
 
 import android.location.LocationManager
-import io.github.mirancz.libreinfo.parsing.types.Location
+import io.github.mirancz.libreinfo.model.types.Location
 import org.maplibre.android.geometry.LatLng
 
 fun Location.toLatLng(): LatLng = LatLng(latitude, longitude)

@@ -24,4 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "LibreInfo"
 include(":app", ":model")
+includeBuild("../shared")
  

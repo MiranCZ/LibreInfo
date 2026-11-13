@@ -2,7 +2,6 @@ package io.github.mirancz.libreinfo.parsing.types.dto
 
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.parsing.types.PreviousStop
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import kotlinx.serialization.Serializable
 
 @Serializable

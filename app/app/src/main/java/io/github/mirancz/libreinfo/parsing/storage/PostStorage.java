@@ -1,12 +1,11 @@
 package io.github.mirancz.libreinfo.parsing.storage;
 
-import static io.github.mirancz.libreinfo.parsing.types.PostExtKt.parsePosts;
-
+import io.github.mirancz.libreinfo.codec.PostsCodec;
+import io.github.mirancz.libreinfo.codec.util.AppInputStream;
 import io.github.mirancz.libreinfo.exception.AppException;
-import io.github.mirancz.libreinfo.parsing.types.Location;
-import io.github.mirancz.libreinfo.parsing.types.Post;
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop;
-import io.github.mirancz.libreinfo.util.AppInputStream;
+import io.github.mirancz.libreinfo.model.Post;
+import io.github.mirancz.libreinfo.model.types.Location;
+import io.github.mirancz.libreinfo.model.Stop;
 import io.github.mirancz.libreinfo.util.AppLog;
 
 import java.io.IOException;
@@ -19,7 +18,7 @@ public class PostStorage implements AppStorage {
     public static PostStorage parse(AppInputStream array, StopStorage stopStorage) throws AppException {
         List<Post> posts;
         try {
-            posts = parsePosts(array, stopStorage);
+            posts = PostsCodec.read(array);
         } catch (IOException e) {
             throw AppException.dataLoad(e);
         }
@@ -41,32 +40,32 @@ public class PostStorage implements AppStorage {
 
         for (Iterator<Post> iterator = posts.iterator(); iterator.hasNext(); ) {
             Post post = iterator.next();
-            Stop stop = post.stop();
+            Stop stop = stopStorage.getStop(post.getStopId());
             if (stop == Stop.Companion.getNONE()) {
                 iterator.remove();
                 continue;
             }
 
-            postsForStop[stop.getId().getId()].add(post);
+            postsForStop[stop.getId()].add(post);
         }
 
         this.posts = posts;
     }
 
-    public Post getPost(int stopID, int postID) {
-        for (Post post : getPosts(stopID)) {
-             if (post.postID() == postID) return post;
+    public Post getPost(int stopId, int postId) {
+        for (Post post : getPosts(stopId)) {
+             if (post.getPostId() == postId) return post;
         }
 
-        Post dummyPost = new Post(Stop.Companion.getNONE(), postID, postID+". nastupiste", Location.getNONE());
-        AppLog.w("Unable to find post with args "+stopID + " ; "+postID + " ; "+getPosts(stopID));
+        Post dummyPost = new Post(-1, postId, postId+". nastupiste", Location.getNONE());
+        AppLog.w("Unable to find post with args "+stopId + " ; "+postId + " ; "+getPosts(stopId));
 
-        postsForStop[stopID].add(dummyPost);
+        postsForStop[stopId].add(dummyPost);
         return dummyPost;
     }
 
     public List<Post> getPosts(Stop stop) {
-        return getPosts(stop.getId().getId());
+        return getPosts(stop.getId());
     }
 
     public List<Post> getPosts(int stopId) {

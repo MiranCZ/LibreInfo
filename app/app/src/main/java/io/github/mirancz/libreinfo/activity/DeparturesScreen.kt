@@ -27,7 +27,6 @@ import io.github.mirancz.libreinfo.parsing.types.departure.DepartureBoard
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureEntry
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureHeader
 import io.github.mirancz.libreinfo.parsing.types.departure.PostDeparture
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.ui.LocalSnackbarHostState
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AsyncContent
@@ -88,7 +87,7 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
     }
 
     ScreenScaffold(title, onBack = state.onBack, actions = {
-        FavouriteStopAction(StopId(stopId))
+        FavouriteStopAction(stopId)
     }) {
         PullToRefreshBox(departuresResult.isRefreshing, departuresResult.refresh) {
             AsyncContent(departuresResult, loading = { DeparturesShimmer(header?.postNames) }) { deps ->
@@ -105,7 +104,7 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
                     DepartureBoard(deps, onPostClick = {
                         state.onNavigate(
                             NavRoute.Departures.PostDetail(
-                                deps.stop.id.id,
+                                deps.stop.id.toInt(),
                                 it.postId
                             )
                         )

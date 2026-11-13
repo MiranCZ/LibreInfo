@@ -10,8 +10,7 @@ import io.github.mirancz.libreinfo.R;
 import io.github.mirancz.libreinfo.activity.base.BaseActivity;
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer;
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage;
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop;
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId;
+import io.github.mirancz.libreinfo.model.Stop;
 import io.github.mirancz.libreinfo.util.OfflineDepartures;
 
 import java.util.ArrayList;
@@ -44,7 +43,7 @@ public class DeparturePerformanceActivity extends BaseActivity {
 
                 long ns = System.nanoTime();
 
-                Map<Integer, Long> took = new HashMap<>();
+                Map<Short, Long> took = new HashMap<>();
 
                 long total = storage.stopStorage().getAllStops().length* 3L;
                 long processed = 0;
@@ -52,11 +51,11 @@ public class DeparturePerformanceActivity extends BaseActivity {
                 for (int i = 0; i < 3; i++) {
                     for (Stop stop : storage.stopStorage().getAllStops()) {
                         long startNs = System.nanoTime();
-                        var result = OfflineDepartures.getOffline(storage, stop.getId().getId());
+                        var result = OfflineDepartures.getOffline(storage, stop.getId());
                         long tookNs = System.nanoTime()-startNs;
 
                         if (!result.isEmpty()) {
-                            took.put(stop.getId().getId(), Math.min(took.getOrDefault(stop.getId().getId(), Long.MAX_VALUE), tookNs));
+                            took.put(stop.getId(), Math.min(took.getOrDefault(stop.getId(), Long.MAX_VALUE), tookNs));
                         }
 
                         processed++;

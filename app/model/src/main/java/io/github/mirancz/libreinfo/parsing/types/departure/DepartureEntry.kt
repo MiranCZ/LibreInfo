@@ -1,6 +1,6 @@
 package io.github.mirancz.libreinfo.parsing.types.departure
 
-import io.github.mirancz.libreinfo.parsing.types.LineAlias
+import io.github.mirancz.libreinfo.model.LineAlias
 
 data class DepartureEntry(
     val line: LineAlias,

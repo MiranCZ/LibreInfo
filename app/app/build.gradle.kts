@@ -230,8 +230,9 @@ secrets {
 }
 
 dependencies {
-
     implementation(project(":model"))
+
+    implementation("io.github.mirancz.libreinfo:shared:0.1")
 
     implementation(platform(libs.compose.bom))
     androidTestImplementation(platform(libs.compose.bom))

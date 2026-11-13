@@ -1,5 +1,6 @@
 package io.github.mirancz.libreinfo.util;
 
+import io.github.mirancz.libreinfo.model.types.Date;
 import io.github.mirancz.libreinfo.parsing.storage.CalendarStorage;
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage;
 import io.github.mirancz.libreinfo.parsing.types.RouteDelayEntry;
@@ -57,7 +58,7 @@ public class OfflineDepartures {
         }
 
         CalendarStorage calendarStorage = storage.calendarStorage();
-        CalendarStorage.Date nowDate = CalendarStorage.Date.now();
+        Date nowDate = Date.now();
 
         record Holder(RouteStop stop, VehicleInfo info, TimeMark time) {
         }
@@ -182,7 +183,7 @@ public class OfflineDepartures {
             if (!departureEntries.isEmpty()) {
                 Departure departure = new Departure(
                         postId,
-                        storage.postStorage().getPost(stopId, postId).name(),
+                        storage.postStorage().getPost(stopId, postId).getName(),
                         departureEntries
                 );
                 result.add(departure);

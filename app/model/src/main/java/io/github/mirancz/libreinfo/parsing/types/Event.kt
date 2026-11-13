@@ -1,5 +1,7 @@
 package io.github.mirancz.libreinfo.parsing.types
 
+import io.github.mirancz.libreinfo.model.LineAlias
+
 /**
  * This class is not [Serializable], see [io.github.mirancz.libreinfo.parsing.types.dto.EventDTO] instead
  */

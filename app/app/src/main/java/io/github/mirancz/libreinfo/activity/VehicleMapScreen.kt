@@ -62,7 +62,7 @@ import io.github.mirancz.libreinfo.BuildConfig
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
-import io.github.mirancz.libreinfo.parsing.types.Location
+import io.github.mirancz.libreinfo.model.types.Location
 import io.github.mirancz.libreinfo.parsing.types.Vehicle
 import io.github.mirancz.libreinfo.parsing.types.dto.VehicleDTO
 import io.github.mirancz.libreinfo.parsing.types.response.RoutePathResponse
@@ -143,7 +143,7 @@ private val DEFAULT_TARGET = Position(longitude = 16.613163, latitude = 49.19174
 public data class SelectedRoute(
     val vehicleId: Int,
     val serviceId: Int,
-    val lineId: Int,
+    val lineId: Short,
     val routeId: Int,
     val color: String,
     val lat: Double?,
@@ -389,7 +389,7 @@ private fun getRoutePathState(
     value = withContext(Dispatchers.IO) {
         runCatching {
             RequestHelper.getRoutePath(
-                context, sel.serviceId, sel.lineId, sel.routeId
+                context, sel.serviceId, sel.lineId.toInt(), sel.routeId
             )
         }.getOrNull()?.toFeatureCollection(sel.color) ?: FeatureCollection()
     }
@@ -517,7 +517,7 @@ private fun loadPosts(): State<String?> = produceState(null) {
                         )
                     ),
                     properties = buildJsonObject {
-                        put("postId", post.postID)
+                        put("postId", post.postId)
                         put("name", post.name)
                     },
                 )
@@ -646,7 +646,7 @@ private fun Vehicle.toFeature(): Feature<Point, JsonObject>? {
             put("serviceId", serviceId)
             put("lineId", line.id)
             put("routeId", routeId)
-            put("name", line.lineDisplayName())
+            put("name", line.displayName)
             put("color", line.backgroundColorStr())
             put("textColor", line.textColorStr())
             put("bearing", bearing ?: 0.0)

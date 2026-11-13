@@ -19,5 +19,8 @@ kotlin {
 dependencies {
     testImplementation(libs.junit)
 
+
+    implementation("io.github.mirancz.libreinfo:shared:0.1")
+
     api(libs.kotlinx.serialization.json)
 }

@@ -1,9 +1,9 @@
 package io.github.mirancz.libreinfo.activity
 
+import io.github.mirancz.libreinfo.model.LineAlias
 import io.github.mirancz.libreinfo.parsing.getRouteStops
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.parsing.types.DateTime
-import io.github.mirancz.libreinfo.parsing.types.LineAlias
 import io.github.mirancz.libreinfo.parsing.types.Trip
 import io.github.mirancz.libreinfo.parsing.types.connection.Connection
 import io.github.mirancz.libreinfo.parsing.types.connection.ConnectionLeg
@@ -80,13 +80,13 @@ private fun buildLeg(part: ConnectionLeg, index: Int, parts: List<ConnectionLeg>
         return VehicleLegUi(
             alias = alias,
             headsign = storage.tripStorage.getTripHeadsign(trip),
-            stopCount = computeStopCount(trip, storage, part.fromStop.id.id, part.toStop.id.id),
+            stopCount = computeStopCount(trip, storage, part.fromStop.id.toInt(), part.toStop.id.toInt()),
             boardTime = part.departure.toTimeString(),
             boardStop = part.fromStop.name,
             alightTime = part.arrival.toTimeString(),
             alightStop = part.toStop.name,
             tripId = tripId,
-            boardStopInternalId = part.fromStop.id.id,
+            boardStopInternalId = part.fromStop.id.toInt(),
         )
     }
 

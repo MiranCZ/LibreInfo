@@ -8,7 +8,6 @@ import io.github.mirancz.libreinfo.parsing.storage.manager.StorageProvider
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureBoard
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureHeader
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
 import io.github.mirancz.libreinfo.util.OfflineDepartures
 import io.github.mirancz.libreinfo.util.request.RequestHelper

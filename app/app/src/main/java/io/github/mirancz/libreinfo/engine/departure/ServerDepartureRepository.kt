@@ -12,7 +12,6 @@ import io.github.mirancz.libreinfo.parsing.types.departure.DepartureTime
 import io.github.mirancz.libreinfo.parsing.types.departure.PostDeparture
 import io.github.mirancz.libreinfo.parsing.types.departure.VehicleInfo
 import io.github.mirancz.libreinfo.parsing.types.response.RouteDelaysResponse
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 
@@ -45,7 +44,7 @@ class ServerDepartureRepository(val storageProvider: StorageProvider) : Departur
         val storage = storageProvider.getInstance()
 
         val stop = storage.stopStorage.getStop(stopId)
-        val response = RequestHelper.getDepartures(context, StopId(stopId))
+        val response = RequestHelper.getDepartures(context, stopId)
 
         var error: AppError? = null
 

@@ -2,18 +2,16 @@ package io.github.mirancz.libreinfo.util;
 
 import android.content.Context;
 
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId;
-
 public class FavouriteStops {
 
     private static PreferencesHolder holder = null;
 
-    public static boolean isFavourite(StopId stopId) {
-        return get().getBoolean(stopId.getId(), false);
+    public static boolean isFavourite(int stopId) {
+        return get().getBoolean(stopId, false);
     }
 
-    public static void setFavourite(StopId stopId, boolean favourite) {
-        get().putBoolean(stopId.getId(), favourite).flush();
+    public static void setFavourite(int stopId, boolean favourite) {
+        get().putBoolean(stopId, favourite).flush();
     }
 
     public static void init(Context context) {

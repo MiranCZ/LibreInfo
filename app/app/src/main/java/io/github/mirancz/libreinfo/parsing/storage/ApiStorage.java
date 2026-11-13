@@ -1,7 +1,9 @@
 package io.github.mirancz.libreinfo.parsing.storage;
 
+import io.github.mirancz.libreinfo.codec.ApiCodec;
+import io.github.mirancz.libreinfo.codec.util.AppInputStream;
 import io.github.mirancz.libreinfo.exception.AppException;
-import io.github.mirancz.libreinfo.util.AppInputStream;
+import io.github.mirancz.libreinfo.model.ApiEntry;
 import io.github.mirancz.libreinfo.util.Pair;
 
 import java.io.IOException;
@@ -13,15 +15,15 @@ public class ApiStorage implements AppStorage {
 
     public static ApiStorage parse(AppInputStream is) throws AppException {
         try {
-            int size = is.readInt();
+            var list = ApiCodec.read(is);
 
-            int[] map = new int[size];
+            int[] map = new int[list.size()];
             Arrays.fill(map, 0xFFFF_FFFF);
 
-            for (int i = 0; i < size; i++) {
-                int tripId = is.readInt();
+            for (ApiEntry entry : list) {
+                int tripId = entry.getTripId();
 
-                int combined = is.readInt();
+                int combined = (((int)entry.getLineId())<<16) | entry.getRouteId();
 
                 map[tripId] = combined;
             }

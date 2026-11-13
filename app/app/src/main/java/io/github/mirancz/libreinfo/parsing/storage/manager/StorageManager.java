@@ -5,13 +5,13 @@ import static io.github.mirancz.libreinfo.util.StorageFile.*;
 import android.content.Context;
 import android.os.Looper;
 
+import io.github.mirancz.libreinfo.codec.util.AppInputStream;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import io.github.mirancz.libreinfo.exception.AppError;
 import io.github.mirancz.libreinfo.exception.AppException;
 import io.github.mirancz.libreinfo.exception.StorageInitException;
 import io.github.mirancz.libreinfo.parsing.storage.AppStorage;
-import io.github.mirancz.libreinfo.util.AppInputStream;
 import io.github.mirancz.libreinfo.util.AppLog;
 import io.github.mirancz.libreinfo.util.StorageFile;
 import io.github.mirancz.libreinfo.util.request.RequestHelper;

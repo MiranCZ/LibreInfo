@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.valentinilk.shimmer.Shimmer
-import io.github.mirancz.libreinfo.parsing.types.LineAlias
+import io.github.mirancz.libreinfo.model.LineAlias
 
 // TODO refactor signature
 // NOTE: Reason for a special `scale` argument instead of using `Modifier.scale`
@@ -32,7 +32,7 @@ import io.github.mirancz.libreinfo.parsing.types.LineAlias
 // FIXME figure out if the scaling can be done in a better way
 @Composable
 fun LineIcon(modifier: Modifier = Modifier, line: LineAlias, padding: Dp = 4.dp, scale: Float = 1f) {
-    LineIcon(modifier, line.lineDisplayName, Color(line.textColor), Color(line.backgroundColor()), padding, scale)
+    LineIcon(modifier, line.displayName, Color(line.textColor), Color(line.backgroundColor), padding, scale)
 }
 
 @Composable

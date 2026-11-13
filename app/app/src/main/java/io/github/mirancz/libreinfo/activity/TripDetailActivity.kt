@@ -1,10 +1,6 @@
 package io.github.mirancz.libreinfo.activity
 
 import android.content.Context
-import android.os.Bundle
-import android.os.PersistableBundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -58,18 +54,18 @@ import com.valentinilk.shimmer.Shimmer
 import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.exception.RequestException
+import io.github.mirancz.libreinfo.model.LineAlias
+import io.github.mirancz.libreinfo.model.types.Date
 import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.parsing.getRouteStops
 import io.github.mirancz.libreinfo.parsing.storage.CalendarStorage
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
-import io.github.mirancz.libreinfo.parsing.types.LineAlias
 import io.github.mirancz.libreinfo.parsing.types.RouteStop
 import io.github.mirancz.libreinfo.parsing.types.Time
 import io.github.mirancz.libreinfo.parsing.types.TimeMark
 import io.github.mirancz.libreinfo.parsing.types.Trip
 import io.github.mirancz.libreinfo.parsing.types.VehicleInfo
-import io.github.mirancz.libreinfo.parsing.types.stop.StopId
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AsyncContent
 import io.github.mirancz.libreinfo.ui.components.Container
@@ -80,7 +76,6 @@ import io.github.mirancz.libreinfo.ui.components.ShimmerText
 import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.DelayUtil.getDelayColor
-import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
@@ -189,7 +184,7 @@ private fun loadAndParseTripInfoData(
 
         neighbors.removeIf { t: Trip? ->
             !storage.calendarStorage.available(
-                CalendarStorage.Date.now(), t!!.serviceId.toInt()
+                Date.now(), t!!.serviceId.toInt()
             )
         }
 

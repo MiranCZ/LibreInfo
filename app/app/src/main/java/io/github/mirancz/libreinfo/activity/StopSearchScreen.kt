@@ -48,8 +48,8 @@ import io.github.mirancz.libreinfo.activity.settings.LocationSettingsScreen
 import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.parsing.storage.StopStorage
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
-import io.github.mirancz.libreinfo.parsing.types.Location
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.model.types.Location
+import io.github.mirancz.libreinfo.model.Stop
 import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AppTextField
@@ -266,7 +266,7 @@ fun StopList(
         ) {
             items(
                 filteredItems,
-                key = { it.id.id }
+                key = { it.id }
             ) { item ->
 
                 Row(

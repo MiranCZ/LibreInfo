@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 
 public class RouteStopStorage implements AppStorage {
 
+    // TODO move to Codec
     public static RouteStopStorage parse(DataInputStream is, ByteBuffer routeStops, int stopsLength) throws AppException {
         try {
             int size = is.readInt();

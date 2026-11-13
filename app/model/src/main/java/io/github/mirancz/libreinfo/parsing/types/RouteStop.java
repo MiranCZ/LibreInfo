@@ -1,6 +1,6 @@
 package io.github.mirancz.libreinfo.parsing.types;
 
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop;
+import io.github.mirancz.libreinfo.model.Stop;
 
 public record RouteStop(int routeId, short stopId, int tripId, short postId, short sequence, StopTime stopTime) {
 
@@ -17,7 +17,7 @@ public record RouteStop(int routeId, short stopId, int tripId, short postId, sho
     }
 
     public boolean equals(Stop stop) {
-        return stopId == stop.getId().getId();
+        return stopId == stop.getId();
     }
 
 }

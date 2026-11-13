@@ -1,6 +1,6 @@
 package io.github.mirancz.libreinfo.parsing.types
 
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.model.Stop
 
 data class VehicleInfo(
     val vehicleId: Int,

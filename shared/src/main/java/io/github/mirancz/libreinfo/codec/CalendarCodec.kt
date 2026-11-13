@@ -23,21 +23,17 @@ object CalendarCodec {
 
     @JvmStatic
     @Throws(IOException::class)
-    fun read(inp: AppInputStream): List<CalendarEntry> {
+    fun read(inp: AppInputStream, consumer: (CalendarEntry) -> Unit) {
         val length = inp.readInt()
 
-        val result = ArrayList<CalendarEntry>()
-
         for (i in 0 until length) {
-            result.add(CalendarEntry(
+            consumer(CalendarEntry(
                 inp.readShort(),
                 inp.readByte(),
                 inp.readDate(),
                 inp.readDate()
             ))
         }
-
-        return result
     }
 
 }

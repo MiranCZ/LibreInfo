@@ -1,7 +1,7 @@
 package io.github.mirancz.libreinfo.util.search
 
 import android.location.Location
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.model.Stop
 import io.github.mirancz.libreinfo.util.location.toAndroidLoc
 import kotlinx.coroutines.yield
 import java.text.CollationKey

@@ -1,7 +1,7 @@
 package io.github.mirancz.libreinfo.parsing.types.departure
 
 import io.github.mirancz.libreinfo.exception.AppError
-import io.github.mirancz.libreinfo.parsing.types.stop.Stop
+import io.github.mirancz.libreinfo.model.Stop
 
 data class DepartureBoard(
     val stop: Stop,
