@@ -1,7 +1,7 @@
 package io.github.mirancz.gtfs.export.writer
 
 import io.github.mirancz.gtfs.ParsedGtfs
-import io.github.mirancz.gtfs.export.ParseUtil.parseRoute
+import io.github.mirancz.gtfs.export.ParseUtil.lineIdFromRoute
 import io.github.mirancz.gtfs.export.SingleWriter
 import io.github.mirancz.libreinfo.codec.LinesCodec
 import io.github.mirancz.libreinfo.codec.util.CheckedOutputStream
@@ -14,7 +14,7 @@ class LineInfoWriter : SingleWriter("lines") {
         val routes = gtfs.routes
 
         val mapped = routes.map { r ->
-            val id = parseRoute(r.route_id)
+            val id = lineIdFromRoute(r.route_id)
 
             var backgroundColorStr: String = r.route_color
             if (backgroundColorStr.isBlank()) backgroundColorStr = "00E68C"

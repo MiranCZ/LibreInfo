@@ -32,7 +32,7 @@ public class ParseUtil {
         return new StopInfo((short) stopId, (short) postId, type);
     }
 
-    public static int parseRoute(String routeId) {
+    public static int lineIdFromRoute(String routeId) {
         if (!routeId.startsWith("L")) {
             return -1;
         }

@@ -7,7 +7,7 @@ import io.github.mirancz.libreinfo.parsing.types.RouteDelayEntry;
 import io.github.mirancz.libreinfo.parsing.types.RouteStop;
 import io.github.mirancz.libreinfo.parsing.types.Time;
 import io.github.mirancz.libreinfo.parsing.types.TimeMark;
-import io.github.mirancz.libreinfo.parsing.types.Trip;
+import io.github.mirancz.libreinfo.model.Trip;
 import io.github.mirancz.libreinfo.parsing.types.departure.Departure;
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureEntry;
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureTime;
@@ -92,19 +92,19 @@ public class OfflineDepartures {
             // for terminal stops compare using arrival time instead
             // (since departure time is the vehicle already leaving for its next route)
             var trip = storage.tripStorage().getTrips()[stop.tripId()];
-            var lastStopId = trip.startPos() + trip.length() - 1;
+            var lastStopId = trip.getStartPos() + trip.intRouteLength() - 1;
             if (lastStopId == stop.routeId()) {
                 timeMode = TimeMark.TimeMode.TERMINUS;
 
                 // ...unless the vehicle continues from this post as the next trip of its block, then the departure is real
                 // (with arrival == departure both modes give the same times, so only check the block when it can matter)
                 // this doesn't tank performance that much since not many cases exist... still not ideal tho
-                if (trip.blockId() != -1 && !stop.stopTime().immediateDeparture()) {
-                    for (Trip t : storage.tripStorage().getTripsForBlock(trip.blockId())) {
-                        if (t.id() == trip.id() || !calendarStorage.available(nowDate, t.serviceId())) continue;
+                if (trip.getBlockId() != -1 && !stop.stopTime().immediateDeparture()) {
+                    for (Trip t : storage.tripStorage().getTripsForBlock(trip.getBlockId())) {
+                        if (t.getTripId() == trip.getTripId() || !calendarStorage.available(nowDate, t.getServiceId())) continue;
 
                         // time check needed due to vehicle round-trips
-                        RouteStop first = storage.routeStopStorage().getRouteStop(t.startPos());
+                        RouteStop first = storage.routeStopStorage().getRouteStop(t.getStartPos());
                         if (first.stopId() == stop.stopId() && first.postId() == stop.postId()
                                 && first.departure().equals(stop.departure())) {
                             timeMode = TimeMark.TimeMode.NORMAL;
@@ -152,26 +152,26 @@ public class OfflineDepartures {
                 if (fromTime.compareTo(mark.getDelayedDeparture()) <= 0) {
                     Trip trip = storage.tripStorage().getTrips()[stop.tripId()];
 
-                    if (!calendarStorage.available(nowDate, trip.serviceId())) continue;
+                    if (!calendarStorage.available(nowDate, trip.getServiceId())) continue;
                     if (includedTrips.contains(trip)) continue;
 
                     String heading = storage.tripStorage().getTripHeadsign(trip);
 
-                    if (trip.blockId() != -1) {
-                        List<Trip> neighbors = new ArrayList<>(storage.tripStorage().getTripsForBlock(trip.blockId()));
+                    if (trip.getBlockId() != -1) {
+                        List<Trip> neighbors = new ArrayList<>(storage.tripStorage().getTripsForBlock(trip.getBlockId()));
 
-                        neighbors.removeIf(t -> !calendarStorage.available(nowDate, t.serviceId()));
+                        neighbors.removeIf(t -> !calendarStorage.available(nowDate, t.getServiceId()));
 
                         heading = storage.tripStorage().getHeadsignForTripList(neighbors, storage);
                         includedTrips.addAll(neighbors);
                     }
 
                     departureEntries.add(new DepartureEntry(
-                            storage.lineStorage().getAlias(trip.lineId()),
+                            storage.lineStorage().getAlias(trip.getLineId()),
                             heading,
                             stopId,
                             postId,
-                            trip.lowFloor(),
+                            trip.getLowFloor(),
                             new DepartureTime.Scheduled(mark),
                             stop.tripId(),
                             holder.info

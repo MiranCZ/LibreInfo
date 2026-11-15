@@ -5,30 +5,43 @@ import io.github.mirancz.libreinfo.codec.util.toCheckedShort
 import io.github.mirancz.libreinfo.codec.util.toCheckedUByte
 import kotlinx.serialization.Serializable
 
+/**
+ * @see [StandaloneTrip]
+ */
 @Serializable
 data class Trip(
-    val routeId: Short,
+    val tripId: Int,
+    val lineId: Short,
     val serviceId: Short,
-    val headsign: String,
+    val headsignId: Int,
     val blockId: Short,
-    val bikesAllowed: Byte,
+    val lowFloor: Boolean,
+    val startPos: Int,
     val routeLength: UByte
 ) {
 
     constructor(
-        routeId: Int,
+        tripId: Int,
+        lineId: Int,
         serviceId: Int,
-        headsign: String,
+        headsignId: Int,
         blockId: Int,
-        bikesAllowed: Int,
+        lowFloor: Boolean,
+        startPos: Int,
         routeLength: Int
     ) : this(
-        routeId.toCheckedShort(),
+        tripId,
+        lineId.toCheckedShort(),
         serviceId.toCheckedShort(),
-        headsign,
+        headsignId,
         blockId.toCheckedShort(),
-        bikesAllowed.toCheckedByte(),
+        lowFloor,
+        startPos,
         routeLength.toCheckedUByte()
     )
+
+    fun intRouteLength(): Int {
+        return routeLength.toInt()
+    }
 
 }

@@ -2,10 +2,11 @@ package io.github.mirancz.libreinfo.parsing.storage;
 
 import android.util.SparseArray;
 
+import io.github.mirancz.libreinfo.codec.TripsCodec;
 import io.github.mirancz.libreinfo.codec.util.AppInputStream;
 import io.github.mirancz.libreinfo.exception.AppException;
+import io.github.mirancz.libreinfo.model.Trip;
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage;
-import io.github.mirancz.libreinfo.parsing.types.Trip;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,36 +15,11 @@ import java.util.List;
 
 public class TripStorage implements AppStorage {
 
-    // TODO move to Codec
     public static TripStorage parse(AppInputStream is) throws AppException {
         try {
-            int size = is.readInt();
+            var result = TripsCodec.read(is);
 
-            String[] headsignPool = new String[size];
-
-            for (int i = 0; i < size; i++) {
-                int key = is.readInt();
-
-                String name = is.readString();
-
-                headsignPool[key] = name;
-            }
-
-            int tripSize = is.readInt();
-            Trip[] trips = new Trip[tripSize];
-
-            for (int i = 0; i < tripSize; i++) {
-                short serviceId = is.readShort();
-                short lineId = is.readShort();
-                int headsignId = is.readInt();
-                short blockId = is.readShort();
-                byte data = (byte) is.read();
-                int startPos = is.readInt();
-                byte length = (byte) is.read();
-
-                trips[i] = new Trip(i, serviceId, lineId, headsignId, blockId,data == 1, startPos, length);
-            }
-            return new TripStorage(headsignPool, trips);
+            return new TripStorage(result.getSecond(), result.getFirst());
         } catch (IOException e) {
             throw AppException.dataLoad(e);
         }
@@ -60,23 +36,23 @@ public class TripStorage implements AppStorage {
         this.blockMap = new SparseArray<>();
 
         for (Trip trip : trips) {
-            if (trip.blockId() == -1) continue;
+            if (trip.getBlockId() == -1) continue;
 
-            if (blockMap.get(trip.blockId()) == null) {
-                blockMap.put(trip.blockId(), new ArrayList<>());
+            if (blockMap.get(trip.getBlockId()) == null) {
+                blockMap.put(trip.getBlockId(), new ArrayList<>());
             }
 
-            blockMap.get(trip.blockId()).add(trip);
+            blockMap.get(trip.getBlockId()).add(trip);
         }
     }
 
 
     public String getTripHeadsign(Trip trip) {
-        return headsignPool[trip.headsignId()];
+        return headsignPool[trip.getHeadsignId()];
     }
 
     public String getHeadsignForTripList(List<Trip> trips, IdStorage storage) {
-        trips.sort(Comparator.comparing(t -> storage.routeStopStorage().getRouteStop(t.startPos()).departure()));
+        trips.sort(Comparator.comparing(t -> storage.routeStopStorage().getRouteStop(t.getStartPos()).departure()));
 
         String headSign = "";
         boolean multiple = false;
@@ -86,7 +62,7 @@ public class TripStorage implements AppStorage {
                 headSign = storage.tripStorage().getTripHeadsign(neighbor);
             } else {
                 multiple = true;
-                headSign = headSign + " (> "+storage.lineStorage().getAlias(neighbor.lineId()).getDisplayName() + " "+storage.tripStorage().getTripHeadsign(neighbor);
+                headSign = headSign + " (> "+storage.lineStorage().getAlias(neighbor.getLineId()).getDisplayName() + " "+storage.tripStorage().getTripHeadsign(neighbor);
             }
         }
         if (multiple) {

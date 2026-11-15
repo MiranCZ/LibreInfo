@@ -10,11 +10,10 @@ import io.github.mirancz.libreinfo.codec.TransitDataCodec
 import io.github.mirancz.libreinfo.codec.TripsCodec
 import io.github.mirancz.libreinfo.codec.util.CheckedOutputStream
 import io.github.mirancz.libreinfo.model.Route
-import io.github.mirancz.libreinfo.model.Trip
+import io.github.mirancz.libreinfo.model.StandaloneTrip
 import io.github.mirancz.libreinfo.model.types.RouteStop
 import io.github.mirancz.libreinfo.model.types.Time
 import java.io.IOException
-import java.util.function.Function
 
 class RoutesWriter : Writer {
 
@@ -45,7 +44,7 @@ class RoutesWriter : Writer {
         }
 
         val mapped = trips.map { t ->
-            val routeId = ParseUtil.parseRoute(t.route_id)
+            val lineId = ParseUtil.lineIdFromRoute(t.route_id)
 
             val route = tripIdToRoute[t.trip_id]
 
@@ -53,12 +52,12 @@ class RoutesWriter : Writer {
 
             val blockId = t.block_id ?: -1
 
-            Trip(
-                routeId,
+            StandaloneTrip(
+                lineId,
                 t.service_id,
                 t.trip_headsign,
                 blockId,
-                t.bikes_allowed,
+                t.wheelchair_accessible,
                 length
             )
         }
@@ -136,7 +135,7 @@ class RoutesWriter : Writer {
             prevSequence = sequence
         }
         if (currentRoute != null) {
-            currentRoute.length = stopTimes.lastIndex - currentRoute.startPos
+            currentRoute.length = stopTimes.size - currentRoute.startPos
             routes.add(currentRoute.toRoute())
         }
 

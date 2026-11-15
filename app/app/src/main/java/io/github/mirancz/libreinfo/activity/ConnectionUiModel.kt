@@ -4,7 +4,7 @@ import io.github.mirancz.libreinfo.model.LineAlias
 import io.github.mirancz.libreinfo.parsing.getRouteStops
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.parsing.types.DateTime
-import io.github.mirancz.libreinfo.parsing.types.Trip
+import io.github.mirancz.libreinfo.model.Trip
 import io.github.mirancz.libreinfo.parsing.types.connection.Connection
 import io.github.mirancz.libreinfo.parsing.types.connection.ConnectionLeg
 import java.time.temporal.ChronoUnit

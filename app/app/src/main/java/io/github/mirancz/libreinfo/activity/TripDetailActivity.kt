@@ -64,7 +64,7 @@ import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.parsing.types.RouteStop
 import io.github.mirancz.libreinfo.parsing.types.Time
 import io.github.mirancz.libreinfo.parsing.types.TimeMark
-import io.github.mirancz.libreinfo.parsing.types.Trip
+import io.github.mirancz.libreinfo.model.Trip
 import io.github.mirancz.libreinfo.parsing.types.VehicleInfo
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AsyncContent
@@ -203,7 +203,7 @@ private fun loadAndParseTripInfoData(
 
         for (i in neighbors.indices) {
             val neighbor = neighbors[i]
-            val info = storage.apiStorage.getLineIdAndRoute(neighbor.id)
+            val info = storage.apiStorage.getLineIdAndRoute(neighbor.tripId)
 
             if (i != 0) {
                 routeInfoText += " => "

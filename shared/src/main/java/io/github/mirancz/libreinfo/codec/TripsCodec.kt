@@ -3,7 +3,7 @@ package io.github.mirancz.libreinfo.codec
 import io.github.mirancz.libreinfo.codec.util.AppInputStream
 import io.github.mirancz.libreinfo.codec.util.CheckedOutputStream
 import io.github.mirancz.libreinfo.codec.util.writeMapPool
-import io.github.mirancz.libreinfo.model.CalendarDate
+import io.github.mirancz.libreinfo.model.StandaloneTrip
 import io.github.mirancz.libreinfo.model.Trip
 import java.io.IOException
 
@@ -11,10 +11,10 @@ object TripsCodec {
 
     @JvmStatic
     @Throws(IOException::class)
-    fun write(os: CheckedOutputStream, trips: List<Trip>) {
+    fun write(os: CheckedOutputStream, trips: List<StandaloneTrip>) {
         os.writeInt(trips.size)
 
-        for (e in trips) os.writeShort(e.routeId)
+        for (e in trips) os.writeShort(e.lineId)
         for (e in trips) os.writeShort(e.serviceId)
 
         val headsignPool: MutableMap<String, Int> = HashMap()
@@ -27,42 +27,44 @@ object TripsCodec {
         }
 
         for (e in trips) os.writeShort(e.blockId)
-        for (e in trips) os.writeByte(e.bikesAllowed)
+        for (e in trips) os.writeBoolean(e.lowFloor.toInt() == 1)
         for (e in trips) os.write(e.routeLength.toInt())
 
-        writeMapPool(headsignPool, {os.writeInt(it) }) { os.writeString(it) }
+        writeMapPool(headsignPool, { os.writeInt(it) }) { os.writeString(it) }
     }
 
     @JvmStatic
     @Throws(IOException::class)
-    fun read(inp: AppInputStream): List<Trip> {
+    fun read(inp: AppInputStream): Pair<Array<Trip>, Array<String>> {
         val length = inp.readInt()
 
-        val result = ArrayList<Trip>()
+        val result = Array<Trip?>(length) { null }
 
-        val routeIds = Array(length) { inp.readShort() }
+        val lineIds = Array(length) { inp.readShort() }
         val serviceIds = Array(length) { inp.readShort() }
         val headsignIds = Array(length) { inp.readInt() }
         val blockIds = Array(length) { inp.readShort() }
-        val bikesAllowed = Array(length) { inp.readByte() }
+        val bikesAllowed = Array(length) { inp.readBoolean() }
         val routeLengths = Array(length) { inp.readByte().toUByte() }
 
         val headsigns = Array(inp.readInt()) { inp.readString() }
 
+        var startPos = 0;
         for (i in 0 until length) {
-            result.add(
-                Trip(
-                    routeIds[i],
-                    serviceIds[i],
-                    headsigns[headsignIds[i]],
-                    blockIds[i],
-                    bikesAllowed[i],
-                    routeLengths[i]
-                )
+            result[i] = Trip(
+                i,
+                lineIds[i],
+                serviceIds[i],
+                headsignIds[i],
+                blockIds[i],
+                bikesAllowed[i],
+                startPos,
+                routeLengths[i]
             )
+            startPos += routeLengths[i].toInt()
         }
 
-        return result
+        return Pair(result.requireNoNulls(), headsigns)
     }
 
 }
