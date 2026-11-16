@@ -1,9 +1,9 @@
 package io.github.mirancz.libreinfo.codec.util;
 
+import io.github.mirancz.libreinfo.model.types.Color;
 import io.github.mirancz.libreinfo.model.types.Date;
 import io.github.mirancz.libreinfo.model.types.Location;
 
-import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -32,20 +32,13 @@ public class CheckedOutputStream implements AutoCloseable {
         os.writeInt(v);
     }
 
-
     public void writeVarInt(int v) throws IOException {
-        writeVarInt((long) v);
-    }
-
-    public void writeVarInt(long v) throws IOException {
-        while ((v & ~0x7f) != 0) {
-            write((int) ((v & 0x7f) | 0x80));
+        while ((v & ~127) != 0) {
+            write((int) ((v & 127) | 128));
             v >>>= 7;
         }
         write((int) v);
     }
-
-
 
     public void writeShort(short v) throws IOException {
         writeShort((int) v);

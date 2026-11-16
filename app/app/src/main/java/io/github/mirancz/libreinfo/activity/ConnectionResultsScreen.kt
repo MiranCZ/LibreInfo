@@ -64,8 +64,8 @@ import androidx.paging.LoadState as PagingLoadState
 
 internal class ConnectionResultsViewModel(
     application: Context,
-    fromStopId: Int,
-    toStopId: Int,
+    fromStopId: Short,
+    toStopId: Short,
     departureTime: String,
     isArrival: Boolean,
 ) : ViewModel() {
@@ -75,7 +75,7 @@ internal class ConnectionResultsViewModel(
 }
 
 @Composable
-fun ConnectionsResultScreen(state: NavState, fromStopId: Int, toStopId: Int, departureTime: String, isArrival: Boolean) {
+fun ConnectionsResultScreen(state: NavState, fromStopId: Short, toStopId: Short, departureTime: String, isArrival: Boolean) {
     val context = LocalContext.current
 
     val vm = viewModel {
@@ -218,7 +218,7 @@ private fun VehicleLeg(state: NavState, leg: VehicleLegUi) {
     val bg = MaterialTheme.colorScheme.surfaceContainer
 
     val openTripDetail = {
-        state.onNavigate(NavRoute.TripDetail(null, leg.boardStopInternalId, leg.tripId))
+        state.onNavigate(NavRoute.TripDetail(null, leg.boardStopInternalId.toShort(), leg.tripId))
     }
 
     Column(Modifier.clickable(onClick = openTripDetail)) {

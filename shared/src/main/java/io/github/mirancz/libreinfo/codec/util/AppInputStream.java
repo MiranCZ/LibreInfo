@@ -1,11 +1,10 @@
 package io.github.mirancz.libreinfo.codec.util;
 
+import io.github.mirancz.libreinfo.model.types.Color;
 import io.github.mirancz.libreinfo.model.types.Date;
 import io.github.mirancz.libreinfo.model.types.Location;
 
-import java.awt.*;
 import java.io.*;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class AppInputStream extends DataInputStream {
@@ -31,10 +30,24 @@ public class AppInputStream extends DataInputStream {
     }
 
     public Location readLocation() throws IOException {
-        float lat = readInt();
-        float lon = readInt();
+        double lat = readInt();
+        double lon = readInt();
 
         return new Location(lat / 1e6, lon / 1e6);
+    }
+
+    public int readVarInt() throws IOException {
+        int i = 0;
+        int j = 0;
+        byte b0;
+
+        do {
+            b0 = readByte();
+            i |= (b0 & 127) << j++ * 7;
+        }
+        while ((b0 & 128) == 128);
+
+        return i;
     }
 
     public String readString() throws IOException {
@@ -48,7 +61,7 @@ public class AppInputStream extends DataInputStream {
             bytes.write(b);
         }
 
-        return bytes.toString(StandardCharsets.UTF_8);
+        return new String(bytes.toByteArray(), StandardCharsets.UTF_8);
     }
 
 }

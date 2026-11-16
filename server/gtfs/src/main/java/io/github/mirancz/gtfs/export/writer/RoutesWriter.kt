@@ -9,9 +9,9 @@ import io.github.mirancz.libreinfo.codec.RoutesCodec
 import io.github.mirancz.libreinfo.codec.TransitDataCodec
 import io.github.mirancz.libreinfo.codec.TripsCodec
 import io.github.mirancz.libreinfo.codec.util.CheckedOutputStream
-import io.github.mirancz.libreinfo.model.Route
-import io.github.mirancz.libreinfo.model.StandaloneTrip
-import io.github.mirancz.libreinfo.model.types.RouteStop
+import io.github.mirancz.libreinfo.model.TripSchedule
+import io.github.mirancz.libreinfo.model.Trip
+import io.github.mirancz.libreinfo.model.types.TripStop
 import io.github.mirancz.libreinfo.model.types.Time
 import java.io.IOException
 
@@ -35,29 +35,31 @@ class RoutesWriter : Writer {
         }
     }
 
-    fun writeTrips(gtfs: ParsedGtfs, routes: List<Route>, os: CheckedOutputStream) {
+    fun writeTrips(gtfs: ParsedGtfs, tripSchedules: List<TripSchedule>, os: CheckedOutputStream) {
         val trips = gtfs.trips
 
-        val tripIdToRoute = HashMap<Int, Route>()
-        for (route in routes) {
-            tripIdToRoute[route.tripId] = route
+        val tripIdToTripSchedule = HashMap<Int, TripSchedule>()
+        for (route in tripSchedules) {
+            tripIdToTripSchedule[route.tripId] = route
         }
 
         val mapped = trips.map { t ->
             val lineId = ParseUtil.lineIdFromRoute(t.route_id)
 
-            val route = tripIdToRoute[t.trip_id]
+            val route = tripIdToTripSchedule[t.trip_id]
 
             val length = route!!.length
 
             val blockId = t.block_id ?: -1
 
-            StandaloneTrip(
+            Trip(
+                t.trip_id,
                 lineId,
                 t.service_id,
                 t.trip_headsign,
                 blockId,
-                t.wheelchair_accessible,
+                t.wheelchair_accessible == 1,
+                route.startPos,
                 length
             )
         }
@@ -65,17 +67,17 @@ class RoutesWriter : Writer {
         TripsCodec.write(os, mapped)
     }
 
-    fun parseRoutes(gtfs: ParsedGtfs): List<Route> {
+    fun parseRoutes(gtfs: ParsedGtfs): List<TripSchedule> {
         data class WipRoute(
             var tripId: Int,
             var startPos: Int,
             var length: Int,
-            var stops: MutableList<RouteStop>
+            var stops: MutableList<TripStop>
         ) {
             constructor(tripId: Int, startPos: Int) : this(tripId, startPos, -1, ArrayList())
 
-            fun toRoute(): Route {
-                return Route(
+            fun toRoute(): TripSchedule {
+                return TripSchedule(
                     tripId, startPos, length, stops
                 )
             }
@@ -85,27 +87,27 @@ class RoutesWriter : Writer {
         var prevSequence = -1
 
         val stopIdToRoute: MutableMap<Short, MutableList<Int>> = HashMap()
-        val routeStops: MutableList<RouteStop> = ArrayList()
+        val tripStops: MutableList<TripStop> = ArrayList()
 
         var routeStopIndex = 0
         var index = 0
 
-        val routes: MutableList<Route> = ArrayList()
+        val tripSchedules: MutableList<TripSchedule> = ArrayList()
 
         val stopTimes = gtfs.stopTimes
 
         fun addRouteStop(stopInfo: StopInfo, e: GtfsStopTimeEntry) {
-            val routeStop = RouteStop(
-                routeStops.size, currentRoute!!.tripId, stopInfo.stopId, stopInfo.postId, index++,
+            val tripStop = TripStop(
+                tripStops.size, currentRoute!!.tripId, stopInfo.stopId, stopInfo.postId, index++,
                 parseTime(e.arrival_time), parseTime(e.departure_time)
             )
 
-            stopIdToRoute.computeIfAbsent(routeStop.stopId) { ArrayList() }
+            stopIdToRoute.computeIfAbsent(tripStop.stopId) { ArrayList() }
                 .add(routeStopIndex++)
 
-            routeStops.add(routeStop)
+            tripStops.add(tripStop)
 
-            currentRoute!!.stops.add(routeStop)
+            currentRoute!!.stops.add(tripStop)
         }
 
         for ((lineNumber, e) in stopTimes.withIndex()) {
@@ -125,7 +127,7 @@ class RoutesWriter : Writer {
                 addRouteStop(stopInfo, e)
             } else {
                 currentRoute.length = lineNumber - currentRoute.startPos
-                routes.add(currentRoute.toRoute())
+                tripSchedules.add(currentRoute.toRoute())
                 currentRoute = WipRoute(tripId, lineNumber)
                 index = 0
 
@@ -136,10 +138,10 @@ class RoutesWriter : Writer {
         }
         if (currentRoute != null) {
             currentRoute.length = stopTimes.size - currentRoute.startPos
-            routes.add(currentRoute.toRoute())
+            tripSchedules.add(currentRoute.toRoute())
         }
 
-        return routes
+        return tripSchedules
     }
 
     fun parseTime(time: String): Time {

@@ -100,15 +100,21 @@ object RequestHelper {
     }
 
     @Throws(RequestException::class)
-    fun getDepartures(context: Context, stopId: Int): ServerDeparturesResponse {
+    fun getDepartures(context: Context, stopId: Short): ServerDeparturesResponse {
         return makeOwnRequest(
             context,
             "departures?stopId=${stopId}"
         )
     }
 
+
     @Throws(RequestException::class)
     fun getStopDelays(context: Context, stopId: Int): StopDelaysResponse {
+        return getStopDelays(context, stopId.toShort())
+    }
+
+    @Throws(RequestException::class)
+    fun getStopDelays(context: Context, stopId: Short): StopDelaysResponse {
         return makeOwnRequest(
             context,
             "stopDelays?stopId=${stopId}"

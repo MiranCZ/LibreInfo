@@ -5,6 +5,7 @@ import static io.github.mirancz.libreinfo.util.StorageFile.*;
 import android.content.Context;
 import android.os.Looper;
 
+import io.github.mirancz.libreinfo.codec.TransitDataCodec;
 import io.github.mirancz.libreinfo.codec.util.AppInputStream;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -30,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.function.Consumer;
 
 public class StorageManager {
 
@@ -54,9 +56,32 @@ public class StorageManager {
         initCalled = true;
 
         synchronized (DATA_LOCK) {
+            deleteLegacyFiles();
             initInternal();
         }
     }
+
+    /// -- BACKWARDS COMPAT: pre-"data/" layout kept everything directly in filesDir
+    private static final String[] LEGACY_FILES = {
+            "data", "api", "stop_mapping", "calendar", "calendar_dates", "stop_times",
+            "trips", "stops", "lines", "posts", "route_stops"
+    };
+
+    private void deleteLegacyFiles() {
+        Path root = context.getFilesDir().toPath();
+        for (String name : LEGACY_FILES) {
+            for (String suffix : new String[]{"", ".meta", ".tmp"}) {
+                Path p = root.resolve(name + suffix);
+                try {
+                    // isRegularFile: the old "data" archive is a file, the new "data" is a directory
+                    if (Files.isRegularFile(p)) Files.delete(p);
+                } catch (IOException e) {
+                    AppLog.e("Failed to delete stale file " + p, e);
+                }
+            }
+        }
+    }
+    /// -- BACKWARDS END
 
     private void initInternal() throws AppException {
         try {
@@ -108,6 +133,8 @@ public class StorageManager {
         }
 
         synchronized (DATA_LOCK) {
+            deleteLegacyFiles();
+
             // no catching, if update fails worker should know
             serverUpdateTime = RequestHelper.getLastStaticUpdate(context);
 
@@ -214,9 +241,10 @@ public class StorageManager {
 
     private void inflateData(boolean skipExisting) throws AppException {
         AppLog.d("Inflating data...");
-        try (var is = new AppInputStream(new XZInputStream(new BufferedInputStream(new FileInputStream(getCachedPath("data").toFile()))))) {
-            while (is.readBoolean()) {
-                String name = is.readString();
+
+        try {
+            TransitDataCodec.readSections(getCachedPath("data"), section -> {
+                String name = section.name();
                 String tmpName = name + ".tmp";
 
                 Path tmpPath = getCachedPath(tmpName);
@@ -224,7 +252,7 @@ public class StorageManager {
 
                 long ms = System.currentTimeMillis();
                 AppLog.d("extracting " + name);
-                int dataLen = is.readInt();
+                int dataLen = section.size();
 
                 if (Files.exists(tmpPath)) {
                     Files.delete(tmpPath);
@@ -239,14 +267,15 @@ public class StorageManager {
                             throw new IOException("Skipped more than " + dataLen + " bytes (" + skipped + ")");
                         }
 
-                        long newSkipped = is.skip(dataLen - skipped);
+                        long newSkipped = section.is().skip(dataLen - skipped);
                         if (newSkipped == 0) {
                             throw new IOException("Failed to skip " + dataLen + " bytes (" + skipped + ")");
                         }
 
                         skipped += newSkipped;
                     }
-                    continue;
+
+                    return;
                 }
 
                 byte[] buffer = new byte[8192];
@@ -254,7 +283,7 @@ public class StorageManager {
                 int len;
 
                 try (FileOutputStream fos = new FileOutputStream(tmpPath.toFile())) {
-                    while ((len = is.read(buffer, 0, Math.min(dataLen, buffer.length))) != -1) {
+                    while ((len = section.is().read(buffer, 0, Math.min(dataLen, buffer.length))) != -1) {
                         dataLen -= len;
 
                         fos.write(buffer, 0, len);
@@ -271,15 +300,7 @@ public class StorageManager {
                 Files.move(tmpPath, finalPath, StandardCopyOption.REPLACE_EXISTING);
 
                 AppLog.d("Extracted "+name + " in "+(System.currentTimeMillis()-ms)+"ms");
-            }
-        } catch (IOException e) {
-            throw AppException.dataLoad(e);
-        }
-    }
-
-    public ByteBuffer getRouteStopsBuff() throws AppException {
-        try(var channel = FileChannel.open(getCachedPath(ROUTE_STOPS), StandardOpenOption.READ)) {
-            return channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+            });
         } catch (IOException e) {
             throw AppException.dataLoad(e);
         }
@@ -301,8 +322,8 @@ public class StorageManager {
         return useCache(dataUser, CALENDAR_DATES);
     }
 
-    public <E> E useStopTimes(DataUser<AppInputStream, E> dataUser) throws AppException {
-        return useCache(dataUser, STOP_TIMES);
+    public <E> E useRoutes(DataUser<AppInputStream, E> dataUser) throws AppException {
+        return useCache(dataUser, ROUTES);
     }
 
     public <E> E useTrips(DataUser<AppInputStream, E> dataUser) throws AppException {
@@ -387,20 +408,6 @@ public class StorageManager {
     }
 
     private Path getCachedPath(String... name) {
-        /// -- BACKWARDS COMPAT START
-        // so stale data from previous versions is not kept
-        Path prevPath = context.getFilesDir().toPath();
-        for (String s : name) {
-            prevPath = prevPath.resolve(s);
-        }
-        try {
-            Files.deleteIfExists(prevPath);
-        } catch (IOException e) {
-            AppLog.e("Failed to delete stale file", e);
-        }
-        /// -- BACKWARDS COMPAT START
-
-
         Path path = getDataDir(context);
 
         for (String s : name) {

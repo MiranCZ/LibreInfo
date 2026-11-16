@@ -54,9 +54,9 @@ class StorageBuilder(val context: Context, val consumer: ((AppStorage) -> Unit)?
         val tripStorage = manager.useTrips(TripStorage::parse)
         onLoaded(tripStorage)
 
-        val routeStopStorage = manager.useStopTimes {
+        val routeStopStorage = manager.useRoutes {
             RouteStopStorage.parse(
-                it, manager.getRouteStopsBuff(), stopStorage.stopsLengths
+                it, stopStorage.stopsLengths
             )
         }
 

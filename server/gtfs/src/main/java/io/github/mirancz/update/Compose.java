@@ -51,7 +51,7 @@ public class Compose {
         if (containers.isEmpty()) {
             throw new IllegalStateException("no container for service '" + service + "' in project '" + project + "'");
         }
-        return containers.getFirst();
+        return containers.get(0);
     }
 
     public DockerClient client() {

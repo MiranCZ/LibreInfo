@@ -54,11 +54,26 @@ public class TransitDataCodec {
             for (CheckedOutputStream os : streams) {
                 os.close();
             }
+
+            output.writeBoolean(false);
         }
     }
 
-    public static void readSections(Path path, Consumer<TDSection> sectionConsumer) throws IOException {
+    public static void readSections(Path path, ThrowingConsumer<TDSection, IOException> sectionConsumer) throws IOException {
         try (var is = new AppInputStream(new XZInputStream(new BufferedInputStream(Files.newInputStream(path))))) {
+            long magic = is.readLong();
+
+            if (magic != MAGIC) {
+                throw new IllegalStateException("Magic does not match!");
+            }
+            int dataVersion = is.readInt();
+            if (dataVersion != DATA_VERSION) {
+                throw new IllegalStateException("Data version mismatch! (expected: "+DATA_VERSION +", got: "+dataVersion+")");
+            }
+
+            // not used for now
+            int date = is.readInt();
+
             while (is.readBoolean()) {
                 String name = is.readString();
 
@@ -112,6 +127,12 @@ public class TransitDataCodec {
         };
     }
 
+    @FunctionalInterface
+    public interface ThrowingConsumer<T, E extends Throwable> {
+        void accept(T t) throws E;
+    }
+
+    @FunctionalInterface
     public interface StreamCreator {
 
         CheckedOutputStream create(String name);

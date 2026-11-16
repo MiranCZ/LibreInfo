@@ -10,7 +10,7 @@
     }
 }
 
-localhost {
+http://localhost, localhost {
     @api not path /stream /stream/* /static/*
     rate_limit @api {
         zone api_burst {

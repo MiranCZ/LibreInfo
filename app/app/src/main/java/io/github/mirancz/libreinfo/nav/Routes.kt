@@ -23,16 +23,16 @@ sealed interface NavRoute : NavKey {
     data class StopSearch(val prefetchDelays: Boolean = false) : NavRoute
 
     @Serializable
-    data class Departures(val stopId: Int) : NavRoute {
+    data class Departures(val stopId: Short) : NavRoute {
 
         @Serializable
-        data class PostDetail(val stopId: Int, val postId: Int) : NavRoute
+        data class PostDetail(val stopId: Short, val postId: Short) : NavRoute
 
 
     }
 
     @Serializable
-    data class TripDetail(val vehicleId: Int?, val stopId: Int, val routeId: Int) : NavRoute
+    data class TripDetail(val vehicleId: Int?, val stopId: Short, val routeId: Int) : NavRoute
 
 
     /**
@@ -52,7 +52,7 @@ sealed interface NavRoute : NavKey {
     data object ConnectionSearch : NavRoute
 
     @Serializable
-    data class ConnectionResults(val fromId: Int, val toId: Int, val time: String, val isArrival: Boolean) : NavRoute
+    data class ConnectionResults(val fromId: Short, val toId: Short, val time: String, val isArrival: Boolean) : NavRoute
 
 
     @Serializable

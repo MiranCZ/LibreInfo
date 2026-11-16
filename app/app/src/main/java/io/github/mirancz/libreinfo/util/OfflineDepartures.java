@@ -25,31 +25,31 @@ import java.util.function.Predicate;
 
 public class OfflineDepartures {
 
-    public static List<Departure> getOffline(IdStorage storage, int stopId) {
+    public static List<Departure> getOffline(IdStorage storage, short stopId) {
         return getOffline(storage, stopId, 5, Time.now());
     }
 
-    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, RouteDelaysResponse delays) {
+    public static List<Departure> getOffline(IdStorage storage, short stopId, int maxSize, RouteDelaysResponse delays) {
         return getOffline(storage, stopId, maxSize, Time.now(), delays);
     }
 
-    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize) {
+    public static List<Departure> getOffline(IdStorage storage, short stopId, int maxSize) {
         return getOffline(storage, stopId, maxSize, Time.now());
     }
 
-    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, Time fromTime) {
+    public static List<Departure> getOffline(IdStorage storage, short stopId, int maxSize, Time fromTime) {
         return getOffline(storage, stopId, maxSize, fromTime, null);
     }
 
-    public static List<Departure> getOffline(IdStorage storage, int stopId, int maxSize, Time fromTime, RouteDelaysResponse delaysResponse) {
+    public static List<Departure> getOffline(IdStorage storage, short stopId, int maxSize, Time fromTime, RouteDelaysResponse delaysResponse) {
         return collectDepartures(storage, stopId, stop -> true, maxSize, fromTime, delaysResponse);
     }
 
-    public static List<Departure> getOfflineForPost(IdStorage storage, int stopId, int postId, int maxSize, Time fromTime, RouteDelaysResponse delaysResponse) {
+    public static List<Departure> getOfflineForPost(IdStorage storage, short stopId, short postId, int maxSize, Time fromTime, RouteDelaysResponse delaysResponse) {
         return collectDepartures(storage, stopId, stop -> stop.postId() == postId, maxSize, fromTime, delaysResponse);
     }
 
-    private static List<Departure> collectDepartures(IdStorage storage, int stopId, Predicate<RouteStop> filter, int maxSize, Time fromTime, RouteDelaysResponse delaysResponse) {
+    private static List<Departure> collectDepartures(IdStorage storage, short stopId, Predicate<RouteStop> filter, int maxSize, Time fromTime, RouteDelaysResponse delaysResponse) {
         RouteStop[] stops = storage.routeStopStorage().getRouteStopsParsed(stopId);
         Map<Integer, Map<Integer, RouteDelayEntry>> delays = null;
 
@@ -104,7 +104,7 @@ public class OfflineDepartures {
                         if (t.getTripId() == trip.getTripId() || !calendarStorage.available(nowDate, t.getServiceId())) continue;
 
                         // time check needed due to vehicle round-trips
-                        RouteStop first = storage.routeStopStorage().getRouteStop(t.getStartPos());
+                        RouteStop first = storage.routeStopStorage().getRouteStop(t.getTripId(), 0);
                         if (first.stopId() == stop.stopId() && first.postId() == stop.postId()
                                 && first.departure().equals(stop.departure())) {
                             timeMode = TimeMark.TimeMode.NORMAL;
@@ -126,7 +126,7 @@ public class OfflineDepartures {
         List<Departure> result = new ArrayList<>();
 
         for (Map.Entry<Short, List<Holder>> entry : postToStop.entrySet()) {
-            int postId = entry.getKey();
+            short postId = entry.getKey();
 
             List<DepartureEntry> departureEntries = new ArrayList<>();
 
@@ -155,7 +155,7 @@ public class OfflineDepartures {
                     if (!calendarStorage.available(nowDate, trip.getServiceId())) continue;
                     if (includedTrips.contains(trip)) continue;
 
-                    String heading = storage.tripStorage().getTripHeadsign(trip);
+                    String heading = trip.getHeadsign();
 
                     if (trip.getBlockId() != -1) {
                         List<Trip> neighbors = new ArrayList<>(storage.tripStorage().getTripsForBlock(trip.getBlockId()));

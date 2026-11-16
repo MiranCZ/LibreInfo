@@ -1,19 +1,20 @@
 package io.github.mirancz.libreinfo.model
 
-import io.github.mirancz.libreinfo.codec.util.toCheckedByte
 import io.github.mirancz.libreinfo.codec.util.toCheckedShort
 import io.github.mirancz.libreinfo.codec.util.toCheckedUByte
 import kotlinx.serialization.Serializable
 
 /**
- * @see [StandaloneTrip]
+ * Data of a single [GTFS trip](https://gtfs.org/documentation/schedule/reference/#tripstxt).
+ *
+ * @see TripSchedule
  */
 @Serializable
 data class Trip(
     val tripId: Int,
     val lineId: Short,
     val serviceId: Short,
-    val headsignId: Int,
+    val headsign: String,
     val blockId: Short,
     val lowFloor: Boolean,
     val startPos: Int,
@@ -24,7 +25,7 @@ data class Trip(
         tripId: Int,
         lineId: Int,
         serviceId: Int,
-        headsignId: Int,
+        headsign: String,
         blockId: Int,
         lowFloor: Boolean,
         startPos: Int,
@@ -33,7 +34,7 @@ data class Trip(
         tripId,
         lineId.toCheckedShort(),
         serviceId.toCheckedShort(),
-        headsignId,
+        headsign,
         blockId.toCheckedShort(),
         lowFloor,
         startPos,

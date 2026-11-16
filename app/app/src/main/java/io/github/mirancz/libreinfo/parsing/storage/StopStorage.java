@@ -43,7 +43,7 @@ public class StopStorage implements AppStorage {
     }
 
 
-    public Stop getStop(int id) {
+    public Stop getStop(short id) {
         if (id < 0 || id >= stops.length) {
             return Stop.Companion.getNONE();
         }

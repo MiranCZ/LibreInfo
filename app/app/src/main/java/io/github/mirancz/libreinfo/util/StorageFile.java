@@ -6,12 +6,11 @@ public enum StorageFile {
     STOP_MAPPING("stop_mapping"),
     CALENDAR("calendar"),
     CALENDAR_DATES("calendar_dates"),
-    STOP_TIMES("stop_times"),
+    ROUTES("routes"),
     TRIPS("trips"),
     STOPS("stops"),
     LINE_ALIASES("lines"),
-    POSTS("posts"),
-    ROUTE_STOPS("route_stops");
+    POSTS("posts");
 
     public final String fileName;
 

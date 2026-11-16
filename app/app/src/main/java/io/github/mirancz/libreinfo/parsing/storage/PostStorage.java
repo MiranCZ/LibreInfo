@@ -52,7 +52,7 @@ public class PostStorage implements AppStorage {
         this.posts = posts;
     }
 
-    public Post getPost(int stopId, int postId) {
+    public Post getPost(short stopId, short postId) {
         for (Post post : getPosts(stopId)) {
              if (post.getPostId() == postId) return post;
         }

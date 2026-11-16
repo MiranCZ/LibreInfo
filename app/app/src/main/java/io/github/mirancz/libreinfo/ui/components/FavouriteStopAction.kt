@@ -42,6 +42,11 @@ fun FavouriteStopAction(stop: Stop) {
     FavouriteStopAction(stop.id.toInt())
 }
 
+@Composable
+fun FavouriteStopAction(stopId: Short) {
+    FavouriteStopAction(stopId.toInt())
+}
+
 /** Toolbar heart that marks stop with [stopId] as a favourite. */
 @Composable
 fun FavouriteStopAction(stopId: Int) {

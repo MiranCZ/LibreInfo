@@ -17,8 +17,8 @@ import kotlin.coroutines.cancellation.CancellationException
  */
 internal class ConnectionPagingSource(
     private val context: Context,
-    private val fromStopId: Int,
-    private val toStopId: Int,
+    private val fromStopId: Short,
+    private val toStopId: Short,
     private val time: String,
     private val isArrival: Boolean,
 ) : PagingSource<String, ConnectionUi>() {

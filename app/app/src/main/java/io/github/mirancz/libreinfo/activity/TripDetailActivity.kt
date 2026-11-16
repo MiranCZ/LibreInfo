@@ -87,7 +87,7 @@ import java.util.function.Function
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
-fun TripDetailScreen(state: NavState, vehicleId: Int?, stopId: Int, tripId: Int) {
+fun TripDetailScreen(state: NavState, vehicleId: Int?, stopId: Short, tripId: Int) {
     val context = LocalContext.current
 
     val provider = AppContainer.storageProvider
@@ -154,7 +154,7 @@ private fun loadAndParseTripInfoData(
     storage: IdStorage,
     tripId: Int,
     context: Context,
-    highlightedStopId: Int,
+    highlightedStopId: Short,
     vehicleId: Int
 ): TripInfoData {
     val res = storage.apiStorage.getLineIdAndRoute(tripId)
@@ -171,7 +171,7 @@ private fun loadAndParseTripInfoData(
 
 
     val trip = storage.tripStorage.trips[tripId]
-    var headsign = storage.tripStorage.getTripHeadsign(trip)
+    var headsign = trip.headsign
 
     var routeInfoText = context.getString(R.string.trip_number, res.left, res.right)
 
@@ -184,13 +184,13 @@ private fun loadAndParseTripInfoData(
 
         neighbors.removeIf { t: Trip? ->
             !storage.calendarStorage.available(
-                Date.now(), t!!.serviceId.toInt()
+                Date.now(), t!!.serviceId
             )
         }
 
         neighbors.sortWith(Comparator.comparing(Function { t: Trip? ->
             storage.routeStopStorage.getRouteStop(
-                t!!.startPos
+                t!!.tripId, 0
             ).departure()
         }))
 
@@ -257,7 +257,7 @@ private fun stopRenderStates(data: TripInfoData, nowMs: Long): List<StopRenderSt
     var alreadyMet = true
 
     return data.stops.mapIndexed { i, stop ->
-        val stopId = stop.stop.stopId.toInt()
+        val stopId = stop.stop.stopId
 
         if (vehicleInfo == VehicleInfo.NONE && !stop.time.delayedDeparture.isBefore(Time.now())) {
             alreadyMet = false
@@ -631,7 +631,7 @@ private fun TripInfo(storage: IdStorage, data: TripInfoData, lastUpdate: Long? =
 
 private data class StopRenderState(
     val index: Int,
-    val stopId: Int,
+    val stopId: Short,
     val alreadyMet: Boolean,
     val leavingStop: Boolean,
     val isTransitionStop: Boolean,
@@ -697,7 +697,7 @@ private data class TimedStop(val stop: RouteStop, val time: TimeMark)
 
 private data class TripInfoData(
     val tripId: Int,
-    val highlightedStopId: Int,
+    val highlightedStopId: Short,
     val lineId: Int,
     val routeId: Int,
     val vehicleId: Int,

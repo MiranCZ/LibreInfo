@@ -3,7 +3,7 @@ package io.github.mirancz.libreinfo.codec
 import io.github.mirancz.libreinfo.codec.util.AppInputStream
 import io.github.mirancz.libreinfo.codec.util.CheckedOutputStream
 import io.github.mirancz.libreinfo.model.LineAlias
-import java.awt.Color
+import io.github.mirancz.libreinfo.model.types.Color
 import java.io.IOException
 
 object LinesCodec {

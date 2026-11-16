@@ -19,18 +19,16 @@ public class TripStorage implements AppStorage {
         try {
             var result = TripsCodec.read(is);
 
-            return new TripStorage(result.getSecond(), result.getFirst());
+            return new TripStorage(result.toArray(new Trip[0]));
         } catch (IOException e) {
             throw AppException.dataLoad(e);
         }
     }
 
-    private final String[] headsignPool;
     private final Trip[] trips;
     private final SparseArray<List<Trip>> blockMap;
 
-    private TripStorage(String[] headsignPool, Trip[] trips) {
-        this.headsignPool = headsignPool;
+    private TripStorage(Trip[] trips) {
         this.trips = trips;
 
         this.blockMap = new SparseArray<>();
@@ -46,23 +44,18 @@ public class TripStorage implements AppStorage {
         }
     }
 
-
-    public String getTripHeadsign(Trip trip) {
-        return headsignPool[trip.getHeadsignId()];
-    }
-
     public String getHeadsignForTripList(List<Trip> trips, IdStorage storage) {
-        trips.sort(Comparator.comparing(t -> storage.routeStopStorage().getRouteStop(t.getStartPos()).departure()));
+        trips.sort(Comparator.comparing(t -> storage.routeStopStorage().getRouteStop(t.getTripId(), 0).departure()));
 
         String headSign = "";
         boolean multiple = false;
 
         for (Trip neighbor : trips) {
             if (headSign.isEmpty()) {
-                headSign = storage.tripStorage().getTripHeadsign(neighbor);
+                headSign = neighbor.getHeadsign();
             } else {
                 multiple = true;
-                headSign = headSign + " (> "+storage.lineStorage().getAlias(neighbor.getLineId()).getDisplayName() + " "+storage.tripStorage().getTripHeadsign(neighbor);
+                headSign = headSign + " (> "+storage.lineStorage().getAlias(neighbor.getLineId()).getDisplayName() + " "+neighbor.getHeadsign();
             }
         }
         if (multiple) {

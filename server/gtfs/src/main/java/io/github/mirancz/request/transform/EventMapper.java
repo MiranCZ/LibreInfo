@@ -31,7 +31,7 @@ public class EventMapper {
 
                             List<String> parts = new ArrayList<>(List.of(BR.split(description, -1)));
 
-                            String title = parts.isEmpty() ? "" : parts.removeFirst().trim();
+                            String title = parts.isEmpty() ? "" : parts.remove(0).trim();
 
                             final String PREFIX = "brno:";
                             if (title.toLowerCase().startsWith(PREFIX)) {

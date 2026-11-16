@@ -59,6 +59,10 @@ public class Updater {
             System.out.println("Osm state: "+osm);
 
             String motisKey = gtfs.hash + ";" + osm.hash;
+
+
+            Parser.parseGtfs();
+
             if (!gtfs.updated && !osm.updated) {
                 System.out.println("Nothing updated");
 

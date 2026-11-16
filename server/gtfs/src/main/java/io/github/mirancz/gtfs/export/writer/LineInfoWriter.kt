@@ -6,7 +6,7 @@ import io.github.mirancz.gtfs.export.SingleWriter
 import io.github.mirancz.libreinfo.codec.LinesCodec
 import io.github.mirancz.libreinfo.codec.util.CheckedOutputStream
 import io.github.mirancz.libreinfo.model.LineAlias
-import java.awt.Color
+import io.github.mirancz.libreinfo.model.types.Color
 
 class LineInfoWriter : SingleWriter("lines") {
 

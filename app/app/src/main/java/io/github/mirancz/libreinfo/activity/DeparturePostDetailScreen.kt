@@ -38,7 +38,7 @@ import io.github.mirancz.libreinfo.ui.showError
 import kotlinx.coroutines.launch
 
 @Composable
-fun DeparturePostDetailScreen(state: NavState, stopId: Int, postId: Int) {
+fun DeparturePostDetailScreen(state: NavState, stopId: Short, postId: Short) {
     val context = LocalContext.current
     val snackbar = LocalSnackbarHostState.current
 

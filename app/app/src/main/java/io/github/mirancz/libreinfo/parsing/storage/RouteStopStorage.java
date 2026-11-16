@@ -1,126 +1,106 @@
 package io.github.mirancz.libreinfo.parsing.storage;
 
+import io.github.mirancz.libreinfo.codec.RoutesCodec;
+import io.github.mirancz.libreinfo.codec.util.AppInputStream;
 import io.github.mirancz.libreinfo.exception.AppException;
+import io.github.mirancz.libreinfo.model.types.StopPattern;
+import io.github.mirancz.libreinfo.model.types.StopPost;
 import io.github.mirancz.libreinfo.parsing.types.RouteStop;
 import io.github.mirancz.libreinfo.parsing.types.Time;
-import io.github.mirancz.libreinfo.util.AppLog;
 
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RouteStopStorage implements AppStorage {
 
-    // TODO move to Codec
-    public static RouteStopStorage parse(DataInputStream is, ByteBuffer routeStops, int stopsLength) throws AppException {
+
+    record StopVisit(StopPattern pattern, int position){
+    }
+
+    public static RouteStopStorage parse(AppInputStream is, int stopsLength) throws AppException {
         try {
-            int size = is.readInt();
+            var result = RoutesCodec.read(is);
 
-            int[][] stopIdToRoute = new int[stopsLength][];
+            @SuppressWarnings("unchecked")
+            List<StopVisit>[] stopIdToPattern = new ArrayList[stopsLength];
 
-            for (int i = 0; i < size; i++) {
-                short stopId = is.readShort();
-
-                int arrSize = is.readInt();
-                int[] route = new int[arrSize];
-
-                for (int j = 0; j < arrSize; j++) {
-                    route[j] = is.readInt();
-                }
-                stopIdToRoute[stopId] = route;
+            for (int i = 0; i < stopIdToPattern.length; i++) {
+                stopIdToPattern[i] = new ArrayList<>();
             }
 
-            return new RouteStopStorage(stopIdToRoute, routeStops);
+            for (StopPattern pattern : result.getPatternPool()) {
+                var stops = pattern.getStops();
+                for (int i = 0; i < stops.size(); i++) {
+                    StopPost stop = stops.get(i);
+                    stopIdToPattern[stop.getStopId()].add(new StopVisit(pattern, i));
+                }
+            }
+
+            var patterns = result.getPatterns();
+            for (int i = 0; i < patterns.length; i++) {
+                StopPattern pattern = patterns[i];
+
+                pattern.getTrips().add(i);
+            }
+
+            return new RouteStopStorage(stopIdToPattern, result);
         } catch (IOException e) {
             throw AppException.dataLoad(e);
         }
     }
 
 
-    private static final int ROUTE_STOP_SIZE_BYTES = Short.BYTES + Integer.BYTES + 2 * Short.BYTES + 4 * Byte.BYTES;
-    private final int[][] stopIdToRouteStops;
-    private final ByteBuffer routeStops;
+    private final List<StopVisit>[] stopIdToPattern;
+    private final RoutesCodec.ParsedRoutes parsedRoutes;
 
-
-    private RouteStopStorage(int[][] stopIdToRoute, ByteBuffer routeStops) {
-        this.stopIdToRouteStops = stopIdToRoute;
-        this.routeStops = routeStops;
-    }
-
-    public int[] getRouteStops(short stopId) {
-        return stopIdToRouteStops[stopId];
+    private RouteStopStorage(List<StopVisit>[] stopIdToPattern, RoutesCodec.ParsedRoutes parsedRoutes) {
+        this.stopIdToPattern = stopIdToPattern;
+        this.parsedRoutes = parsedRoutes;
     }
 
     public RouteStop[] getRouteStopsParsed(int stopId) {
-        try {
-            return getRouteStopsParsedInternal((short) stopId);
-        } catch (IOException e) {
-            AppLog.e("Failed to read route stops for stop " + stopId, e);
-            return new RouteStop[0];
+        var coll = stopIdToPattern[stopId];
+
+        List<RouteStop> result = new ArrayList<>();
+
+        for (int i = 0; i < coll.size(); i++) {
+            StopVisit visit = coll.get(i);
+
+            for (int trip : visit.pattern.getTrips()) {
+                result.add(getRouteStop(trip, visit.position));
+            }
         }
+
+        return result.toArray(new RouteStop[0]);
     }
 
-    public RouteStop[] getRouteStopsFromSegmentParsed(int start, int length) {
-        try {
-            return getRouteStopsFromSegmentParsedInternal(start, length);
-        } catch (IOException e) {
-            AppLog.e("Failed to read route stop segment [" + start + ", " + (start + length) + ")", e);
-            return new RouteStop[0];
+    public RouteStop[] getTripsRouteStops(int tripId) {
+        var stops = parsedRoutes.getPatterns()[tripId].getStops();
+        RouteStop[] result = new RouteStop[stops.size()];
+
+        for (int i = 0; i < result.length; i++) {
+            result[i] = getRouteStop(tripId, i);
         }
+
+        return result;
     }
 
-    public RouteStop getRouteStop(int id) {
-        try {
-            return parseStop(id);
-        } catch (IOException e) {
-            AppLog.e("Failed to read route stop " + id, e);
-            return null;
-        }
-    }
-    private RouteStop[] getRouteStopsFromSegmentParsedInternal(int start, int length) throws IOException {
-        RouteStop[] results = new RouteStop[length];
+    public RouteStop getRouteStop(int tripId, int offset) {
+        StopPost stop = parsedRoutes.getPatterns()[tripId].getStops().get(offset);
 
-        for (int i = 0; i < length; i++) {
-            int routeId = start+i;
+        int routeId = parsedRoutes.getPatterns().length * offset + tripId;
 
-            RouteStop stop = parseStop(routeId);
-            results[i] = stop;
-        }
+        short arrival = parsedRoutes.getArrivals()[tripId][offset];
 
-        return results;
-    }
+        int minutes = arrival % 60;
+        int hours = arrival / 60;
 
+        Time arrivalTime = new Time(hours, minutes);
 
-    private RouteStop parseStop(int routeId) throws IOException {
-        long pos = (long) (ROUTE_STOP_SIZE_BYTES) * routeId;
-        if (pos > Integer.MAX_VALUE) {
-            throw new IllegalStateException("File too large!");
-        }
-        routeStops.position((int) pos);
+        int dwell = parsedRoutes.getDwells()[tripId][offset];
 
-        short stopId = routeStops.getShort();
-        int tripId = routeStops.getInt();
-        short postId = routeStops.getShort();
-        short sequence = routeStops.getShort();
-
-        Time arrival = new Time(routeStops.get(), routeStops.get());
-        Time departure = new Time(routeStops.get(), routeStops.get());
-
-        return new RouteStop(routeId, stopId, tripId, postId, sequence, arrival, departure);
-    }
-
-    private RouteStop[] getRouteStopsParsedInternal(short stopId) throws IOException {
-        int[] routes = getRouteStops(stopId);
-        if (routes == null || routes.length == 0) return new RouteStop[0];
-
-        RouteStop[] results = new RouteStop[routes.length];
-
-        for (int i = 0, routesLength = routes.length; i < routesLength; i++) {
-            int routeId = routes[i];
-
-            results[i] = parseStop(routeId);
-        }
-        return results;
+        return new RouteStop(routeId, stop.getStopId(), tripId, stop.getPostId(), (short) offset, arrivalTime, arrivalTime.addMinutes(dwell));
     }
 
 }

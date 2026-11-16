@@ -12,6 +12,8 @@ object PostsCodec {
     @JvmStatic
     @Throws(IOException::class)
     fun write(os: CheckedOutputStream, posts: List<Post>) {
+        os.writeInt(posts.size)
+
         for (p in posts) os.writeShort(p.stopId)
         for (p in posts) os.writeShort(p.postId)
         for (p in posts) os.writeLocation(p.location)

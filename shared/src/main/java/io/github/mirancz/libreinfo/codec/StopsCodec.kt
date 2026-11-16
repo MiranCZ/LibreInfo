@@ -19,6 +19,9 @@ object StopsCodec {
     fun write(os: CheckedOutputStream, stops: List<Stop>) {
         os.writeInt(stops.size)
 
+
+        for (e in stops) os.writeShort(e.id)
+
         for (e in stops) {
             val parent = e.parentStation
 
@@ -32,11 +35,11 @@ object StopsCodec {
                 throw IllegalStateException("Parent stop id does not match stop id of child!");
             }
 
-            os.writeShort(e.id)
             os.writeShort(packedPost)
-            os.writeLocation(e.location)
         }
 
+
+        for (e in stops) os.writeLocation(e.location)
         for (e in stops) os.writeString(e.name)
     }
 

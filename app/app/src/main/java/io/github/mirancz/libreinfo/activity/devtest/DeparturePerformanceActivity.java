@@ -98,8 +98,8 @@ public class DeparturePerformanceActivity extends BaseActivity {
 
                 Collections.sort(values);
 
-                String minStopS = storage.stopStorage().getStop(minStop).getName();
-                String maxStopS = storage.stopStorage().getStop(maxStop).getName();
+                String minStopS = storage.stopStorage().getStop((short) minStop).getName();
+                String maxStopS = storage.stopStorage().getStop((short) maxStop).getName();
 
                 resultText += "\nAverage: " +formatNs(Math.round(average*100)/100)+"ms";
                 resultText += "\nMedian: " +formatNs(values.get(values.size()/2))+"ms\n";

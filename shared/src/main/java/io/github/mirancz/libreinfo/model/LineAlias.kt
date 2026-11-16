@@ -1,8 +1,8 @@
 package io.github.mirancz.libreinfo.model
 
 import io.github.mirancz.libreinfo.codec.util.toCheckedShort
+import io.github.mirancz.libreinfo.model.types.Color
 import kotlinx.serialization.Serializable
-import java.awt.Color
 import java.util.Locale
 import java.util.Optional
 import java.util.function.Function

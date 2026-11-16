@@ -14,26 +14,26 @@ import io.github.mirancz.libreinfo.util.request.RequestHelper
 
 class OfflineDepartureRepository(val storageProvider: StorageProvider) : DepartureRepository {
 
-    override fun headerOrNull(context: Context, stopId: Int): DepartureHeader? {
+    override fun headerOrNull(context: Context, stopId: Short): DepartureHeader? {
         val storage = storageProvider.getInstanceOrNull() ?: return null
 
         return header(storage, stopId)
     }
 
-    override suspend fun header(context: Context, stopId: Int): DepartureHeader {
+    override suspend fun header(context: Context, stopId: Short): DepartureHeader {
         val storage = storageProvider.getInstance()
 
         return header(storage, stopId)
     }
 
-    private fun header(storage: IdStorage, stopId: Int): DepartureHeader {
+    private fun header(storage: IdStorage, stopId: Short): DepartureHeader {
         val stop = storage.stopStorage.getStop(stopId)
         val stopName = stop.name
 
         return DepartureHeader(stopName, stop.isFavourite(),storage.postStorage.getPosts(stop).map { it.name })
     }
 
-    override suspend fun board(context: Context, stopId: Int, maxEntries: Int, forceRefresh: Boolean): DepartureBoard {
+    override suspend fun board(context: Context, stopId: Short, maxEntries: Int, forceRefresh: Boolean): DepartureBoard {
         val storage = storageProvider.getInstance()
 
         var error: AppError? = null

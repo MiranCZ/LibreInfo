@@ -16,19 +16,19 @@ import io.github.mirancz.libreinfo.parsing.types.stop.isFavourite
 import io.github.mirancz.libreinfo.util.request.RequestHelper
 
 class ServerDepartureRepository(val storageProvider: StorageProvider) : DepartureRepository {
-    override fun headerOrNull(context: Context, stopId: Int): DepartureHeader? {
+    override fun headerOrNull(context: Context, stopId: Short): DepartureHeader? {
         val storage = storageProvider.getInstanceOrNull() ?: return null
 
         return header(storage, stopId)
     }
 
-    override suspend fun header(context: Context, stopId: Int): DepartureHeader {
+    override suspend fun header(context: Context, stopId: Short): DepartureHeader {
         val storage = storageProvider.getInstance()
 
         return header(storage, stopId)
     }
 
-    private fun header(storage: IdStorage, stopId: Int): DepartureHeader {
+    private fun header(storage: IdStorage, stopId: Short): DepartureHeader {
         val stop = storage.stopStorage.getStop(stopId)
         val stopName = stop.name
 
@@ -37,7 +37,7 @@ class ServerDepartureRepository(val storageProvider: StorageProvider) : Departur
 
     override suspend fun board(
         context: Context,
-        stopId: Int,
+        stopId: Short,
         maxEntries: Int,
         forceRefresh: Boolean
     ): DepartureBoard {
@@ -70,7 +70,7 @@ class ServerDepartureRepository(val storageProvider: StorageProvider) : Departur
                         storage.lineStorage.getAlias(it.lineId),
                         it.finalStop,
                         stopId,
-                        p.postId,
+                        p.postId.toShort(),
                         it.isLowFloor,
                         DepartureTime.Verbatim(it.time),
                         storage.apiStorage.getTripId(it.lineId, it.routeId),

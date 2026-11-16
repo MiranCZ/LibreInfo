@@ -2,6 +2,8 @@ package io.github.mirancz.gtfs.export.writer
 
 import io.github.mirancz.gtfs.ParsedGtfs
 import io.github.mirancz.gtfs.export.SingleWriter
+import io.github.mirancz.gtfs.remap.IdType
+import io.github.mirancz.gtfs.remap.Mapper
 import io.github.mirancz.libreinfo.codec.ApiCodec
 import io.github.mirancz.libreinfo.codec.util.CheckedOutputStream
 import io.github.mirancz.libreinfo.model.ApiEntry
@@ -13,7 +15,7 @@ class ApiWriter : SingleWriter("api") {
 
         ApiCodec.write(os, api.map { e ->
             ApiEntry(
-                e.trip_id,
+                Mapper.map(IdType.TRIP, e.trip_id),
                 e.line_id,
                 e.route_id
             )

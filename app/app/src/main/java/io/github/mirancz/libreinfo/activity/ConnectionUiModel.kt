@@ -79,7 +79,7 @@ private fun buildLeg(part: ConnectionLeg, index: Int, parts: List<ConnectionLeg>
         val trip = storage.tripStorage.trips[tripId]
         return VehicleLegUi(
             alias = alias,
-            headsign = storage.tripStorage.getTripHeadsign(trip),
+            headsign = trip.headsign,
             stopCount = computeStopCount(trip, storage, part.fromStop.id.toInt(), part.toStop.id.toInt()),
             boardTime = part.departure.toTimeString(),
             boardStop = part.fromStop.name,

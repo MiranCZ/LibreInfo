@@ -46,7 +46,7 @@ import kotlinx.coroutines.withContext
 
 
 @Composable
-fun DeparturesScreen(state: NavState, stopId: Int) {
+fun DeparturesScreen(state: NavState, stopId: Short) {
     val vm: StopViewModel = viewModel()
     val context = LocalContext.current
 
@@ -104,8 +104,8 @@ fun DeparturesScreen(state: NavState, stopId: Int) {
                     DepartureBoard(deps, onPostClick = {
                         state.onNavigate(
                             NavRoute.Departures.PostDetail(
-                                deps.stop.id.toInt(),
-                                it.postId
+                                deps.stop.id,
+                                it.postId.toShort()
                             )
                         )
                     }) {
