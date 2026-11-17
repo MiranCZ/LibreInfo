@@ -1,6 +1,6 @@
 package io.github.mirancz.libreinfo.exception
 
-import io.github.mirancz.libreinfo.util.request.Endpoint
+import io.github.mirancz.libreinfo.util.request.EndpointName
 
 /**
  * What went wrong, as plain data. Turning it into user-facing text, an icon or a retry affordance is
@@ -10,30 +10,30 @@ sealed interface AppError {
 
     /** Failures of a network request, thrown as [RequestException]. */
     sealed interface Request : AppError {
-        val endpoint: Endpoint
+        val endpoint: EndpointName
     }
 
     /** No network connectivity at all. */
-    data class Offline(override val endpoint: Endpoint) : Request
+    data class Offline(override val endpoint: EndpointName) : Request
 
     /** The server couldn't be reached. */
-    data class Unreachable(override val endpoint: Endpoint) : Request
+    data class Unreachable(override val endpoint: EndpointName) : Request
 
-    data class Timeout(override val endpoint: Endpoint, val seconds: Int) : Request
+    data class Timeout(override val endpoint: EndpointName, val seconds: Int) : Request
 
     /** The server answered with a non-success HTTP status. */
-    data class HttpStatus(override val endpoint: Endpoint, val code: Int) : Request
+    data class HttpStatus(override val endpoint: EndpointName, val code: Int) : Request
 
     /** The server answered with 410. */
-    data class OldClient(override val endpoint: Endpoint) : Request
+    data class OldClient(override val endpoint: EndpointName) : Request
 
     /** The response body was empty or couldn't be read. */
-    data class ReadFailed(override val endpoint: Endpoint) : Request
+    data class ReadFailed(override val endpoint: EndpointName) : Request
 
     /** The response was read but couldn't be parsed. */
-    data class InvalidResponse(override val endpoint: Endpoint) : Request
+    data class InvalidResponse(override val endpoint: EndpointName) : Request
 
-    data class UnknownRequest(override val endpoint: Endpoint) : Request
+    data class UnknownRequest(override val endpoint: EndpointName) : Request
 
     /** The locally cached static data is missing or corrupt. */
     data object DataLoad : AppError

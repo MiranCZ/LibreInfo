@@ -1,5 +1,7 @@
 package io.github.mirancz.libreinfo.codec;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import io.github.mirancz.libreinfo.codec.debug.CompressionStats;
 import io.github.mirancz.libreinfo.codec.util.AppInputStream;
 import io.github.mirancz.libreinfo.codec.util.CheckedOutputStream;
@@ -57,6 +59,16 @@ public class TransitDataCodec {
 
             output.writeBoolean(false);
         }
+    }
+
+    public static void writeInfo(Path path, long dataSize) throws IOException {
+        // FIXME ideally rework this
+        var obj = new JsonObject();
+        obj.addProperty("byteSize", dataSize);
+        obj.addProperty("dataVersion", DATA_VERSION);
+        obj.addProperty("lastUpdated", System.currentTimeMillis());
+
+        Files.writeString(path, obj.toString());
     }
 
     public static void readSections(Path path, ThrowingConsumer<TDSection, IOException> sectionConsumer) throws IOException {

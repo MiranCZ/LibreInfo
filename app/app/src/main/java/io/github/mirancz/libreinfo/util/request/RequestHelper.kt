@@ -150,7 +150,7 @@ object RequestHelper {
     @JvmStatic
     @Throws(RequestException::class)
     fun getVersionInfo(context: Context, versionUrl: String): VersionInfoResponse {
-        return makeRequest(context, Endpoint(versionUrl, Endpoint.Name.Literal("Release version meta")))
+        return makeRequest(context, Endpoint(versionUrl, EndpointName.Literal("Release version meta")))
     }
 
     @JvmStatic
@@ -161,13 +161,13 @@ object RequestHelper {
         endpointName: String,
         deserializer: DeserializationStrategy<T>
     ): T {
-        return makeRequest(context, Endpoint(URL, Endpoint.Name.Literal(endpointName)), deserializer)
+        return makeRequest(context, Endpoint(URL, EndpointName.Literal(endpointName)), deserializer)
     }
 
     @JvmStatic
     @Throws(RequestException::class)
     fun readUrl(context: Context, URL: String, endpointName: String): InputStream {
-        return readUrl(context, Endpoint(URL, Endpoint.Name.Literal(endpointName)))
+        return readUrl(context, Endpoint(URL, EndpointName.Literal(endpointName)))
     }
 
     @Throws(RequestException::class)
@@ -222,7 +222,7 @@ object RequestHelper {
                 val output = String(IOUtil.readAllBytes(stream), StandardCharsets.UTF_8)
 
                 if (output.isBlank()) {
-                    throw RequestException(AppError.ReadFailed(endpoint))
+                    throw RequestException(AppError.ReadFailed(endpoint.name))
                 }
 
                 return json.decodeFromString(deserializer, output)
@@ -231,13 +231,13 @@ object RequestHelper {
             throw e
         } catch (e: SerializationException) {
             AppLog.e("Failed to parse response from " + endpoint.url, e)
-            throw RequestException(AppError.InvalidResponse(endpoint), e)
+            throw RequestException(AppError.InvalidResponse(endpoint.name), e)
         } catch (e: IOException) {
             AppLog.e("IO error reading from " + endpoint.url, e)
-            throw RequestException(AppError.ReadFailed(endpoint), e)
+            throw RequestException(AppError.ReadFailed(endpoint.name), e)
         } catch (e: Exception) {
             AppLog.e("Unexpected error reading from " + endpoint.url, e)
-            throw RequestException(AppError.UnknownRequest(endpoint), e)
+            throw RequestException(AppError.UnknownRequest(endpoint.name), e)
         }
     }
 
@@ -245,7 +245,7 @@ object RequestHelper {
     private fun readUrl(context: Context, endpoint: Endpoint): InputStream {
         if (!hasNetwork(context)) {
             AppLog.d("assuming network is unreachable for " + endpoint.url)
-            throw RequestException(AppError.Offline(endpoint))
+            throw RequestException(AppError.Offline(endpoint.name))
         }
 
         // TODO make this into a setting
@@ -290,21 +290,21 @@ object RequestHelper {
 
             if (response.code == 410) {
                 response.close()
-                throw RequestException(AppError.OldClient(endpoint))
+                throw RequestException(AppError.OldClient(endpoint.name))
             }
 
             if (!response.isSuccessful) {
                 val code = response.code
                 response.close()
-                throw RequestException(AppError.HttpStatus(endpoint, code))
+                throw RequestException(AppError.HttpStatus(endpoint.name, code))
             }
 
             return response.body.byteStream()
         } catch (e: SocketTimeoutException) {
-            throw RequestException(AppError.Timeout(endpoint, (timeoutMs / 1000).toInt()), e)
+            throw RequestException(AppError.Timeout(endpoint.name, (timeoutMs / 1000).toInt()), e)
         } catch (e: IOException) {
             AppLog.e("Failed to reach " + endpoint.url, e)
-            throw RequestException(AppError.Unreachable(endpoint), e)
+            throw RequestException(AppError.Unreachable(endpoint.name), e)
         }
     }
 

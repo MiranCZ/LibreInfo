@@ -30,16 +30,14 @@ public class Parser {
             throw new FileNotFoundException("GTFS zip not found at " + GTFS_ZIP_PATH);
         }
 
-
         List<ApiPost> posts = RequestHelper.getPosts().posts();
-//        List<ApiPost> posts = new Gson().fromJson(Files.readString(STATE_DIR.resolve("posts.json")), PostsResponse.class).posts();
 
         Path mapped = getMappedGtfsFile();
-        Path tmp = mapped.resolveSibling(mapped.getFileName() + ".tmp");
+        Path mappedTmp = mapped.resolveSibling(mapped.getFileName() + ".tmp");
 
         Files.createDirectories(mapped.getParent());
 
-        ParsedGtfs data = handleGtfs(tmp);
+        ParsedGtfs data = handleGtfs(mappedTmp);
 
         List<Writer> writers = List.of(
                 new ApiWriter(),
@@ -52,13 +50,23 @@ public class Parser {
                 new PostWriter(posts)
         );
 
-        TransitDataCodec.write(OUTPUT_DIR.resolve("data"), streamCreator -> {
+        Path output = OUTPUT_DIR.resolve("data");
+        Path outputTmp = output.resolveSibling(output.getFileName() + ".tmp");
+
+        Path info = OUTPUT_DIR.resolve("info");
+        Path infoTmp = info.resolveSibling(info.getFileName() + ".tmp");
+
+        TransitDataCodec.write(outputTmp, streamCreator -> {
             for (Writer writer : writers) {
                 writer.write(data, streamCreator);
             }
         });
 
-        Files.move(tmp, mapped, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        TransitDataCodec.writeInfo(info, Files.size(outputTmp));
+
+        Files.move(mappedTmp, mapped, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        Files.move(outputTmp, output, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        Files.move(infoTmp, info, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         Mapper.savePersistentMaps();
     }
 
