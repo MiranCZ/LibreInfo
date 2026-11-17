@@ -9,6 +9,9 @@ data class ParentStopStation(val stopId: Short, val postId: Short, val postType:
         val NONE = ParentStopStation(-1, -1, PostType.POST)
     }
 
+    fun asStopString() =
+        "U${stopId}${if (postType == PostType.POST) "Z" else "N"}${postId}"
+
 
 }
 

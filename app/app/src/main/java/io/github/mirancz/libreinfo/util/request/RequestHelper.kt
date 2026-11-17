@@ -134,7 +134,7 @@ object RequestHelper {
 
         return makeOwnRequest(
             context,
-            "findConnections?fromStop=${fromStop.parentStation}&toStop=${toStop.parentStation}&time=$time&arriveBy=$isArrival$cursorParam"
+            "findConnections?fromStop=${fromStop.getParentStationStr()}&toStop=${toStop.getParentStationStr()}&time=$time&arriveBy=$isArrival$cursorParam"
         )
     }
 

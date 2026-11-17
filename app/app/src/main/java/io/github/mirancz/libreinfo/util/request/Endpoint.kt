@@ -23,9 +23,9 @@ class Endpoint(@JvmField val url: String, @JvmField val name: EndpointName) {
 
         @JvmField
         val APP_SERVER = if (DebugFlags.shouldUseLocalhost()) {
-            Endpoint("http://localhost:8080", EndpointName.StaticGtfs)
+            Endpoint("http://localhost:8080", EndpointName.AppServer)
         } else {
-            Endpoint("https://api.libre-info.com", EndpointName.StaticGtfs)
+            Endpoint("https://api.libre-info.com", EndpointName.AppServer)
         }
 
         @JvmField

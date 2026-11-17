@@ -42,10 +42,7 @@ public class Mapper {
     public static Mapped<Integer> getMapped(IdType type, Integer id) {
         if (id == null) return new Mapped.Present<>(null);
 
-        var mapper = mappers.get(type);
-        if (mapper == null) {
-            return Mapped.of(null);
-        }
+        var mapper = getMapper(type);
 
         return mapper.tryMap(id);
     }
@@ -62,6 +59,17 @@ public class Mapper {
         return map(type, Integer.parseInt(id.trim()));
     }
 
+
+    public static Mapped<Integer> getOriginal(IdType type, Integer id) {
+        if (id == null) {
+            return new Mapped.Present<>(null);
+        }
+
+        var mapper = getMapper(type);
+
+        return mapper.mapOriginal(id);
+    }
+
     private static String mapStop(String stopID) {
         if (!stopID.startsWith("U")) {
             throw new IllegalStateException("Invalid stop UID: " + stopID);
@@ -76,6 +84,10 @@ public class Mapper {
     }
 
     public static int map(IdType type, int id) {
+        return getMapper(type).map(id);
+    }
+
+    private static Mapper getMapper(IdType type) {
         var mapper = mappers.get(type);
         if (mapper == null) {
             Mapper n = createMapper(type);
@@ -84,7 +96,7 @@ public class Mapper {
             mappers.put(type, n);
         }
 
-        return mapper.map(id);
+        return mapper;
     }
 
     @NotNull
@@ -118,6 +130,7 @@ public class Mapper {
 
 
     private final HashMap<Integer, Integer> orgToMapped;
+    private final HashMap<Integer, Integer> mappedToOrg;
 
     private Mapper() {
         this(new HashMap<>());
@@ -125,6 +138,11 @@ public class Mapper {
 
     private Mapper(HashMap<Integer, Integer> map) {
         this.orgToMapped = map;
+        this.mappedToOrg = new HashMap<>();
+
+        for (Map.Entry<Integer, Integer> e : map.entrySet()) {
+            mappedToOrg.put(e.getValue(), e.getKey());
+        }
     }
 
     private int map(int original) {
@@ -133,7 +151,12 @@ public class Mapper {
         int value = orgToMapped.size();
 
         orgToMapped.put(original, value);
+        mappedToOrg.put(value, original);
         return value;
+    }
+
+    private Mapped<Integer> mapOriginal(int mapped) {
+        return Mapped.of(mappedToOrg.get(mapped));
     }
 
     private Mapped<Integer> tryMap(int original) {

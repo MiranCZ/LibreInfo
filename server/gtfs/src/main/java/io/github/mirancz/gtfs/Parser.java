@@ -62,7 +62,7 @@ public class Parser {
             }
         });
 
-        TransitDataCodec.writeInfo(info, Files.size(outputTmp));
+        TransitDataCodec.writeInfo(infoTmp, Files.size(outputTmp));
 
         Files.move(mappedTmp, mapped, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         Files.move(outputTmp, output, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);

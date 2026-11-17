@@ -96,7 +96,6 @@ public class Main {
 
         get("/diversions", endpoints::handleDiversions);
         get("/events", endpoints::handleEvents);
-        get("/posts", endpoints::handlePosts);
 
         get("/routePath", endpoints::routePath);
     }

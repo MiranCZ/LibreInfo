@@ -3,7 +3,7 @@ package io.github.mirancz.libreinfo;
 public class DebugFlags {
 
 
-    private static final boolean USE_LOCALHOST = true;
+    private static final boolean USE_LOCALHOST = false;
 
     public static boolean shouldUseLocalhost() {
         //noinspection ConstantValue

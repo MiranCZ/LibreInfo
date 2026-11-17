@@ -16,6 +16,9 @@ data class Stop(
         val NONE: Stop = Stop(-1, "UNKNOWN", ParentStopStation.NONE, Location.NONE)
     }
 
+    fun getParentStationStr() =
+        parentStation.asStopString()
+
 
 
 }

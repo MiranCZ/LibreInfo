@@ -45,7 +45,7 @@ public class RequestHelper {
     public static VehiclesResponse getVehicles() {
         VehiclesResponse vehiclesResponse = new Gson().fromJson(get("vehicles"), VehiclesResponse.class);
 
-        return new VehiclesResponse(vehiclesResponse.vehicles()/*.stream().map(ApiVehicle::mapIds).filter(Objects::nonNull).toList()*/);
+        return new VehiclesResponse(vehiclesResponse.vehicles().stream().map(ApiVehicle::mapIds).filter(Objects::nonNull).toList());
     }
 
     public static String getDiversions() {
@@ -82,7 +82,7 @@ public class RequestHelper {
     }
 
     public static String getDepartures(int stopId) {
-        Mapped<Integer> upstreamStopId = Mapper.getMapped(IdType.STOP, stopId);
+        Mapped<Integer> upstreamStopId = Mapper.getOriginal(IdType.STOP, stopId);
         if (upstreamStopId.isEmpty()) {
             throw new IllegalArgumentException("Unknown stop " + stopId);
         }
