@@ -42,7 +42,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.valentinilk.shimmer.Shimmer
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.SelectedRoute
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
+import io.github.mirancz.libreinfo.activity.settings.DepartureClickAction
+import io.github.mirancz.libreinfo.nav.NavRoute
+import io.github.mirancz.libreinfo.nav.NavRoute.*
+import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.parsing.storage.ApiStorage
 import io.github.mirancz.libreinfo.parsing.types.Time
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureEntry
@@ -51,6 +56,7 @@ import io.github.mirancz.libreinfo.parsing.types.departure.PostDeparture
 import io.github.mirancz.libreinfo.parsing.types.departure.VehicleInfo
 import io.github.mirancz.libreinfo.parsing.types.dto.StopDelaysResponse
 import io.github.mirancz.libreinfo.ui.theme.extendedColors
+import io.github.mirancz.libreinfo.util.AppSettings
 import io.github.mirancz.libreinfo.util.DelayUtil
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 
@@ -388,4 +394,50 @@ private fun BlinkingText(text: String, color: Color = Color.Unspecified, fontSiz
     )
 
     Text(text, color = color, fontSize = fontSize, modifier = Modifier.alpha(alpha))
+}
+
+fun onDepartureClick(
+    entry: DepartureEntry,
+    stopId: Short,
+    state: NavState,
+) {
+    val vehicleInfo = entry.vehicleInfo
+    val vehicleId = if (vehicleInfo.hasId()) vehicleInfo.id() else null
+    val tripId = entry.tripId
+
+    when (AppSettings.Departures.clickAction) {
+        DepartureClickAction.TRIP_DETAIL -> {
+            // FIXME is it trip or route id???
+            if (tripId != null) {
+                println("Route detail 1")
+                val route = TripDetail(vehicleId, stopId, tripId)
+                state.onNavigate(route)
+            }
+        }
+        DepartureClickAction.MAP -> {
+            if (tripId != null) {
+                if (vehicleId != null) {
+                    println("NAVIGATING TO MAP")
+                    state.onNavigate(
+                        VehicleMap(
+                            SelectedRoute(
+                                vehicleId = vehicleId,
+                                serviceId = null,
+                                lineId = entry.line.id,
+                                routeId = tripId,
+                                color = entry.line.backgroundColorStr(),
+                                lat = null,
+                                lng = null
+                            )
+                        )
+                    )
+                } else {
+
+                    println("Route detail 2")
+                    val route = TripDetail(vehicleId, stopId, tripId)
+                    state.onNavigate(route)
+                }
+            }
+        }
+    }
 }

@@ -21,6 +21,7 @@ import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.model.Post
 import io.github.mirancz.libreinfo.parsing.types.Time
 import io.github.mirancz.libreinfo.parsing.types.departure.Departure
+import io.github.mirancz.libreinfo.parsing.types.departure.DepartureEntry
 import io.github.mirancz.libreinfo.util.OfflineDepartures
 import io.github.mirancz.libreinfo.util.load.rememberLoad
 import io.github.mirancz.libreinfo.util.request.RequestHelper
@@ -33,6 +34,7 @@ import io.github.mirancz.libreinfo.ui.components.AsyncContent
 import io.github.mirancz.libreinfo.ui.components.DepartureDetail
 import io.github.mirancz.libreinfo.ui.components.DepartureEntryRowShimmer
 import io.github.mirancz.libreinfo.ui.components.DeparturePostHeader
+import io.github.mirancz.libreinfo.ui.components.onDepartureClick
 import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 import io.github.mirancz.libreinfo.ui.showError
 import kotlinx.coroutines.launch
@@ -87,14 +89,7 @@ fun DeparturePostDetailScreen(state: NavState, stopId: Short, postId: Short) {
                 res.second.apiStorage,
                 stopDelays
             ) {
-                val vehicleInfo = it.vehicleInfo
-                val vehicleId = if (vehicleInfo.hasId()) vehicleInfo.id() else null
-
-                // FIXME is it trip or route id???
-                it.tripId?.let { tripId ->
-                    val route = NavRoute.TripDetail(vehicleId, stopId, tripId)
-                    state.onNavigate(route)
-                }
+                onDepartureClick(it, stopId, state)
             }
         }
     }

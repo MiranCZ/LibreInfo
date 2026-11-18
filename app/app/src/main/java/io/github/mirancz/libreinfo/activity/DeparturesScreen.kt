@@ -36,6 +36,7 @@ import io.github.mirancz.libreinfo.ui.components.FavouriteStopAction
 import io.github.mirancz.libreinfo.ui.components.NothingHere
 import io.github.mirancz.libreinfo.ui.components.PostDeparture
 import io.github.mirancz.libreinfo.ui.components.StopViewModel
+import io.github.mirancz.libreinfo.ui.components.onDepartureClick
 import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 import io.github.mirancz.libreinfo.ui.showError
 import io.github.mirancz.libreinfo.util.AppSettings
@@ -109,14 +110,7 @@ fun DeparturesScreen(state: NavState, stopId: Short) {
                             )
                         )
                     }) {
-                        val vehicleInfo = it.vehicleInfo
-                        val vehicleId = if (vehicleInfo.hasId()) vehicleInfo.id() else null
-
-                        // FIXME is it trip or route id???
-                        it.tripId?.let { tripId ->
-                            val route = NavRoute.TripDetail(vehicleId, stopId, routeId = tripId)
-                            state.onNavigate(route)
-                        }
+                        onDepartureClick(it, stopId, state)
                     }
                 }
             }

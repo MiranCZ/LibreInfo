@@ -142,10 +142,10 @@ private val DEFAULT_TARGET = Position(longitude = 16.613163, latitude = 49.19174
 @Serializable
 public data class SelectedRoute(
     val vehicleId: Int,
-    val serviceId: Int,
-    val lineId: Short,
-    val routeId: Int,
-    val color: String,
+    val serviceId: Int?,
+    val lineId: Short?,
+    val routeId: Int?,
+    val color: String?,
     val lat: Double?,
     val lng: Double?
 )
@@ -247,15 +247,11 @@ private fun VehicleMapContent(
             }.onSuccess { list ->
                 vehicles.putAll(list.associateBy { it.id })
 
-                // update camera if vehicle moved from screen open; nothing else can be selected yet
+                // update camera (and unset attributes) if vehicle moved from screen open; nothing else can be selected yet
                 // since the vehicle layer is empty until this fetch completes
                 val update = currentSelected?.let { vehicles[it.vehicleId] } ?: return@onSuccess
-                val lat = update.latitude ?: return@onSuccess
-                val lng = update.longitude ?: return@onSuccess
 
-                scope.launch {
-                    cameraState.animateTo(CameraPosition(target = Position(lng, lat), zoom = 16.0))
-                }
+                select(update)
             }
 
             VehicleWebsocket.subscribe(MainActivity::class.java) { message ->
@@ -387,11 +383,13 @@ private fun getRoutePathState(
 ): State<FeatureCollection<LineString, JsonObject>> = produceState(FeatureCollection(), selected) {
     val sel = selected ?: run { value = FeatureCollection(); return@produceState }
     value = withContext(Dispatchers.IO) {
-        runCatching {
-            RequestHelper.getRoutePath(
-                context, sel.serviceId, sel.lineId.toInt(), sel.routeId
-            )
-        }.getOrNull()?.toFeatureCollection(sel.color) ?: FeatureCollection()
+        if (sel.serviceId != null && sel.lineId != null && sel.routeId != null && sel.color != null) {
+            runCatching {
+                RequestHelper.getRoutePath(
+                    context, sel.serviceId, sel.lineId.toInt(), sel.routeId
+                )
+            }.getOrNull()?.toFeatureCollection(sel.color) ?: FeatureCollection()
+        } else FeatureCollection()
     }
 }
 

@@ -2,6 +2,7 @@ package io.github.mirancz.libreinfo.util
 
 import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.activity.settings.DepartureSource
+import io.github.mirancz.libreinfo.activity.settings.DepartureClickAction
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -21,6 +22,8 @@ object AppSettings {
         var source by enumPref("dep_source", DepartureSource::class.java, DepartureSource.DEFAULT)
         var delayRender by enumPref("dep_delay_render", DelayRenderType::class.java, DelayRenderType.DEFAULT)
         var showLowFloor by boolPref("dep_show_low_floor", true)
+        var clickAction by enumPref("dep_click_action", DepartureClickAction::class.java, DepartureClickAction.TRIP_DETAIL)
+        var clickFallback by boolPref("dep_click_fallback", true)
         var maxEntries by intPref("dep_max_entries", 5)
     }
 

@@ -379,6 +379,7 @@ private fun TimePickerDialog(
     ) {
         Column {
             RadioButtonHorizontalSelection(
+                Modifier.fillMaxWidth(),
                 initialValueIndex = if (isArrival) 0 else 1,
                 options = listOf(stringResource(R.string.arrival), stringResource(R.string.departure))
             ) { i ->
