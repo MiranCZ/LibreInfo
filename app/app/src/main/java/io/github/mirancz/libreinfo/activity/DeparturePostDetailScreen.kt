@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,7 +38,9 @@ import io.github.mirancz.libreinfo.ui.components.DeparturePostHeader
 import io.github.mirancz.libreinfo.ui.components.onDepartureClick
 import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 import io.github.mirancz.libreinfo.ui.showError
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun DeparturePostDetailScreen(state: NavState, stopId: Short, postId: Short) {
@@ -46,6 +49,8 @@ fun DeparturePostDetailScreen(state: NavState, stopId: Short, postId: Short) {
 
     var post: Post? by remember { mutableStateOf(null) }
     var stopDelays by remember { mutableStateOf(StopDelaysResponse(emptyMap())) }
+    var stopDelaysLoaded by remember { mutableStateOf(false) }
+
     val scope = rememberCoroutineScope()
 
     val result = rememberLoad {
@@ -60,6 +65,7 @@ fun DeparturePostDetailScreen(state: NavState, stopId: Short, postId: Short) {
         }
 
         try {
+            stopDelaysLoaded = true
             stopDelays = RequestHelper.getStopDelays(context, stopId)
         } catch (e: RequestException) {
             scope.launch { snackbar.showError(context, e.error) }
@@ -80,8 +86,20 @@ fun DeparturePostDetailScreen(state: NavState, stopId: Short, postId: Short) {
         Pair(res, storage)
     }
 
-    val _post = post
-    val title = if (_post == null) "" else _post.name
+    if (!stopDelaysLoaded) {
+        LaunchedEffect(Unit) {
+            withContext(Dispatchers.IO) {
+                try {
+                    stopDelaysLoaded = true
+                    stopDelays = RequestHelper.getStopDelays(context, stopId)
+                } catch (e: RequestException) {
+                    scope.launch { snackbar.showError(context, e.error) }
+                }
+            }
+        }
+    }
+
+    val title = post?.name ?: ""
     ScreenScaffold(title, onBack = state.onBack) {
         AsyncContent(result, loading = { DepartureDetailShimmer(title) }) { res ->
             DepartureDetail(
