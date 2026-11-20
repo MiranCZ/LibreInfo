@@ -66,12 +66,13 @@ import io.github.mirancz.libreinfo.R
 import io.github.mirancz.libreinfo.activity.attribution.AttributionScreen
 import io.github.mirancz.libreinfo.activity.devtest.DeparturePerformanceActivity
 import io.github.mirancz.libreinfo.activity.devtest.LineListScreen
-import io.github.mirancz.libreinfo.activity.settings.DeparturesSettingsScreen
+import io.github.mirancz.libreinfo.activity.settings.departure.DeparturesThemingSettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.DevSettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.LocationSettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.SettingsScreen
 import io.github.mirancz.libreinfo.activity.settings.StorageOptionsScreen
 import io.github.mirancz.libreinfo.activity.settings.UpdatingSettingsScreen
+import io.github.mirancz.libreinfo.activity.settings.departure.DepartureSettingsScreen
 import io.github.mirancz.libreinfo.nav.LocalNavResults
 import io.github.mirancz.libreinfo.nav.NavResults
 import io.github.mirancz.libreinfo.nav.NavRoute
@@ -245,7 +246,8 @@ fun AppNavHost() {
 
                 entry<NavRoute.Settings.Location> { LocationSettingsScreen(stateFor(it)) }
                 entry<NavRoute.Settings.Updates> { UpdatingSettingsScreen(stateFor(it)) }
-                entry<NavRoute.Settings.Departures> { DeparturesSettingsScreen(stateFor(it)) }
+                entry<NavRoute.Settings.Departures> { DepartureSettingsScreen(stateFor(it)) }
+                entry<NavRoute.Settings.DepartureTheming> { DeparturesThemingSettingsScreen(stateFor(it)) }
                 entry<NavRoute.Settings.Storage> { StorageOptionsScreen(stateFor(it)) }
 
                 entry<NavRoute.VehicleMap> { VehicleMapScreen(stateFor(it), it.vehicle) }

@@ -1,7 +1,12 @@
 <resources>
     <string name="app_name">LibreInfo</string>
     <string name="departures">Aktuální odjezdy</string>
-    <string name="departures_settings">Odjezdy</string>
+    <string name="departures_theming">Vzhled odjezdů</string>
+    <string name="departures_settings">Nastavení odjezdů</string>
+    <string name="click_action_map">Mapu</string>
+    <string name="click_action_trip">Trasu</string>
+    <string name="click_action_description">Po kliknutí na spoj otevřít</string>
+    <string name="click_action_fallback">Při nedostupnosti mapy otevřít trasu</string>
     <string name="departure_source">Zdroj dat</string>
     <string name="departure_source_server">Server (oficiální)</string>
     <string name="departure_source_local">Zařízení (neoficiální)</string>

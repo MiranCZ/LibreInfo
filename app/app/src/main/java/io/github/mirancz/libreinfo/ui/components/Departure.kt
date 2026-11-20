@@ -25,11 +25,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -409,7 +411,6 @@ fun onDepartureClick(
         DepartureClickAction.TRIP_DETAIL -> {
             // FIXME is it trip or route id???
             if (tripId != null) {
-                println("Route detail 1")
                 val route = TripDetail(vehicleId, stopId, tripId)
                 state.onNavigate(route)
             }
@@ -417,7 +418,6 @@ fun onDepartureClick(
         DepartureClickAction.MAP -> {
             if (tripId != null) {
                 if (vehicleId != null) {
-                    println("NAVIGATING TO MAP")
                     state.onNavigate(
                         VehicleMap(
                             SelectedRoute(
@@ -432,10 +432,12 @@ fun onDepartureClick(
                         )
                     )
                 } else {
-
-                    println("Route detail 2")
-                    val route = TripDetail(vehicleId, stopId, tripId)
-                    state.onNavigate(route)
+                    if (AppSettings.Departures.clickFallback) {
+                        val route = TripDetail(vehicleId, stopId, tripId)
+                        state.onNavigate(route)
+                    } else {
+                        // TODO show error
+                    }
                 }
             }
         }

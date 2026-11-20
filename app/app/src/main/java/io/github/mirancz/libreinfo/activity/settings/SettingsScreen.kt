@@ -1,7 +1,5 @@
 package io.github.mirancz.libreinfo.activity.settings
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Storage
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import io.github.mirancz.libreinfo.BuildConfig
@@ -16,7 +14,7 @@ import io.github.mirancz.libreinfo.ui.components.NavigationItem
 fun SettingsScreen(state: NavState) {
     NavigationScreenScaffold(stringResource(R.string.settings), onBack = state.onBack) {
         NavigationItem(
-            R.drawable.palette, R.string.departures_settings
+            R.drawable.bus_light_full, R.string.departures_settings
         ) { state.onNavigate(NavRoute.Settings.Departures) }
 
         NavigationItem(

@@ -1,4 +1,4 @@
-package io.github.mirancz.libreinfo.activity.settings
+package io.github.mirancz.libreinfo.activity.settings.departure
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
@@ -24,11 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import io.github.mirancz.libreinfo.util.AppSettings
 import io.github.mirancz.libreinfo.parsing.storage.manager.AppContainer
 import io.github.mirancz.libreinfo.parsing.storage.manager.IdStorage
 import io.github.mirancz.libreinfo.parsing.types.StopTime
@@ -40,42 +37,23 @@ import io.github.mirancz.libreinfo.parsing.types.departure.VehicleInfo
 import io.github.mirancz.libreinfo.util.DeparturesSettings
 import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.R
+import io.github.mirancz.libreinfo.activity.settings.DelayRenderType
 import io.github.mirancz.libreinfo.nav.NavState
 import io.github.mirancz.libreinfo.parsing.types.departure.DepartureTime
 import io.github.mirancz.libreinfo.ui.ScreenScaffold
 import io.github.mirancz.libreinfo.ui.components.AppDropdown
 import io.github.mirancz.libreinfo.ui.components.AppSwitch
-import io.github.mirancz.libreinfo.ui.components.CountdownConfirmDialog
 import io.github.mirancz.libreinfo.ui.components.DepartureEntryShimmer
 import io.github.mirancz.libreinfo.ui.components.Divider
+import io.github.mirancz.libreinfo.ui.components.PostDeparture
 import io.github.mirancz.libreinfo.ui.components.rememberActivityShimmer
 
-class DeparturesSettingsViewModel : ViewModel() {
-    // read eagerly so the dropdown never flashes the default before load() lands
-    var source by mutableStateOf(AppSettings.Departures.source)
-        private set
-
-    fun load() {
-        source = AppSettings.Departures.source
-    }
-
-    fun updateSource(s: DepartureSource) {
-        AppSettings.Departures.source = s; source = s
-    }
-}
-
-private const val CONFIRM_COOLDOWN_SECONDS = 3
-
 @Composable
-fun DeparturesSettingsScreen(state: NavState) {
-    val vm: DeparturesSettingsViewModel = viewModel()
-
+fun DeparturesThemingSettingsScreen(state: NavState) {
     val provider = AppContainer.storageProvider
     var storage: IdStorage? by remember { mutableStateOf(provider.getInstanceOrNull()) }
 
     LaunchedEffect(Unit) {
-        vm.load()
-
         val storageRes = withContext(Dispatchers.IO) {
             provider.getInstance()
         }
@@ -91,35 +69,8 @@ fun DeparturesSettingsScreen(state: NavState) {
         Pair(DelayRenderType.BOX, stringResource(R.string.rectangle)),
     )
 
-    val sourceTranslationMap = mapOf(
-        Pair(DepartureSource.SERVER, stringResource(R.string.departure_source_server)),
-        Pair(DepartureSource.LOCAL, stringResource(R.string.departure_source_local)),
-    )
-
-    var pendingSource by remember { mutableStateOf<DepartureSource?>(null) }
-
-    pendingSource?.let { pending ->
-        LocalSourceWarningDialog(
-            onConfirm = { vm.updateSource(pending); pendingSource = null },
-            onDismiss = { pendingSource = null }
-        )
-    }
-
-    ScreenScaffold(stringResource(R.string.departures_settings), onBack = state.onBack) {
+    ScreenScaffold(stringResource(R.string.departures_theming), onBack = state.onBack) {
         LazyColumn {
-            item {
-                SettingDropdown(
-                    stringResource(R.string.departure_source),
-                    vm.source,
-                    DepartureSource.entries,
-                    displayString = { sourceTranslationMap.getOrDefault(it, "??") }
-                ) {
-                    // computing locally yields unofficial data, so that direction needs a confirmation
-                    if (it == DepartureSource.LOCAL && vm.source != DepartureSource.LOCAL) pendingSource =
-                        it else vm.updateSource(it)
-                }
-                Divider()
-            }
             item {
                 Crossfade(targetState = storage) { local ->
                     if (local != null) {
@@ -163,23 +114,7 @@ fun DeparturesSettingsScreen(state: NavState) {
     }
 }
 
-/**
- * Warns that on-device departures are unofficial. The confirm button unlocks only after
- * [CONFIRM_COOLDOWN_SECONDS] so the warning is not dismissed reflexively.
- */
-@Composable
-private fun LocalSourceWarningDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
-    CountdownConfirmDialog(
-        stringResource(R.string.departure_source_warning_title),
-        stringResource(R.string.cancel),
-        stringResource(R.string.departure_source_warning_confirm),
-        onDismiss,
-        onConfirm,
-        CONFIRM_COOLDOWN_SECONDS
-    ) {
-        Text(stringResource(R.string.departure_source_warning_message))
-    }
-}
+
 
 @Composable
 private fun PreviewCard(name: String,storage: IdStorage) {
@@ -274,7 +209,7 @@ private fun DeparturePreview(name: String, storage: IdStorage, vararg entries: P
     val settings = LocalDeparturesSettings.current
 
     CompositionLocalProvider(LocalDeparturesSettings provides settings.copy(maxEntries = entries.size)) {
-        io.github.mirancz.libreinfo.ui.components.PostDeparture(dep.toPostDeparture(false), onEntryClick = null)
+        PostDeparture(dep.toPostDeparture(false), onEntryClick = null)
     }
 }
 
@@ -305,7 +240,7 @@ private fun SettingToggleRow(
 }
 
 @Composable
-private fun <T> SettingDropdown(label: String, selected: T, options: List<T>, displayString: (T) -> String = { it.toString() }, onSelect: (T) -> Unit) {
+fun <T> SettingDropdown(label: String, selected: T, options: List<T>, displayString: (T) -> String = { it.toString() }, onSelect: (T) -> Unit) {
     Row (
         Modifier
             .fillMaxWidth()
