@@ -37,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -52,6 +53,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entryProvider
@@ -87,6 +90,7 @@ import io.github.mirancz.libreinfo.util.LocalDeparturesSettings
 import io.github.mirancz.libreinfo.util.UpdateHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.minutes
 
 class MainActivity : ComponentActivity() {
 
@@ -204,6 +208,21 @@ fun AppNavHost() {
     )
 
     val results = remember { NavResults() }
+    var backgroundedAt by rememberSaveable { mutableLongStateOf(0L) }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+        backgroundedAt = System.currentTimeMillis()
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_START) {
+        val away = System.currentTimeMillis() - backgroundedAt
+        if (backgroundedAt != 0L && away > 30.minutes.inWholeMilliseconds) {
+            backStack.clear()
+            backStack.add(NavRoute.Home)
+        }
+        backgroundedAt = 0L
+    }
+
 
     CompositionLocalProvider(LocalNavResults provides results) {
         NavDisplay(
